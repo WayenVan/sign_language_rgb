@@ -1,0 +1,15 @@
+/dataset
+/results
+*.pyc
+/.vscode
+/.env
+*.code-workspace
+.idea
+
+/resources
+__pycache__/*
+.pytest_cache
+mmpose
+
+/outputs
+*.swp
