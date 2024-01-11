@@ -1,40 +1,46 @@
 from omegaconf import OmegaConf, DictConfig
 import sys
+import logging
 sys.path.append('src')
-from csi_sign_language.utils.logger import build_logger, strtime
-from csi_sign_language.engines.build import build_trainner, build_inferencer
-from csi_sign_language.data.build import build_dataloader
-from csi_sign_language.models.build_model import build_model
+from hydra.utils import instantiate
+
 import torch
+from torch.utils.data.dataloader import DataLoader
+from torch.nn import Module
+from torch.optim.optimizer import Optimizer
+from csi_sign_language.engines.trainers import Trainner
 import hydra
 import os
 import shutil
 
-@hydra.main(version_base=None, config_path='../configs', config_name='default.yaml')
+logger = logging.getLogger('main')
+
+@hydra.main(version_base=None, config_path='../configs/train', config_name='default.yaml')
 def main(cfg: DictConfig):
     script = os.path.abspath(__file__)
-    save_dir = os.path.join(cfg.save_dir, f'experiment-{strtime()}')
-    os.makedirs(save_dir)
-    OmegaConf.save(cfg, os.path.join(save_dir, 'config.yaml'))
-    logger = build_logger('main', os.path.join(save_dir, 'train.log'))
+    save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+    
     shutil.copyfile(script, os.path.join(save_dir, 'script.py'))
-
     logger.info('building model and dataloaders')
-    data_loaders = build_dataloader(cfg)
-    model: torch.nn.Module = build_model(cfg)
-    opt = torch.optim.Adam(model.parameters(), lr=cfg.train.lr)
+    
+    train_loader: DataLoader = instantiate(cfg.train_loader)
+    val_loader: DataLoader = instantiate(cfg.val_loader)
+    
+    
+    model: Module = instantiate(cfg.model)
+    opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
 
     logger.info('building trainner and inferencer')
-    trainer = build_trainner(cfg)
-
+    trainer: Trainner = instantiate(cfg.trainner, logger=logger)
     logger.info('training loop start')
     best_wer_value = 1000
-    for epoch in range(cfg.train.epoch):
+    for epoch in range(cfg.epoch):
         logger.info(f'epoch {epoch}')
-        wer_value = trainer.do_train(model, data_loaders['train_loader'], data_loaders['val_loader'], opt, logger)
+        wer_value = trainer.do_train(model, train_loader, val_loader, opt)
         if wer_value < best_wer_value:
             best_wer_value = wer_value
             torch.save(model, os.path.join(save_dir, 'model.pth'))
+            logger.info(f'best value saved')
         logger.info(f'finish one epoch')
         
         

@@ -1,0 +1,63 @@
+# defaults:
+#   - override hydra/job_logging: none
+#   - override hydra/hydra_logging: none
+
+phoenix14_root: /home/jingyan/Documents/csi_sign_language/dataset/phoenix2014-release
+vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
+csi: csi_sign_language
+transform: torchvision.transforms
+T: torchvision.transforms
+
+device: cuda
+debug: True
+epoch: 50
+
+model:
+  _target_: csi_sign_language.models.models.ResnetTransformer
+  d_feedforward: 1024
+  n_head: 4
+  n_class: 1296
+
+img_transform: 
+      _target_: ${T}.Compose
+      transforms: 
+        - _target_: ${T}.ToPILImage
+        - _target_: ${T}.Resize
+          size: [224, 224]
+        - _target_: ${T}.ToTensor
+        - _target_: ${T}.Normalize
+          mean: [0.485, 0.456, 0.406]
+          std: [0.299, 0.224, 0.225]
+
+train_loader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 2
+  num_workers: 12
+  dataset:
+    _target_: csi_sign_language.data.dataset.phoenix14.Phoenix14Dataset
+    data_root: ${phoenix14_root}
+    gloss_vocab_dir: ${vocab_dir}
+    type: train
+    img_transform: ${img_transform}
+
+val_loader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 2
+  num_workers: 12
+  dataset:
+    _target_: csi_sign_language.data.dataset.phoenix14.Phoenix14Dataset
+    data_root: ${phoenix14_root}
+    gloss_vocab_dir: ${vocab_dir}
+    type: dev
+    img_transform: ${img_transform}
+
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 1e-5
+  
+trainner:
+  _target_: ${csi}.engines.trainers.Trainner
+  num_class: 1296
+  vocab_dir: ${vocab_dir}
+  device: ${device}
+  debug: True

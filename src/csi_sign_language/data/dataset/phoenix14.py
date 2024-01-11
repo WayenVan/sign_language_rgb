@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 
 
 class BasePhoenix14Dataset(Dataset, ABC):
-    
+    data_root: str
     def __init__(self, data_root, gloss_vocab_dir, type='train', multisigner=True, length_time=None, length_glosses=None,
                 padding_mode : PaddingMode ='front'):
         if multisigner:
