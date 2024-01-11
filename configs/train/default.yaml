@@ -1,19 +1,15 @@
-# defaults:
-#   - override hydra/job_logging: none
-#   - override hydra/hydra_logging: none
-
-phoenix14_root: /home/jingyan/Documents/csi_sign_language/dataset/phoenix2014-release
-vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 csi: csi_sign_language
 transform: torchvision.transforms
 T: torchvision.transforms
 
+phoenix14_root: /home/jingyan/Documents/csi_sign_language/dataset/phoenix2014-release
+vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 device: cuda
 debug: True
 epoch: 50
 
 model:
-  _target_: csi_sign_language.models.models.ResnetTransformer
+  _target_: ${csi}.models.models.ResnetTransformer
   d_feedforward: 1024
   n_head: 4
   n_class: 1296
@@ -34,7 +30,7 @@ train_loader:
   batch_size: 2
   num_workers: 12
   dataset:
-    _target_: csi_sign_language.data.dataset.phoenix14.Phoenix14Dataset
+    _target_: ${csi}.data.dataset.phoenix14.Phoenix14Dataset
     data_root: ${phoenix14_root}
     gloss_vocab_dir: ${vocab_dir}
     type: train
@@ -45,7 +41,7 @@ val_loader:
   batch_size: 2
   num_workers: 12
   dataset:
-    _target_: csi_sign_language.data.dataset.phoenix14.Phoenix14Dataset
+    _target_: ${csi}.data.dataset.phoenix14.Phoenix14Dataset
     data_root: ${phoenix14_root}
     gloss_vocab_dir: ${vocab_dir}
     type: dev
