@@ -23,15 +23,15 @@ def main(cfg: DictConfig):
     shutil.copyfile(script, os.path.join(save_dir, 'script.py'))
     logger.info('building model and dataloaders')
     
-    train_loader: DataLoader = instantiate(cfg.train_loader)
-    val_loader: DataLoader = instantiate(cfg.val_loader)
+    train_loader: DataLoader = instantiate(cfg.data.train_loader)
+    val_loader: DataLoader = instantiate(cfg.data.val_loader)
     
     
     model: Module = instantiate(cfg.model)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
 
     logger.info('building trainner and inferencer')
-    trainer: Trainner = instantiate(cfg.trainner, logger=logger)
+    trainer: Trainner = instantiate(cfg.trainner, vocab=train_loader.dataset.vocab, logger=logger)
     logger.info('training loop start')
     best_wer_value = 1000
     for epoch in range(cfg.epoch):

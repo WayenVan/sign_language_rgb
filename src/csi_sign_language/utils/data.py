@@ -26,9 +26,9 @@ def assert_lists_same_length(lists):
 def padding(data: np.ndarray, axis: int, length: int, padding_mode: PaddingMode):
 
     delta_legnth = length - data.shape[axis]
-    # if delta_legnth <=0:
-    #     return np.take(data, range(length), axis=axis), np.ma.make_mask(np.ones(length))
-    assert delta_legnth >= 0
+    if delta_legnth == 0:
+        return data, np.ma.make_mask(np.ones(length))
+    assert delta_legnth > 0
         
 
     npad = [[0, 0] for i in data.shape]

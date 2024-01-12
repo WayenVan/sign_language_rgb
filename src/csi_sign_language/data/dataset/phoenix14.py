@@ -1,23 +1,24 @@
 import os
+from typing import Any
 import numpy as np
 import glob
 import cv2 as cv2
 import pandas as pd
-from typing import Any, Tuple, List
-from collections import OrderedDict
-from pathlib import Path
 
 import torch
 from torch.utils.data import Dataset
 from torchtext.vocab import vocab, build_vocab_from_iterator, Vocab
-
+import torch.nn.functional as F
 from einops import rearrange
 
 from csi_sign_language.csi_typing import PaddingMode
 from ...csi_typing import *
 from ...utils.data import VideoGenerator, padding, load_vocab
-
+from typing import *
 from abc import ABC, abstractmethod
+import json
+from omegaconf import OmegaConf
+
 
 
 class BasePhoenix14Dataset(Dataset, ABC):
@@ -115,3 +116,101 @@ class Phoenix14Dataset(BasePhoenix14Dataset):
         file_list = sorted(file_list, key=lambda x: int(x.split('_')[-1].split('-')[0][2:]))
         return file_list
         
+
+
+class MyPhoenix14Dataset(Dataset):
+    
+    data_root: str
+    info: dict
+    
+    def __init__(
+        self, 
+        data_root: str,
+        subset: Union[Literal['multisigner'], Literal['si5']],
+        mode: Union[Literal['train'], Literal['dev'], Literal['test']],
+        gloss_length=None,
+        video_length=None,
+        transform=None) -> None:
+        
+        self.data_root = data_root
+        self.subset = subset
+        self.mode = mode
+        self.subset_root = os.path.join(data_root, subset)
+        self.info = OmegaConf.load(os.path.join(self.subset_root, 'info.yaml'))
+            
+        self.vocab = self.create_vocab_from_list(self.info['vocab'])
+        self.data_id: List[str] = self.info[mode]['data']
+        self.feature_dir = os.path.join(data_root, subset, mode)
+        self.transform = transform
+        
+        self.video_length = video_length
+        self.gloss_length = gloss_length
+        
+        
+    def __getitem__(self, index) -> Any:
+        data = np.load(os.path.join(self.feature_dir, f'{self.data_id[index]}.npz'))
+        video = data['video']
+        gloss = data['gloss']
+    
+        ret = dict(
+            video=video, #[t c h w]
+            gloss=gloss)
+        if self.transform is not None:
+            ret = self.transform(ret)
+        return ret
+        
+    def __len__(self):
+        return len(self.data_id)
+    
+    @staticmethod 
+    def create_vocab_from_list(list: List[str]):
+        return vocab(OrderedDict([(item, 1) for item in list]))
+
+class CollateFn:
+    
+    def __init__(self, length_video=None, length_gloss=None) -> None:
+        self.length_video = length_video
+        self.length_gloss = length_gloss
+    
+    def __call__(self, data) -> Any:
+        
+        video_batch = [item['video'] for item in data]
+        gloss_batch = [item['gloss'] for item in data]
+        
+        video, v_length = self._padding_temporal(video_batch, self.length_video)
+        gloss, g_length = self._padding_temporal(gloss_batch, self.length_gloss)
+        
+        return dict(
+            video=video,
+            gloss=gloss,
+            video_length=v_length,
+            gloss_length=g_length,
+        )
+    
+    @staticmethod
+    def _padding_temporal(batch_data: List[torch.Tensor], force_length=None):
+        #[t, ....]
+        if force_length is not None:
+            #if force temporal length
+            t_length = force_length
+        else:
+            #temporal should be the max
+            t_length = max(data.size()[0] for data in batch_data)
+        
+        t_lengths_data = []
+        ret_data = []
+        for data in batch_data:
+            t_length_data = data.size()[0]
+            t_lengths_data.append(torch.tensor(t_length_data))
+            delta_length = t_length - t_length_data
+            assert delta_length >= 0
+            if delta_length == 0:
+                ret_data.append(data)
+                continue
+            
+            data = torch.transpose(data, 0, -1)
+            data = F.pad(data, (0, delta_length), mode='constant', value=0)
+            data = torch.transpose(data, 0, -1)
+            ret_data.append(data)
+        
+        return torch.stack(ret_data), torch.stack(t_lengths_data)

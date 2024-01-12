@@ -37,7 +37,7 @@ class CTCDecoder():
         """
         :param probs: [n t c] if batch_first or [t n c]
         :param seq_length: [n] , defaults to None
-        :return: list[list[str]]
+        :return: batch of decoded tokens list[list[str]]
         """
         
         if not self.batch_first:

@@ -13,3 +13,5 @@ mmpose
 
 /outputs
 *.swp
+
+/preprocessed

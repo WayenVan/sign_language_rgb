@@ -11,44 +11,47 @@ from typing import *
 import numpy as np
 import cv2
 from einops import rearrange
-from csi_sign_language.utils.data import VideoGenerator, padding
+from csi_sign_language.utils.data import VideoGenerator
+from omegaconf import OmegaConf
 import json
 
 @click.command()
 @click.option('--data_root', default='dataset/phoenix2014-release')
-@click.option('--output_root', default='dataset/ph14')
+@click.option('--output_root', default='preprocessed/ph14')
 @click.option('--frame_size', nargs=2, default=(224, 224))
-def main(data_root, output_root, frame_size):
+@click.option('--subset', default='multisigner')
+def main(data_root, output_root, frame_size, subset):
     
     vocab, vocab_SI5 = generate_vocab(data_root, output_root)
-    meta = {}
-    meta['author'] = 'jingyan wang'
+    info = OmegaConf.create()
+    info.author = 'jingyan wang'
+    info.email = '2533494w@student.gla.ac.uk'
     
-    for subset in ('multisigner', 'si5'):
-        meta[subset] = {}
-        multi_signer = True if subset == 'multisigner' else False
-        v = vocab if subset == 'multisigner' else vocab_SI5
-        meta[subset]['vocab'] = v.get_itos()
-        for type in ('train', 'dev', 'test'):
-            meta[subset][type] = {}
-            annotations, feature_dir, _, _ = get_basic_info(data_root, type, multisigner=multi_signer)
-            feature_saving_dir = os.path.join(output_root, subset, type)
-            data_length = len(annotations)
-            print(f'creating {subset}-{type}')
-            meta[subset][type]['data'] = []
-            for idx in tqdm(range(data_length)):
-                video, gloss = get_single_data(idx, annotations, v, feature_dir, frame_size)
-                name = f'{subset}-{type}-{idx}-feature'
-                os.makedirs(feature_saving_dir, exist_ok=True)
-                np.savez(os.path.join(feature_saving_dir, f'{name}.npz'), video=video, gloss=gloss)
-                meta[subset][type]['data'].append(name)
-                if idx % 50 == 0:
-                    with open(os.path.join(output_root, 'info.json'), 'w') as f:
-                        json.dump(meta, f, indent=4)
-                
-                
+    subset_root = os.path.join(output_root, subset)
+    multi_signer = True if subset == 'multisigner' else False
+    v = vocab if subset == 'multisigner' else vocab_SI5
+    info['vocab'] = v.get_itos()
+    for mode in ('train', 'dev', 'test'):
+        submode_root = os.path.join(subset_root, mode)
+        annotations, feature_dir, max_lgt_v, max_lgt_g= get_basic_info(data_root, mode, multisigner=multi_signer)
+        data_length = len(annotations)
+        print(f'creating {subset}-{mode}')
+        info[mode] = {}
+        info[mode]['max_length_video'] = max_lgt_v
+        info[mode]['max_length_gloss'] = max_lgt_g
+        info[mode]['data'] = []
+        for idx in tqdm(range(data_length)):
+            video, gloss = get_single_data(idx, annotations, v, feature_dir, frame_size)
+            name = f'{subset}-{mode}-{idx}-feature'
+            os.makedirs(submode_root, exist_ok=True)
+            np.savez(os.path.join(submode_root, f'{name}.npz'), video=video, gloss=gloss)
+            info[mode]['data'].append(name)
+            if idx % 50 == 0:
+                OmegaConf.save(info, os.path.join(subset_root, 'info.yaml'))
     
-    
+    OmegaConf.save(info, os.path.join(subset_root, 'info.yaml'))
+            
+
     
 def get_single_data(idx, annotations, gloss_vocab,feature_dir, frame_size=(224, 224)):
     anno = annotations['annotation'].iloc[idx]
@@ -69,12 +72,9 @@ def get_single_data(idx, annotations, gloss_vocab,feature_dir, frame_size=(224, 
     # anno, anno_mask = padding(anno, 0, length_gloss, 'back')
     
     frames = rearrange(frames, 't h w c -> t c h w')
-    ret = dict(
-        video=frames, #[t, c, h, w]
-        annotation = anno, #[s]
-    )
     
-    return ret
+    
+    return frames, anno
     
     
 def get_basic_info(data_root, type='train', multisigner=True,):

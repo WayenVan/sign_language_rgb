@@ -2,21 +2,21 @@ import sys
 sys.path.append('src')
 import os
 from pathlib import Path
-from csi_sign_language.data.dataset.phoenix14 import Phoenix14SegDataset, Phoenix14GraphSegDataset
-import tqdm
+from csi_sign_language.data.dataset.phoenix14 import Phoenix14Dataset
+from tqdm import tqdm
 import hydra
 from omegaconf import DictConfig, OmegaConf
-from csi_sign_language.data.build import build_dataset
-from csi_sign_language.utils.logger import build_logger
+
+def main():
+    cfg = OmegaConf.load('configs/train/default.yaml')
+    cfg2 = OmegaConf.load('/home/jingyan/Documents/sign_language_rgb/outputs/2024-01-11/13-41-00/.hydra/config.yaml')
+    loader = hydra.utils.instantiate(cfg.data.train_loader)
+    loader2 = hydra.utils.instantiate(cfg2.train_loader)
+    for i in tqdm(loader):
+        pass
+        
+    for i in tqdm(loader2):
+        pass
 
 
-@hydra.main('../configs', 'defaultv2', version_base=None)
-def main(cfg: DictConfig):
-    logger = build_logger('name', 'experiments/log2.log')
-    dataset = build_dataset(cfg)
-    a = dataset['train_set'][0]['annotation']
-    v = dataset['train_set'].dataset.reduced_vocab
-    print(len(v))
-    
-    
 main()

@@ -5,11 +5,9 @@ pool = nn.AvgPool1d(3, ceil_mode=True)
 
 random = torch.rand((12, 128, 8))
 print(pool(random).size())
+print(torch.transpose(random, 0, -1).size())
 
 a = [1, 2, 3, 4, 5]
 print(a[::2])
-
-
-a = numpy.random.rand(3, 3)
-a[0] = [1., 1., 1]
-print(a)
+a = torch.tensor([1, 2, 3, 0 ,0], dtype=torch.bool)
+print(~a)
