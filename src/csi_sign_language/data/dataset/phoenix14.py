@@ -162,6 +162,9 @@ class MyPhoenix14Dataset(Dataset):
     def __len__(self):
         return len(self.data_id)
     
+    def get_vocab(self):
+        return self.vocab
+    
     @staticmethod 
     def create_vocab_from_list(list: List[str]):
         return vocab(OrderedDict([(item, 1) for item in list]))

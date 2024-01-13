@@ -19,9 +19,11 @@ class VideoGenerator:
         for file in self.__frame_list:
             yield cv2.imread(file)
             
-def assert_lists_same_length(lists):
-    length = len(lists[0])
-    assert all(len(lst) == length for lst in lists[1:]), "Lists have different lengths"
+def flatten_concatenation(matrix):
+    flat_list = []
+    for row in matrix:
+        flat_list += row
+    return flat_list
 
 def padding(data: np.ndarray, axis: int, length: int, padding_mode: PaddingMode):
 

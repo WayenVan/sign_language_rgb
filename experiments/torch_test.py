@@ -7,7 +7,12 @@ random = torch.rand((12, 128, 8))
 print(pool(random).size())
 print(torch.transpose(random, 0, -1).size())
 
-a = [1, 2, 3, 4, 5]
-print(a[::2])
-a = torch.tensor([1, 2, 3, 0 ,0], dtype=torch.bool)
-print(~a)
+import sys
+sys.path.append('src')
+from csi_sign_language.utils.lr_scheduler import WarmUpLr
+
+wlr = WarmUpLr(1e-9, 1, 2, min_lr=1e-6, decay_factor=0.95)
+
+
+for i in range(100):
+    print(wlr(i))

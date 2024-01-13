@@ -7,40 +7,51 @@ from einops import rearrange
 import logging
 from typing import *
 from ..utils.data import *
-
+from csi_sign_language.utils.decode import CTCDecoder
 class Inferencer():
     
     def __init__(
             self,
-            vocab_dir,
+            vocab,
             device,
-            num_class
+            num_class,
+            logger: logging.Logger
         ) -> None:
         
-        self.vocab: v.Vocab = load_vocab(vocab_dir)
+        self.vocab: v.Vocab = vocab
         self.device=device
         self.NUM_CLASS = num_class
-    
-    def do_inference(self, model, data_loader, parent_logger):
-        hyp = []
-        for data in tqdm(data_loader):
-            hyp = hyp + self.do_inference_single_batch(model, data, parent_logger)
-        return hyp
-            
-    def do_inference_single_batch(self, model, data, parent_logger: logging.Logger) -> List[List[str]]:
-        logger = parent_logger.getChild(__class__.__name__) 
+        self.logger = logger.getChild(__class__.__name__)
+        self.decoder = CTCDecoder(self.vocab, blank_id=0)
+    def do_inference(self, model: Module, loader) -> List[List[str]]:
         
         model.to(self.device)
         model.eval()
-        logger.info('start inference')
         
-        video = data['video'].to(self.device)
-        video = rearrange(video, 'n t c h w -> t n c h w') #batch first
-        annotation = data['annotation'].to(self.device)
-        video_mask: torch.Tensor = data['video_mask'].to(self.device)
-        annotation_mask: torch.Tensor = data['annotation_mask'].to(self.device)
-        y_predict = self.model(video, video_mask)
-        hypothesis  = self.decoder(y_predict)
+        ground_truth = []
+        hypothesis = []
+        for idx, data in enumerate(tqdm(loader)):
+            video = data['video'].to(self.device)
+            video = rearrange(video, 'n t c h w -> t n c h w') #batch first
+            gloss = data['gloss'].to(self.device)
+            video_length: torch.Tensor = data['video_length'].to(self.device)
+            gloss_length: torch.Tensor = data['gloss_length'].to(self.device)
+            with torch.no_grad():
+                y_predict = model(video, video_length)
+            hypothesis += self.decoder(y_predict, video_length)
+            ground_truth += self._get_ground_truth(gloss, gloss_length)
+        return hypothesis, ground_truth
     
-        return hypothesis
-    
+
+    def _get_ground_truth(self, ground_truth, gloss_length) -> List[List[str]]:
+        """
+
+        :param ground_truth: [n t]
+        :param sequence_masks: [n]
+        """
+        ret = []
+        for batch_id, gloss in enumerate(ground_truth):
+            gloss = gloss.cpu().numpy()
+            l = gloss_length[batch_id].cpu().numpy()
+            ret.append(self.vocab.lookup_tokens(gloss[:l]))
+        return ret

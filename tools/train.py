@@ -9,14 +9,20 @@ from torch.utils.data.dataloader import DataLoader
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
 from csi_sign_language.engines.trainers import Trainner
+from csi_sign_language.engines.inferencers import Inferencer
+from csi_sign_language.utils.data import flatten_concatenation
+from csi_sign_language.utils.metrics import wer
 import hydra
 import os
 import shutil
-
+from itertools import chain
 logger = logging.getLogger('main')
 
 @hydra.main(version_base=None, config_path='../configs/train', config_name='default.yaml')
 def main(cfg: DictConfig):
+    torch.cuda.manual_seed_all(cfg.seed)
+    torch.manual_seed(cfg.seed)
+    
     script = os.path.abspath(__file__)
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     
@@ -25,18 +31,23 @@ def main(cfg: DictConfig):
     
     train_loader: DataLoader = instantiate(cfg.data.train_loader)
     val_loader: DataLoader = instantiate(cfg.data.val_loader)
-    
+    vocab = train_loader.dataset.vocab
     
     model: Module = instantiate(cfg.model)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
 
     logger.info('building trainner and inferencer')
-    trainer: Trainner = instantiate(cfg.trainner, vocab=train_loader.dataset.vocab, logger=logger)
+    trainer: Trainner = instantiate(cfg.trainner, vocab=vocab, logger=logger)
+    inferencer: Inferencer = instantiate(cfg.inferencer, vocab=vocab, logger=logger) 
     logger.info('training loop start')
     best_wer_value = 1000
     for epoch in range(cfg.epoch):
         logger.info(f'epoch {epoch}')
-        wer_value = trainer.do_train(model, train_loader, val_loader, opt)
+        mean_loss = trainer.do_train(model, train_loader, opt)
+        logger.info(f'training finished, mean loss: {mean_loss}')
+        hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
+        wer_value = wer(hypothesis, ground_truth)
+        logger.info(f'validation finished, wer: {wer_value}')
         if wer_value < best_wer_value:
             best_wer_value = wer_value
             torch.save(model, os.path.join(save_dir, 'model.pth'))
