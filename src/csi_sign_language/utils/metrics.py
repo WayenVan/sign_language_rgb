@@ -1,6 +1,7 @@
 import Levenshtein as L
 from typing import *
 #calculate levenshtein_distance
+import numpy as np
 
 def leven_dist(ref, hyp):
     m = len(ref)
@@ -32,3 +33,15 @@ def wer(refs: List[List[Hashable]], hyps: List[List[Hashable]]):
     total_levenshtein = sum([L.distance(ref, hyp) for ref, hyp in list(zip(refs, hyps))])
 
     return total_levenshtein/n
+
+def wer_mean(refs: List[List[Hashable]], hyps: List[List[Hashable]]):
+    """
+    :param refs: list of reference sequences
+    :param hyps: list of hyposisthesis
+    """
+    assert len(refs) == len(hyps)
+    ret = []
+    for ref, hyp in zip(refs, hyps):
+        levenshtein = L.distance(ref, hyp)
+        ret.append(levenshtein/len(ref))
+    return np.mean(ret).item()

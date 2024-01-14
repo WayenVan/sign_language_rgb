@@ -33,7 +33,7 @@ class Trainner():
             self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
     
         
-    def do_train(self, model, train_loader, opt):
+    def do_train(self, model, train_loader, opt, lr_scheduler):
         
         model.to(self.device)
         model.train()
@@ -68,6 +68,7 @@ class Trainner():
             if self.verbose:
                 self.logger.info(f'iteration index: {idx}, batch loss: {loss.item()}')
             
+            lr_scheduler.step()
             losses.append(loss.item())
         return np.mean(losses)
 

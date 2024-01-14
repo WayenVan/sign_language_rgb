@@ -8,6 +8,7 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import LambdaLR
 from csi_sign_language.engines.trainers import Trainner
 from csi_sign_language.engines.inferencers import Inferencer
 from csi_sign_language.utils.data import flatten_concatenation
@@ -35,7 +36,8 @@ def main(cfg: DictConfig):
     
     model: Module = instantiate(cfg.model)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
-
+    lr_scheduler: LambdaLR = instantiate(cfg.lr_scheduler, opt)
+    
     logger.info('building trainner and inferencer')
     trainer: Trainner = instantiate(cfg.trainner, vocab=vocab, logger=logger)
     inferencer: Inferencer = instantiate(cfg.inferencer, vocab=vocab, logger=logger) 
@@ -43,15 +45,15 @@ def main(cfg: DictConfig):
     best_wer_value = 1000
     for epoch in range(cfg.epoch):
         logger.info(f'epoch {epoch}')
-        mean_loss = trainer.do_train(model, train_loader, opt)
+        mean_loss = trainer.do_train(model, train_loader, opt, lr_scheduler)
         logger.info(f'training finished, mean loss: {mean_loss}')
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
-        wer_value = wer(hypothesis, ground_truth)
+        wer_value = wer(ground_truth, hypothesis)
         logger.info(f'validation finished, wer: {wer_value}')
         if wer_value < best_wer_value:
             best_wer_value = wer_value
             torch.save(model, os.path.join(save_dir, 'model.pth'))
-            logger.info(f'best value saved')
+            logger.info(f'best model saved')
         logger.info(f'finish one epoch')
         
         

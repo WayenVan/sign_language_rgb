@@ -53,5 +53,8 @@ class Inferencer():
         for batch_id, gloss in enumerate(ground_truth):
             gloss = gloss.cpu().numpy()
             l = gloss_length[batch_id].cpu().numpy()
-            ret.append(self.vocab.lookup_tokens(gloss[:l]))
+            temp = self.vocab.lookup_tokens(gloss[:l])
+            if len(temp) == 0:
+                a = 1
+            ret.append(temp)
         return ret
