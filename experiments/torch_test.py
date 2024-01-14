@@ -11,7 +11,7 @@ import sys
 sys.path.append('src')
 from csi_sign_language.utils.lr_scheduler import WarmUpLr
 
-wlr = WarmUpLr(1e-6, 5e-5, 3, min_lr=1e-6)
+wlr = WarmUpLr(1e-6, 5e-5, 3, min_lambda=1e-6)
 
 
 for i in range(100):

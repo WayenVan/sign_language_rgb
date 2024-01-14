@@ -18,20 +18,22 @@ import os
 import shutil
 from itertools import chain
 logger = logging.getLogger('main')
+import lmdb
 
 @hydra.main(version_base=None, config_path='../configs/train', config_name='default.yaml')
 def main(cfg: DictConfig):
     torch.cuda.manual_seed_all(cfg.seed)
     torch.manual_seed(cfg.seed)
     
+    env = lmdb.open(os.path.join(cfg.phoenix14_root, cfg.data.subset, 'feature_database'))
     script = os.path.abspath(__file__)
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     
     shutil.copyfile(script, os.path.join(save_dir, 'script.py'))
     logger.info('building model and dataloaders')
     
-    train_loader: DataLoader = instantiate(cfg.data.train_loader)
-    val_loader: DataLoader = instantiate(cfg.data.val_loader)
+    train_loader: DataLoader = instantiate(cfg.data.train_loader, dataset={'lmdb_env': env})
+    val_loader: DataLoader = instantiate(cfg.data.val_loader, dataset={'lmdb_env': env})
     vocab = train_loader.dataset.vocab
     
     model: Module = instantiate(cfg.model)
@@ -45,7 +47,7 @@ def main(cfg: DictConfig):
     best_wer_value = 1000
     for epoch in range(cfg.epoch):
         logger.info(f'epoch {epoch}')
-        mean_loss = trainer.do_train(model, train_loader, opt, lr_scheduler)
+        mean_loss = trainer.do_train(model, train_loader, opt)
         logger.info(f'training finished, mean loss: {mean_loss}')
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
         wer_value = wer(ground_truth, hypothesis)
@@ -54,6 +56,7 @@ def main(cfg: DictConfig):
             best_wer_value = wer_value
             torch.save(model, os.path.join(save_dir, 'model.pth'))
             logger.info(f'best model saved')
+        lr_scheduler.step()
         logger.info(f'finish one epoch')
         
         

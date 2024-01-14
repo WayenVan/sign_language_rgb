@@ -16,9 +16,10 @@ from ...csi_typing import *
 from ...utils.data import VideoGenerator, padding, load_vocab
 from typing import *
 from abc import ABC, abstractmethod
-import json
-from omegaconf import OmegaConf
 
+from ...utils.lmdb_tool import retrieve_numpy_array
+import json
+import yaml
 
 
 class BasePhoenix14Dataset(Dataset, ABC):
@@ -121,13 +122,14 @@ class Phoenix14Dataset(BasePhoenix14Dataset):
 class MyPhoenix14Dataset(Dataset):
     
     data_root: str
-    info: dict
+
     
     def __init__(
         self, 
         data_root: str,
         subset: Union[Literal['multisigner'], Literal['si5']],
         mode: Union[Literal['train'], Literal['dev'], Literal['test']],
+        lmdb_env,
         gloss_length=None,
         video_length=None,
         transform=None) -> None:
@@ -136,21 +138,24 @@ class MyPhoenix14Dataset(Dataset):
         self.subset = subset
         self.mode = mode
         self.subset_root = os.path.join(data_root, subset)
-        self.info = OmegaConf.load(os.path.join(self.subset_root, 'info.yaml'))
+        with open(os.path.join(self.subset_root, 'info.json'), 'r') as f:
+            self.info = json.load(f)
+        # self.info = OmegaConf.load(os.path.join(self.subset_root, 'info.yaml'))
             
         self.vocab = self.create_vocab_from_list(self.info['vocab'])
         self.data_id: List[str] = self.info[mode]['data']
-        self.feature_dir = os.path.join(data_root, subset, mode)
+
         self.transform = transform
         
         self.video_length = video_length
         self.gloss_length = gloss_length
+        self.lmdb_env = lmdb_env
         
         
     def __getitem__(self, index) -> Any:
-        data = np.load(os.path.join(self.feature_dir, f'{self.data_id[index]}.npz'))
-        video = data['video']
-        gloss = data['gloss']
+        data = self.data_id[index]
+        video = retrieve_numpy_array(self.lmdb_env, data['video_key'], data['video_shape'], data['video_dtype'])
+        gloss = retrieve_numpy_array(self.lmdb_env, data['gloss_key'], data['gloss_shape'], data['gloss_dtype'])
     
         ret = dict(
             video=video, #[t c h w]

@@ -29,6 +29,6 @@ class ToTensor:
     def __call__(self, data) -> Any:
         ret = {}
         for k, v in data.items():
-            ret[k] = torch.from_numpy(v)
+            ret[k] = torch.tensor(v)
         return ret
     

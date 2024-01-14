@@ -18,14 +18,13 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-6
+  lr: 1e-4
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.LambdaLR
   lr_lambda: 
     _target_: ${csi}.utils.lr_scheduler.WarmUpLr
-    initial_lr: 1e-6
-    target_lr: 5e-5
+    initial_lambda: 0.1
     warm_up_rounds: 2
   
 trainner:

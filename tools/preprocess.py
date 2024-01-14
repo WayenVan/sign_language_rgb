@@ -14,6 +14,10 @@ from einops import rearrange
 from csi_sign_language.utils.data import VideoGenerator
 from omegaconf import OmegaConf
 import json
+from csi_sign_language.utils.lmdb_tool import store_numpy_array, retrieve_numpy_array
+import lmdb
+
+
 
 @click.command()
 @click.option('--data_root', default='dataset/phoenix2014-release')
@@ -31,8 +35,9 @@ def main(data_root, output_root, frame_size, subset):
     multi_signer = True if subset == 'multisigner' else False
     v = vocab if subset == 'multisigner' else vocab_SI5
     info['vocab'] = v.get_itos()
+    os.makedirs(subset_root, exist_ok=True)
+    env = lmdb.open(os.path.join(subset_root, 'feature_database'), map_size=1099511627776)
     for mode in ('train', 'dev', 'test'):
-        submode_root = os.path.join(subset_root, mode)
         annotations, feature_dir, max_lgt_v, max_lgt_g= get_basic_info(data_root, mode, multisigner=multi_signer)
         data_length = len(annotations)
         print(f'creating {subset}-{mode}')
@@ -42,14 +47,25 @@ def main(data_root, output_root, frame_size, subset):
         info[mode]['data'] = []
         for idx in tqdm(range(data_length)):
             video, gloss = get_single_data(idx, annotations, v, feature_dir, frame_size)
-            name = f'{subset}-{mode}-{idx}-feature'
-            os.makedirs(submode_root, exist_ok=True)
-            np.savez(os.path.join(submode_root, f'{name}.npz'), video=video, gloss=gloss)
-            info[mode]['data'].append(name)
+            video_key = f'{subset}-{mode}-{idx}-video'
+            gloss_key = f'{subset}-{mode}-{idx}-gloss'
+            info[mode]['data'].append(dict(
+                video_key=video_key,
+                gloss_key=gloss_key,
+                video_shape=video.shape,
+                video_dtype=str(video.dtype),
+                gloss_shape=gloss.shape,
+                gloss_dtype=str(gloss.dtype)
+            ))
+            store_numpy_array(env, video_key, video)
+            store_numpy_array(env, gloss_key, gloss)
             if idx % 50 == 0:
                 OmegaConf.save(info, os.path.join(subset_root, 'info.yaml'))
     
-    OmegaConf.save(info, os.path.join(subset_root, 'info.yaml'))
+    info_d = OmegaConf.to_container(info)
+    with open(os.path.join(subset_root, 'info.json'), 'w') as f:
+        json.dump(info_d, f)
+    env.close()
             
 
     
