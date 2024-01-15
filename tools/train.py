@@ -18,7 +18,8 @@ import os
 import shutil
 from itertools import chain
 logger = logging.getLogger('main')
-import lmdb
+import numpy as np
+
 
 @hydra.main(version_base=None, config_path='../configs/train', config_name='default.yaml')
 def main(cfg: DictConfig):
@@ -32,33 +33,66 @@ def main(cfg: DictConfig):
     shutil.copyfile(script, os.path.join(save_dir, 'script.py'))
     logger.info('building model and dataloaders')
     
+    #initialize data 
     train_loader: DataLoader = instantiate(cfg.data.train_loader)
     val_loader: DataLoader = instantiate(cfg.data.val_loader)
     vocab = train_loader.dataset.vocab
     
+    #initialize trainning essential
     model: Module = instantiate(cfg.model)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
-    lr_scheduler: LambdaLR = instantiate(cfg.lr_scheduler, opt)
+    wer_values = []
+    losses = []
+    last_epoch = -1
+    
+    #load checkpoint
+    if cfg.is_resume:
+        logger.info('loading checkpoint')
+        checkpoint = torch.load(cfg.checkpoint)
+        last_epoch = checkpoint['epoch']
+        model.load_state_dict(checkpoint['model_state'])
+        opt.load_state_dict(checkpoint['optimizer_state'])
+        wer_values = checkpoint['wer']
+        losses = checkpoint['loss']
+    
+    
+    lr_scheduler: LambdaLR = instantiate(
+        cfg.lr_scheduler, 
+        opt,
+        last_epoch=last_epoch)
     
     logger.info('building trainner and inferencer')
     trainer: Trainner = instantiate(cfg.trainner, vocab=vocab, logger=logger)
     inferencer: Inferencer = instantiate(cfg.inferencer, vocab=vocab, logger=logger) 
     logger.info('training loop start')
     best_wer_value = 1000
-    for epoch in range(cfg.epoch):
-        logger.info(f'epoch {epoch}')
+    for i in range(cfg.epoch):
+        real_epoch = last_epoch + i + 1
+            
+        logger.info(f'epoch {real_epoch}')
         mean_loss = trainer.do_train(model, train_loader, opt)
+        # mean_loss = np.array([0.])
         logger.info(f'training finished, mean loss: {mean_loss}')
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
         wer_value = wer(ground_truth, hypothesis)
         logger.info(f'validation finished, wer: {wer_value}')
+        
+        wer_values.append(wer_value)
+        losses.append(mean_loss.item())
         if wer_value < best_wer_value:
             best_wer_value = wer_value
-            torch.save(model, os.path.join(save_dir, 'model.pth'))
-            logger.info(f'best model saved')
+            torch.save({
+                'epoch': real_epoch,
+                'model_state': model.state_dict(),
+                'optimizer_state': opt.state_dict(),
+                'wer': wer_values,
+                'loss': losses
+                }, os.path.join(save_dir, 'checkpoint.pt'))
+            logger.info(f'best checkpoint saved')
         lr_scheduler.step()
         logger.info(f'finish one epoch')
-        
+
+
         
 if __name__ == '__main__':
     main()

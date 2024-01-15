@@ -10,6 +10,11 @@ device: cuda
 verbose: True
 epoch: 50
 
+#if continuos read model
+is_resume: False
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-15/14-14-11/checkpoint.pt
+  
+
 model:
   _target_: ${csi}.models.models.ResnetTransformer
   d_feedforward: 1024
