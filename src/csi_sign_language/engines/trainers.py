@@ -35,16 +35,16 @@ class Trainner():
         
     def do_train(self, model, train_loader, opt):
         
-        model.to(self.device)
+        model.to(self.device, non_blocking=True)
         model.train()
         self.logger.info('start training')
         losses = []
         for idx, data in enumerate(tqdm(train_loader)):
             
             opt.zero_grad()
-            video = data['video'].to(self.device)
+            video = data['video'].to(self.device, non_blocking=True)
             video = rearrange(video, 'n t c h w -> t n c h w') #batch first
-            gloss = data['gloss'].to(self.device)
+            gloss = data['gloss'].to(self.device, non_blocking=True)
             video_length: torch.Tensor = data['video_length'].to(self.device)
             gloss_length: torch.Tensor = data['gloss_length'].to(self.device)
             y_predict = model(video, video_length)

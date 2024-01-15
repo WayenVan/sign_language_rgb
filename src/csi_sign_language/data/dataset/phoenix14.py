@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from ...utils.lmdb_tool import retrieve_numpy_array
 import json
 import yaml
-
+import lmdb
 
 class BasePhoenix14Dataset(Dataset, ABC):
     data_root: str
@@ -129,7 +129,6 @@ class MyPhoenix14Dataset(Dataset):
         data_root: str,
         subset: Union[Literal['multisigner'], Literal['si5']],
         mode: Union[Literal['train'], Literal['dev'], Literal['test']],
-        lmdb_env,
         gloss_length=None,
         video_length=None,
         transform=None) -> None:
@@ -149,10 +148,12 @@ class MyPhoenix14Dataset(Dataset):
         
         self.video_length = video_length
         self.gloss_length = gloss_length
-        self.lmdb_env = lmdb_env
-        
+        self.lmdb_env = None
         
     def __getitem__(self, index) -> Any:
+        if self.lmdb_env is None:
+            self._init_db()
+        
         data = self.data_id[index]
         video = retrieve_numpy_array(self.lmdb_env, data['video_key'], data['video_shape'], data['video_dtype'])
         gloss = retrieve_numpy_array(self.lmdb_env, data['gloss_key'], data['gloss_shape'], data['gloss_dtype'])
@@ -166,6 +167,13 @@ class MyPhoenix14Dataset(Dataset):
         
     def __len__(self):
         return len(self.data_id)
+    
+    def _init_db(self):
+        self.lmdb_env = lmdb.open(
+            os.path.join(self.data_root, self.subset, 'feature_database'), 
+            readonly=True,
+            lock=False,
+            create=False)
     
     def get_vocab(self):
         return self.vocab

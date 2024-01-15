@@ -25,15 +25,15 @@ def main(cfg: DictConfig):
     torch.cuda.manual_seed_all(cfg.seed)
     torch.manual_seed(cfg.seed)
     
-    env = lmdb.open(os.path.join(cfg.phoenix14_root, cfg.data.subset, 'feature_database'))
+    # env = lmdb.open(os.path.join(cfg.phoenix14_root, cfg.data.subset, 'feature_database'))
     script = os.path.abspath(__file__)
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     
     shutil.copyfile(script, os.path.join(save_dir, 'script.py'))
     logger.info('building model and dataloaders')
     
-    train_loader: DataLoader = instantiate(cfg.data.train_loader, dataset={'lmdb_env': env})
-    val_loader: DataLoader = instantiate(cfg.data.val_loader, dataset={'lmdb_env': env})
+    train_loader: DataLoader = instantiate(cfg.data.train_loader)
+    val_loader: DataLoader = instantiate(cfg.data.val_loader)
     vocab = train_loader.dataset.vocab
     
     model: Module = instantiate(cfg.model)

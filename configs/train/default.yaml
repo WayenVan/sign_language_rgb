@@ -65,7 +65,8 @@ data:
   train_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 12
+    num_workers: 6
+    pin_memory: True
     dataset: ${data.train_set}
     collate_fn: ${data.collate_fn}
 
