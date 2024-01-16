@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from ...utils.lmdb_tool import retrieve_numpy_array
 import json
 import yaml
-
+import lmdb
 
 class BasePhoenix14Dataset(Dataset, ABC):
     data_root: str

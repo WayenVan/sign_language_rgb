@@ -7,12 +7,4 @@ random = torch.rand((12, 128, 8))
 print(pool(random).size())
 print(torch.transpose(random, 0, -1).size())
 
-import sys
-sys.path.append('src')
-from csi_sign_language.utils.lr_scheduler import WarmUpLr
-
-wlr = WarmUpLr(1e-6, 5e-5, 3, min_lambda=1e-6)
-
-
-for i in range(100):
-    print(wlr(i))
+print(random[::3].size())

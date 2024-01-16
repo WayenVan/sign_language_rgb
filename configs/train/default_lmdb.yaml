@@ -4,7 +4,7 @@ T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
 seed: 3407
-phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14
+phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
 vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 device: cuda
 verbose: True
@@ -52,6 +52,7 @@ data:
         transforms: 
         - _target_: ${CT}.video.FrameScale
         - _target_: ${CT}.video.ToTensor
+    
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}

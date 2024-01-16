@@ -13,7 +13,14 @@ import torch
 #         for t in self.transforms:
 #             video, gloss = t(video, gloss)
 #         return video, gloss
+
+class DownSampleT:
+    def __init__(self, step) -> None:
+        self.s = step
         
+    def __call__(self, data) -> Any:
+        data['video'] = data['video'][::self.s]
+        return data
         
 class FrameScale:
     def __init__(self) -> None:

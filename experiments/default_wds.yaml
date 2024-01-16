@@ -4,7 +4,7 @@ T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
 seed: 3407
-data_root: /home/wayenvan/Documents/sign_language_rgb/preprocessed/ph14
+data_root: preprocessed/ph14_wds
 device: cuda
 verbose: True
 epoch: 50
@@ -43,6 +43,7 @@ inferencer:
   num_class: 1296
 
 data:
+  shuffle: 100
   subset: multisigner
 
   collate_fn: 
@@ -60,7 +61,6 @@ data:
   train_set: 
     _target_: webdataset.WebDataset
     urls: ${data_root}/${data.subset}/train.tar
-  
 
   val_set: 
     _target_: webdataset.WebDataset
@@ -71,12 +71,13 @@ data:
     _target_: webdataset.WebLoader
     batch_size: 2
     num_workers: 6
+    pin_memory: True
     collate_fn: ${data.collate_fn}
 
   val_loader:
     _target_: webdataset.WebLoader
     batch_size: 2
-    num_workers: 6
+    num_workers: 8
     collate_fn: ${data.collate_fn}
 
 

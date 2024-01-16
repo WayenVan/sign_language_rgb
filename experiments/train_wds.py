@@ -39,7 +39,7 @@ def main(cfg: DictConfig):
     transform = instantiate(cfg.data.transform)
     decoder = instantiate(cfg.data.decoder)
     
-    train_set = instantiate(cfg.data.train_set).map(decoder).map(transform)
+    train_set = instantiate(cfg.data.train_set).shuffle(cfg.data.shuffle).map(decoder).map(transform)
     val_set = instantiate(cfg.data.val_set).map(decoder).map(transform)
     
     train_loader: DataLoader = instantiate(cfg.data.train_loader, dataset=train_set)
@@ -82,7 +82,7 @@ def main(cfg: DictConfig):
         real_epoch = last_epoch + i + 1
             
         logger.info(f'epoch {real_epoch}')
-        mean_loss = trainer.do_train(model, train_loader, opt)
+        mean_loss = trainer.do_train(model, train_loader, opt, non_blocking=True)
         # mean_loss = np.array([0.])
         logger.info(f'training finished, mean loss: {mean_loss}')
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
