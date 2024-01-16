@@ -29,6 +29,7 @@ class ToTensor:
     def __call__(self, data) -> Any:
         ret = {}
         for k, v in data.items():
-            ret[k] = torch.tensor(v)
+            if k != '__key__':
+                ret[k] = torch.tensor(v)
         return ret
     
