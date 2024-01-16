@@ -10,6 +10,9 @@ def load_vocab(file_dir):
         _dict = OrderedDict([(item.strip(), 1) for item in f])
     return vocab(_dict)
 
+def list2vocab(l):
+    _dict = OrderedDict([(k, 1) for k in l])
+    return vocab(_dict)
 class VideoGenerator:
 
     def __init__(self, frame_list: typing.List[str]):
