@@ -47,7 +47,7 @@ class Trainner():
             gloss = data['gloss'].to(self.device, non_blocking=non_blocking)
             video_length: torch.Tensor = data['video_length'].to(self.device)
             gloss_length: torch.Tensor = data['gloss_length'].to(self.device)
-            y_predict = model(video, video_length)
+            y_predict, video_length= model(video, video_length)
 
             loss = self.loss_fn(y_predict, gloss, video_length, gloss_length)
             if  np.isinf(loss.item()) or np.isnan(loss.item()):

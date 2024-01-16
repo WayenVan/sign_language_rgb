@@ -70,7 +70,7 @@ def main(cfg: DictConfig):
         real_epoch = last_epoch + i + 1
             
         logger.info(f'epoch {real_epoch}')
-        mean_loss = trainer.do_train(model, train_loader, opt)
+        mean_loss = trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
         # mean_loss = np.array([0.])
         logger.info(f'training finished, mean loss: {mean_loss}')
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)

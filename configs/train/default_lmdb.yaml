@@ -9,6 +9,7 @@ vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-voc
 device: cuda
 verbose: True
 epoch: 50
+non_block: True
 
 #if continuos read model
 is_resume: False
@@ -73,6 +74,7 @@ data:
     batch_size: 2
     num_workers: 6
     pin_memory: True
+    shuffle: True
     dataset: ${data.train_set}
     collate_fn: ${data.collate_fn}
 
