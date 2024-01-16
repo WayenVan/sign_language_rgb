@@ -22,7 +22,7 @@ class Inferencer():
         self.device=device
         self.NUM_CLASS = num_class
         self.logger = logger.getChild(__class__.__name__)
-        self.decoder = CTCDecoder(self.vocab, blank_id=0)
+        self.decoder = CTCDecoder(self.vocab, blank_id=0, search_mode='greedy')
     def do_inference(self, model: Module, loader) -> List[List[str]]:
         
         model.to(self.device)

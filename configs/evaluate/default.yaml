@@ -4,11 +4,10 @@ T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14
-model_path: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-13/12-11-00/model.pth
 device: cuda
-
 verbose: True
 
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-15/14-45-57/checkpoint.pt
 
 model:
   _target_: ${csi}.models.models.ResnetTransformer
