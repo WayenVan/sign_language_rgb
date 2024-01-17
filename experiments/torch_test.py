@@ -7,4 +7,9 @@ random = torch.rand((12, 128, 8))
 print(pool(random).size())
 print(torch.transpose(random, 0, -1).size())
 
-print(random[::3].size())
+def f(x: torch.Tensor):
+    x = torch.ones((2,2))
+    return x
+
+f(random)
+print(random.shape)
