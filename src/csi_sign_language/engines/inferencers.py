@@ -37,7 +37,7 @@ class Inferencer():
             gloss_length: torch.Tensor = data['gloss_length'].to(self.device)
             with torch.no_grad():
                 outputs = model(video, video_length)
-                y_predict = outputs['seq_output']
+                y_predict = outputs['seq_out']
                 video_length = outputs['video_length']
 
             hypothesis += self.decoder(y_predict, video_length)
