@@ -52,8 +52,10 @@ data:
   video_transform: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.FrameScale
         - _target_: ${CT}.video.ToTensor
+        - _target_: ${CT}.video.Standization
+          mean: [0.4513, 0.4580, 0.4668]
+          std: [0.3367, 0.3127, 0.3066]
     
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset

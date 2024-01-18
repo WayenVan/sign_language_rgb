@@ -159,7 +159,7 @@ class MyPhoenix14Dataset(Dataset):
         gloss = retrieve_numpy_array(self.lmdb_env, data['gloss_key'], data['gloss_shape'], data['gloss_dtype'])
     
         ret = dict(
-            video=video, #[t c h w]
+            video=video/255., #[t c h w]
             gloss=gloss)
         if self.transform is not None:
             ret = self.transform(ret)
@@ -193,6 +193,7 @@ class CollateFn:
         video_batch = [item['video'] for item in data]
         gloss_batch = [item['gloss'] for item in data]
         
+        
         video, v_length = self._padding_temporal(video_batch, self.length_video)
         gloss, g_length = self._padding_temporal(gloss_batch, self.length_gloss)
         
@@ -206,6 +207,9 @@ class CollateFn:
     @staticmethod
     def _padding_temporal(batch_data: List[torch.Tensor], force_length=None):
         #[t, ....]
+        if batch_data is not None:
+            if not isinstance(batch_data[0], torch.Tensor):
+                raise Exception('data in collate function must be a torch tensor!')
         if force_length is not None:
             #if force temporal length
             t_length = force_length

@@ -14,6 +14,32 @@ import torch
 #             video, gloss = t(video, gloss)
 #         return video, gloss
 
+class Standization:
+
+    def __init__(self, mean, std, epsilon=1e-5) -> None:
+        """
+        :param mean: size 3, channel means
+        :param var: size 3, channel stds
+        :param epsilon: -5
+        """
+        self.mean = torch.tensor(mean)
+        self.std = torch.tensor(std)
+        self.epsilon = epsilon
+
+    def __call__(self, data) -> Any:
+        video = data['video']
+        #t, c, h, wepsilon
+        video = (
+            (video - self._rearrange(self.mean)) /
+            torch.sqrt(self._rearrange(self.std)**2 + self.epsilon)
+        )
+        data['video'] = video
+        return data
+        
+    def _rearrange(self, x):
+        return rearrange(x, '(t c h w) -> t c h w', t=1, h=1, w=1)
+            
+
 class DownSampleT:
     def __init__(self, step) -> None:
         self.s = step

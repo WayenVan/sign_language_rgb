@@ -27,6 +27,7 @@ class ResnetTransformer(nn.Module):
         self.tconv = TemporalConv(d_model, d_model)
         self.t_avgpool = TemporalAveragePooling1D(self.tconv.get_kernel_size())
         self.trans_decoder = nn.TransformerEncoderLayer(d_model, n_head, dim_feedforward=d_feedforward)
+        self.fc_conv = nn.Linear(d_model, n_class)
         self.fc = nn.Linear(d_model, n_class)
 
     def forward(self, x, video_length):
@@ -38,18 +39,22 @@ class ResnetTransformer(nn.Module):
         x = rearrange(x, 't n c h w -> (t n) c h w')
         x = self.resnet(x)
         x = rearrange(x, '(t n) c -> n c t', n=batch_size)
+
         identity = x
         x, video_length = self.tconv(x, video_length)
         x = x + self.t_avgpool(identity)
         x = rearrange(x, 'n c t -> t n c')
+        conv_out = self.fc_conv(x)
         
         mask = self._make_video_mask(video_length, x.size(dim=0))
         x = x + self.trans_decoder(x, src_key_padding_mask=mask)
-        
         x = self.fc(x)
-        x = F.log_softmax(x, dim=-1)
 
-        return x, video_length
+        return dict(
+            seq_out=x,
+            conv_out=conv_out,
+            video_length=video_length 
+        )
     
     @staticmethod
     def _make_video_mask(video_length: torch.Tensor, temporal_dim):
