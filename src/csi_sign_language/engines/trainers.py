@@ -20,6 +20,7 @@ class Trainner():
         vocab,
         device,
         logger,
+        loss_fn, 
         verbose=False
         ) -> None:
 
@@ -27,7 +28,7 @@ class Trainner():
         self.device = device
         self.vocab = vocab
         self.verbose=verbose
-        self.loss_fn = nn.CTCLoss(reduction='mean', zero_infinity=False)
+        self.loss_fn = loss_fn
         self.logger: logging.Logger = logger.getChild(__class__.__name__)
         if self.device == 'cuda':
             self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
@@ -46,10 +47,17 @@ class Trainner():
             gloss = data['gloss'].to(self.device, non_blocking=non_blocking)
             video_length: torch.Tensor = data['video_length'].to(self.device)
             gloss_length: torch.Tensor = data['gloss_length'].to(self.device)
-            with torch.autocast_decrement_nesting():
+            
+            if 'cuda' in self.device:
+                with torch.autocast('cuda'):
+                    outputs = model(video, video_length)
+                    y_predict = outputs['seq_out']
+                    loss = self.loss_fn(outputs, gloss, gloss_length)
+            else:
                 outputs = model(video, video_length)
-            y_predict = outputs['seq_output']
-            loss = self.loss_fn(outputs, gloss, gloss_length)
+                y_predict = outputs['seq_out']
+                loss = self.loss_fn(outputs, gloss, gloss_length)
+                
             if  np.isinf(loss.item()) or np.isnan(loss.item()):
                 self.logger.warn(f'loss is {loss.item()}')
                 self.logger.warn(f'annotation lenght {str(gloss_length)}')

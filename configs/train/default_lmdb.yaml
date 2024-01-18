@@ -1,3 +1,4 @@
+# distillation cnn transformer VAC, 2 ctc loss
 csi: csi_sign_language
 transform: torchvision.transforms
 T: torchvision.transforms
@@ -33,10 +34,16 @@ lr_scheduler:
     _target_: ${csi}.utils.lr_scheduler.WarmUpLr
     initial_lambda: 0.1
     warm_up_rounds: 2
-  
+
+loss_fn:
+  _target_: ${csi}.utils.loss.Losss
+  weights: [1., 1., 25.]
+  temperature: 5
+
 trainner:
   _target_: ${csi}.engines.trainers.Trainner
   num_class: 1296
+  loss_fn: ${loss_fn}
   device: ${device}
   verbose: ${verbose}
 

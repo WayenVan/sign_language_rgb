@@ -22,8 +22,8 @@ class Standization:
         :param var: size 3, channel stds
         :param epsilon: -5
         """
-        self.mean = torch.tensor(mean)
-        self.std = torch.tensor(std)
+        self.mean = torch.tensor(mean, dtype=torch.float32)
+        self.std = torch.tensor(std, dtype=torch.float32)
         self.epsilon = epsilon
 
     def __call__(self, data) -> Any:

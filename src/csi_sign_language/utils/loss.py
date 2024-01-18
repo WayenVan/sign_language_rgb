@@ -19,11 +19,9 @@ class Losss:
         input_length = output['video_length']
         
         conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
-        return(
-            self.weights[0]*self.CTC_seq(seq_out, target, input_length, target_length) + 
-            self.weights[1]*self.CTC_conv(conv_out, target, input_length, target_length) +
-            self.weights[2]*self.distll(seq_out, conv_out),
-            )
+        return self.weights[0]*self.CTC_seq(seq_out, target, input_length, target_length) + \
+            self.weights[1]*self.CTC_conv(conv_out, target, input_length, target_length) + \
+            self.weights[2]*self.distll(seq_out, conv_out)
 
 
 class SelfDistill:
@@ -39,4 +37,4 @@ class SelfDistill:
 
         teacher = F.log_softmax(rearrange(teacher, 't n c -> (t n) c'), dim=-1)
         student = F.log_softmax(rearrange(student, 't n c -> (t n) c'), dim=-1)
-        return F.nll_loss(student, teacher)
+        return F.kl_div(student, teacher, log_target=True, reduction='batchmean')

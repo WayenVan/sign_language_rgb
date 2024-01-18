@@ -159,7 +159,7 @@ class MyPhoenix14Dataset(Dataset):
         gloss = retrieve_numpy_array(self.lmdb_env, data['gloss_key'], data['gloss_shape'], data['gloss_dtype'])
     
         ret = dict(
-            video=video/255., #[t c h w]
+            video=video.astype('float32')/255., #[t c h w]
             gloss=gloss)
         if self.transform is not None:
             ret = self.transform(ret)

@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
-
 from ..modules.resnet import *
 from ..modules.unet import *
 from ..modules.tconv import *
+from torch.cuda.amp.autocast_mode import autocast
 
 __all__ = [
     'ResnetTransformer'
@@ -29,7 +29,8 @@ class ResnetTransformer(nn.Module):
         self.trans_decoder = nn.TransformerEncoderLayer(d_model, n_head, dim_feedforward=d_feedforward)
         self.fc_conv = nn.Linear(d_model, n_class)
         self.fc = nn.Linear(d_model, n_class)
-
+    
+    
     def forward(self, x, video_length):
         """
         :param x: [t, n, c, h, w]
