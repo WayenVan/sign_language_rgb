@@ -5,6 +5,7 @@ from einops import rearrange
 
 from ..modules.resnet import *
 from ..modules.unet import *
+from ..modules.tconv import *
 
 __all__ = [
     'ResnetTransformer'
@@ -23,7 +24,8 @@ class ResnetTransformer(nn.Module):
 
         self.resnet: ResNet = resnet18(weights=ResNet18_Weights.DEFAULT)
         d_model = self.resnet.fc.in_features
-        self.conv_pool = nn.Conv1d(d_model, d_model, kernel_size=4, stride=4)
+        self.tconv = TemporalConv(d_model, d_model)
+        self.t_avgpool = TemporalAveragePooling1D(self.tconv.get_kernel_size())
         self.trans_decoder = nn.TransformerEncoderLayer(d_model, n_head, dim_feedforward=d_feedforward)
         self.fc = nn.Linear(d_model, n_class)
 
@@ -36,12 +38,14 @@ class ResnetTransformer(nn.Module):
         x = rearrange(x, 't n c h w -> (t n) c h w')
         x = self.resnet(x)
         x = rearrange(x, '(t n) c -> n c t', n=batch_size)
-        x = self.conv_pool(x)
+        identity = x
+        x, video_length = self.tconv(x, video_length)
+        x = x + self.t_avgpool(identity)
         x = rearrange(x, 'n c t -> t n c')
-        video_length = (video_length - 4 ) // 4 + 1
         
         mask = self._make_video_mask(video_length, x.size(dim=0))
-        x = self.trans_decoder(x, src_key_padding_mask=mask)
+        x = x + self.trans_decoder(x, src_key_padding_mask=mask)
+        
         x = self.fc(x)
         x = F.log_softmax(x, dim=-1)
 

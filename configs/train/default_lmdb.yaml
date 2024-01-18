@@ -7,24 +7,25 @@ seed: 3407
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
 vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 device: cuda
-verbose: True
+verbose: False
 epoch: 50
 non_block: True
 
 #if continuos read model
 is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-15/14-14-11/checkpoint.pt
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-17/12-56-21/checkpoint.pt
   
 
 model:
   _target_: ${csi}.models.models.ResnetTransformer
   d_feedforward: 1024
-  n_head: 2
+  n_head: 4
   n_class: 1296
 
 optimizer:
   _target_: torch.optim.Adam
   lr: 1e-4
+  weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.LambdaLR

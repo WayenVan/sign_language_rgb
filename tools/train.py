@@ -40,11 +40,14 @@ def main(cfg: DictConfig):
     
     #initialize trainning essential
     model: Module = instantiate(cfg.model)
+    #move model before optimizer initialize
+    model.to(cfg.device, non_blocking=cfg.non_block)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
     wer_values = []
     losses = []
     last_epoch = -1
     
+
     #load checkpoint
     if cfg.is_resume:
         logger.info('loading checkpoint')

@@ -25,7 +25,6 @@ class Inferencer():
         self.decoder = CTCDecoder(self.vocab, blank_id=0, search_mode='greedy')
     def do_inference(self, model: Module, loader) -> List[List[str]]:
         
-        model.to(self.device)
         model.eval()
         
         ground_truth = []

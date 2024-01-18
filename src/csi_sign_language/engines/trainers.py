@@ -35,7 +35,6 @@ class Trainner():
         
     def do_train(self, model, train_loader, opt, non_blocking=False):
         
-        model.to(self.device, non_blocking=True)
         model.train()
         self.logger.info('start training')
         losses = []

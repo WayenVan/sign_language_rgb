@@ -32,6 +32,9 @@ class TemporalConv(nn.Module):
                 modules.append(nn.BatchNorm1d(self.hidden_size))
                 modules.append(nn.ReLU(inplace=True))
         self.temporal_conv = nn.Sequential(*modules)
+    
+    def get_kernel_size(self):
+        return self.kernel_size
 
     def update_lgt(self, lgt):
         feat_len = lgt
@@ -46,7 +49,25 @@ class TemporalConv(nn.Module):
     def forward(self, frame_feat, lgt):
         visual_feat = self.temporal_conv(frame_feat)
         lgt = self.update_lgt(lgt)
-        return {
-            "visual_feat": visual_feat,
-            "feat_len": lgt,
-        }
+        return visual_feat, lgt
+
+class TemporalAveragePooling1D(nn.Module):
+    
+    def __init__(self, kernel_size, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.kernal_size = kernel_size
+        
+        modules = []
+        for ks in self.kernal_size:
+            if ks[0] == 'P':
+                modules.append(nn.AvgPool1d(kernel_size=int(ks[1]), ceil_mode=False))
+            elif ks[0] == 'K':
+                modules.append(nn.AvgPool1d(kernel_size=int(ks[1]), stride=1, padding=0))
+            else:
+                raise Exception(f'unsupportted kernal type {ks[0]}')
+            
+        self.layers = nn.Sequential(*modules)
+        
+    def forward(self, x):
+        #N, C, T
+        return self.layers(x)
