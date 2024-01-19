@@ -9,18 +9,18 @@ phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
 vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 device: cuda
 verbose: False
-epoch: 50
+epoch: 40
 non_block: True
 
 #if continuos read model
 is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-17/12-56-21/checkpoint.pt
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-19/01-47-00/checkpoint.pt
   
 
 model:
   _target_: ${csi}.models.models.ResnetTransformer
   d_feedforward: 1024
-  n_head: 4
+  n_head: 8
   n_class: 1296
 
 optimizer:
@@ -34,6 +34,7 @@ lr_scheduler:
     _target_: ${csi}.utils.lr_scheduler.WarmUpLr
     initial_lambda: 0.1
     warm_up_rounds: 2
+    decay_factor: 0.9
 
 loss_fn:
   _target_: ${csi}.utils.loss.Losss
@@ -82,8 +83,9 @@ data:
   train_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 6
+    num_workers: 4
     pin_memory: True
+    persistent_workers: True
     shuffle: True
     dataset: ${data.train_set}
     collate_fn: ${data.collate_fn}
@@ -91,7 +93,8 @@ data:
   val_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 12
+    num_workers: 4
+    persistent_workers: True
     dataset: ${data.val_set}
     collate_fn: ${data.collate_fn}
 

@@ -15,13 +15,13 @@ class CTCDecoder():
         search_mode: Union[Literal['beam'], Literal['greedy']]='beam', 
         blank_id=0,
         batch_first=False,
-        logits_input=True,
-        beam_width=50
+        log_probs_input=True,
+        beam_width=10
         ) -> None:
         self.vocab = vocab
         self.num_class = len(vocab)
         self.batch_first = batch_first
-        self.logits_input= logits_input
+        self.log_probs_input= log_probs_input
         self.search_mode = search_mode
         self.blank_id = blank_id
 
@@ -29,7 +29,7 @@ class CTCDecoder():
             self.beam_decoder = ctcdecode.CTCBeamDecoder(
                 vocab.get_itos(), 
                 beam_width=beam_width, 
-                log_probs_input=self.logits_input,
+                log_probs_input=self.log_probs_input,
                 blank_id=blank_id,
                 num_processes=10)
             

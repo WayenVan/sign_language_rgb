@@ -18,11 +18,12 @@ def main(cfg: DictConfig):
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     
     model: torch.nn.Module = instantiate(cfg.model)
+    model.to(cfg.device)
     checkpoint = torch.load(cfg.checkpoint)
     model.load_state_dict(checkpoint['model_state'])
     
     test_loader = instantiate(cfg.data.test_loader)
-    vocab = test_loader.dataset. get_vocab()
+    vocab = test_loader.dataset.get_vocab()
     inferencer: Inferencer = instantiate(cfg.inferencer, logger=logger, vocab=vocab)
     hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
     wer_value = wer(ground_truth, hypothesis)
