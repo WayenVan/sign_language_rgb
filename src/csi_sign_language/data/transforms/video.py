@@ -56,13 +56,12 @@ class FrameScale:
         return data
 
 class ToTensor:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, keys) -> None:
+        self.keys = keys
     
     def __call__(self, data) -> Any:
-        ret = {}
         for k, v in data.items():
-            if k != '__key__':
-                ret[k] = torch.tensor(v)
-        return ret
+            if k in self.keys:
+                data[k] = torch.tensor(v)
+        return data
     

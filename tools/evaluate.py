@@ -5,7 +5,7 @@ sys.path.append('src')
 from hydra.utils import instantiate
 
 import torch
-from csi_sign_language.engines.inferencers import Inferencer
+from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.utils.metrics import wer, wer_mean
 import hydra
 import os

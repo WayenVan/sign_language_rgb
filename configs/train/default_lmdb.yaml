@@ -11,6 +11,7 @@ device: cuda
 verbose: False
 epoch: 40
 non_block: True
+pin_memory: True
 
 #if continuos read model
 is_resume: False
@@ -18,7 +19,9 @@ checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-19/01-47-0
   
 
 model:
-  _target_: ${csi}.models.models.ResnetTransformer
+  _target_: ${csi}.models.models.SLRModel
+  loss_weight: [1., 1., 25.]
+  loss_temp: 8
   d_feedforward: 1024
   n_head: 8
   n_class: 1296
@@ -36,20 +39,14 @@ lr_scheduler:
     warm_up_rounds: 2
     decay_factor: 0.9
 
-loss_fn:
-  _target_: ${csi}.utils.loss.Losss
-  weights: [1., 1., 25.]
-  temperature: 5
-
 trainner:
-  _target_: ${csi}.engines.trainers.Trainner
+  _target_: ${csi}.engines.trainner.Trainner
   num_class: 1296
-  loss_fn: ${loss_fn}
   device: ${device}
   verbose: ${verbose}
 
 inferencer:
-  _target_: ${csi}.engines.inferencers.Inferencer
+  _target_: ${csi}.engines.inferencer.Inferencer
   device: ${device}
   num_class: 1296
 
@@ -61,6 +58,7 @@ data:
         _target_: ${T}.Compose
         transforms: 
         - _target_: ${CT}.video.ToTensor
+          keys: [video, gloss]
         - _target_: ${CT}.video.Standization
           mean: [0.4513, 0.4580, 0.4668]
           std: [0.3367, 0.3127, 0.3066]
@@ -84,8 +82,7 @@ data:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
     num_workers: 4
-    pin_memory: True
-    persistent_workers: True
+    pin_memory: ${pin_memory}
     shuffle: True
     dataset: ${data.train_set}
     collate_fn: ${data.collate_fn}
@@ -94,7 +91,7 @@ data:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
     num_workers: 4
-    persistent_workers: True
+    pin_memory: ${pin_memory}
     dataset: ${data.val_set}
     collate_fn: ${data.collate_fn}
 

@@ -46,7 +46,7 @@ def main(data_root, output_root, frame_size, subset):
         info[mode]['max_length_gloss'] = max_lgt_g
         info[mode]['data'] = []
         for idx in tqdm(range(data_length)):
-            video, gloss = get_single_data(idx, annotations, v, feature_dir, frame_size)
+            video, gloss, gloss_label = get_single_data(idx, annotations, v, feature_dir, frame_size)
             video_key = f'{subset}-{mode}-{idx}-video'
             gloss_key = f'{subset}-{mode}-{idx}-gloss'
             info[mode]['data'].append(dict(
@@ -55,7 +55,8 @@ def main(data_root, output_root, frame_size, subset):
                 video_shape=video.shape,
                 video_dtype=str(video.dtype),
                 gloss_shape=gloss.shape,
-                gloss_dtype=str(gloss.dtype)
+                gloss_dtype=str(gloss.dtype),
+                gloss_label=gloss_label
             ))
             store_numpy_array(env, video_key, video)
             store_numpy_array(env, gloss_key, gloss)
@@ -64,15 +65,15 @@ def main(data_root, output_root, frame_size, subset):
     
     info_d = OmegaConf.to_container(info)
     with open(os.path.join(subset_root, 'info.json'), 'w') as f:
-        json.dump(info_d, f)
+        json.dump(info_d, f, indent=4)
     env.close()
             
 
     
 def get_single_data(idx, annotations, gloss_vocab,feature_dir, frame_size=(224, 224)):
     anno = annotations['annotation'].iloc[idx]
-    anno: List[str] = anno.split()
-    anno: List[int] = gloss_vocab(anno)
+    anno_str: List[str] = anno.split()
+    anno: List[int] = gloss_vocab(anno_str)
     anno: np.ndarray = np.asarray(anno)
 
     folder: str = annotations['folder'].iloc[idx]
@@ -90,7 +91,7 @@ def get_single_data(idx, annotations, gloss_vocab,feature_dir, frame_size=(224, 
     frames = rearrange(frames, 't h w c -> t c h w')
     
     
-    return frames, anno
+    return frames, anno, anno_str
     
     
 def get_basic_info(data_root, type='train', multisigner=True,):

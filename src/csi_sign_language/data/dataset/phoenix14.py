@@ -157,10 +157,13 @@ class MyPhoenix14Dataset(Dataset):
         data = self.data_id[index]
         video = retrieve_numpy_array(self.lmdb_env, data['video_key'], data['video_shape'], data['video_dtype'])
         gloss = retrieve_numpy_array(self.lmdb_env, data['gloss_key'], data['gloss_shape'], data['gloss_dtype'])
+        gloss_label = data['gloss_label']
     
         ret = dict(
             video=video.astype('float32')/255., #[t c h w]
-            gloss=gloss)
+            gloss=gloss,
+            gloss_label=gloss_label)
+        
         if self.transform is not None:
             ret = self.transform(ret)
         return ret
@@ -192,7 +195,7 @@ class CollateFn:
         
         video_batch = [item['video'] for item in data]
         gloss_batch = [item['gloss'] for item in data]
-        
+        gloss_label = [item['gloss_label'] for item in data]
         
         video, v_length = self._padding_temporal(video_batch, self.length_video)
         gloss, g_length = self._padding_temporal(gloss_batch, self.length_gloss)
@@ -202,6 +205,7 @@ class CollateFn:
             gloss=gloss,
             video_length=v_length,
             gloss_length=g_length,
+            gloss_label=gloss_label
         )
     
     @staticmethod

@@ -9,8 +9,8 @@ from torch.utils.data.dataloader import DataLoader
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-from csi_sign_language.engines.trainers import Trainner
-from csi_sign_language.engines.inferencers import Inferencer
+from csi_sign_language.engines.trainner import Trainner
+from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.utils.data import flatten_concatenation, list2vocab
 from csi_sign_language.utils.metrics import wer
 

@@ -9,8 +9,8 @@ from torch.utils.data.dataloader import DataLoader
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-from csi_sign_language.engines.trainers import Trainner
-from csi_sign_language.engines.inferencers import Inferencer
+from csi_sign_language.engines.trainner import Trainner
+from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.utils.data import flatten_concatenation
 from csi_sign_language.utils.metrics import wer
 import hydra
@@ -39,7 +39,7 @@ def main(cfg: DictConfig):
     vocab = train_loader.dataset.vocab
     
     #initialize trainning essential
-    model: Module = instantiate(cfg.model)
+    model: Module = instantiate(cfg.model, vocab)
     #move model before optimizer initialize
     model.to(cfg.device, non_blocking=cfg.non_block)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
@@ -65,25 +65,26 @@ def main(cfg: DictConfig):
         last_epoch=last_epoch)
     
     logger.info('building trainner and inferencer')
-    trainer: Trainner = instantiate(cfg.trainner, vocab=vocab, logger=logger)
-    inferencer: Inferencer = instantiate(cfg.inferencer, vocab=vocab, logger=logger) 
+    trainer: Trainner = instantiate(cfg.trainner, logger=logger)
+    inferencer: Inferencer = instantiate(cfg.inferencer, logger=logger) 
     logger.info('training loop start')
     best_wer_value = 1000
     for i in range(cfg.epoch):
         real_epoch = last_epoch + i + 1
             
         logger.info(f'epoch {real_epoch}')
-        mean_loss = trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
+        mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
+        train_wer = wer(gt_train, hyp_train)
         # mean_loss = np.array([0.])
-        logger.info(f'training finished, mean loss: {mean_loss}')
+        logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}')
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
-        wer_value = wer(ground_truth, hypothesis)
-        logger.info(f'validation finished, wer: {wer_value}')
+        val_wer = wer(ground_truth, hypothesis)
+        logger.info(f'validation finished, wer: {val_wer}')
         
-        wer_values.append(wer_value)
+        wer_values.append(val_wer)
         losses.append(mean_loss.item())
-        if wer_value < best_wer_value:
-            best_wer_value = wer_value
+        if val_wer < best_wer_value:
+            best_wer_value = val_wer
             torch.save({
                 'epoch': real_epoch,
                 'model_state': model.state_dict(),
