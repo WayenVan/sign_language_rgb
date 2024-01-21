@@ -17,6 +17,7 @@ __all__ = [
 class SLRModel(nn.Module):
     def __init__(
         self, 
+        backbone: nn.Module,
         vocab,
         loss_weight,
         loss_temp,
@@ -29,7 +30,7 @@ class SLRModel(nn.Module):
         self.vocab = vocab
         self.return_label = return_label
         
-        self.backbone = ResnetTransformer(**kwargs)
+        self.backbone = backbone
         self.loss = GlobalLoss(loss_weight, loss_temp)
         
         self.decoder = CTCDecoder(self.vocab, blank_id=0, search_mode=ctc_search_type, log_probs_input=True)

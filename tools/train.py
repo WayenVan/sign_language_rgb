@@ -39,10 +39,13 @@ def main(cfg: DictConfig):
     vocab = train_loader.dataset.vocab
     
     #initialize trainning essential
-    model: Module = instantiate(cfg.model, vocab)
+    model: Module = instantiate(cfg.model, vocab=vocab)
     #move model before optimizer initialize
     model.to(cfg.device, non_blocking=cfg.non_block)
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
+    #initialize record list
+    losses_train = []
+    wer_train = []
     wer_values = []
     losses = []
     last_epoch = -1
@@ -83,6 +86,9 @@ def main(cfg: DictConfig):
         
         wer_values.append(val_wer)
         losses.append(mean_loss.item())
+        wer_train.append(train_wer)
+        losses_train.append(mean_loss.item())
+
         if val_wer < best_wer_value:
             best_wer_value = val_wer
             torch.save({
@@ -90,7 +96,9 @@ def main(cfg: DictConfig):
                 'model_state': model.state_dict(),
                 'optimizer_state': opt.state_dict(),
                 'wer': wer_values,
-                'loss': losses
+                'wer_train': wer_train,
+                'loss': losses,
+                'loss_train': losses_train,
                 }, os.path.join(save_dir, 'checkpoint.pt'))
             logger.info(f'best checkpoint saved')
         lr_scheduler.step()

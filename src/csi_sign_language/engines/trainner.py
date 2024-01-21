@@ -3,7 +3,7 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from logging import Logger
 from tqdm import tqdm
-from ..models.models import *
+from ..models.model import *
 from einops import rearrange
 import numpy as np
 from ..utils.inspect import *

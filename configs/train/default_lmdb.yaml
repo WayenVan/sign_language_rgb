@@ -1,4 +1,5 @@
-# distillation cnn transformer VAC, 2 ctc loss
+description: resnet + LSTM
+
 csi: csi_sign_language
 transform: torchvision.transforms
 T: torchvision.transforms
@@ -19,12 +20,13 @@ checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-19/01-47-0
   
 
 model:
-  _target_: ${csi}.models.models.SLRModel
+  _target_: ${csi}.models.model.SLRModel
   loss_weight: [1., 1., 25.]
   loss_temp: 8
-  d_feedforward: 1024
-  n_head: 8
-  n_class: 1296
+  backbone: 
+    _target_: ${csi}.models.backbone.ResnetLSTM
+    n_class: 1296
+    n_layers: 4
 
 optimizer:
   _target_: torch.optim.Adam
