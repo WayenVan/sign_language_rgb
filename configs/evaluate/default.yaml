@@ -3,18 +3,9 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
-device: cuda
-verbose: True
-
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-18/22-29-37/checkpoint.pt
-
-model:
-  _target_: ${csi}.models.models.ResnetTransformer
-  d_feedforward: 1024
-  n_head: 4
-  n_class: 1296
-
+checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-18/22-29-37/checkpoint.pt
+train_config: ${checkpoint_dir}/.hydra/config.yaml
+checkpoint: ${checkpoint_dir}/checkpoint.pt
 
 inferencer:
   _target_: ${csi}.engines.inferencers.Inferencer
@@ -29,18 +20,18 @@ data:
         _target_: ${T}.Compose
         transforms: 
         - _target_: ${CT}.video.ToTensor
-        - _target_: ${CT}.video.Standization
-          mean: [0.4513, 0.4580, 0.4668]
-          std: [0.3367, 0.3127, 0.3066]
-          
+          keys: [video, gloss]
+        - _target_: ${CT}.video.FrameScale
+          min: -1.
+          max: 1.
+        - _target_: ${CT}.video.CentralCrop
+          size: 224
   test_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}
     subset: ${data.subset}
     mode: test
     transform: ${data.video_transform}
-
-
   test_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2

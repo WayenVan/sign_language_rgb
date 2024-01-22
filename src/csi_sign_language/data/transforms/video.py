@@ -1,3 +1,4 @@
+import math
 from typing import Any
 import numpy as np
 from ...utils.data import *
@@ -5,14 +6,6 @@ from einops import rearrange
 from torchvision import transforms as T
 import torch
 
-# class Compose:
-#     def __init__(self, transforms) -> None:
-#         self.transforms = transforms
-    
-#     def __call__(self, video, gloss) -> Any:
-#         for t in self.transforms:
-#             video, gloss = t(video, gloss)
-#         return video, gloss
 
 class Standization:
 
@@ -49,10 +42,13 @@ class DownSampleT:
         return data
         
 class FrameScale:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, min, max) -> None:
+        self.min = min
+        self.max = max
+
     def __call__(self, data) -> Any:
-        data['video'] = data['video'].astype(np.float32) / 255.
+        video = data['video']
+        data['video'] = self.min + video * (self.max - self.min)
         return data
 
 class ToTensor:
@@ -65,3 +61,17 @@ class ToTensor:
                 data[k] = torch.tensor(v)
         return data
     
+
+class CentralCrop:
+
+    def __init__(self, size=224) -> None:
+        self.size = size
+
+    def __call__(self, data) -> Any:
+        video: torch.Tensor = data['video']
+        T, C, H, W = video.shape
+        start_h = math.floor((H - self.size)/2.)
+        start_w = math.floor((W - self.size)/2.)
+        data['video'] = video[:, :, start_h:start_h+self.size, start_w:start_w+self.size]
+        return data
+        

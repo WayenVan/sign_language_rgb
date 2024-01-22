@@ -16,7 +16,7 @@ logger = logging.getLogger('main')
 def main(cfg: DictConfig):
     result = OmegaConf.create()
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
-
+    train_cfg = OmegaConf.load(cfg.train_config)
     test_loader = instantiate(cfg.data.test_loader)
     vocab = test_loader.dataset.get_vocab()
     

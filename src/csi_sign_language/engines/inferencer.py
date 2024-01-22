@@ -13,12 +13,10 @@ class Inferencer():
     def __init__(
             self,
             device,
-            num_class,
             logger: logging.Logger
         ) -> None:
         
         self.device=device
-        self.NUM_CLASS = num_class
         self.logger = logger.getChild(__class__.__name__)
 
     def do_inference(self, model: Module, loader) -> List[List[str]]:

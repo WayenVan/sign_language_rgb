@@ -9,7 +9,7 @@ seed: 3407
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
 vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 device: cuda
-verbose: False
+verbose: True
 epoch: 40
 non_block: True
 pin_memory: True
@@ -50,7 +50,6 @@ trainner:
 inferencer:
   _target_: ${csi}.engines.inferencer.Inferencer
   device: ${device}
-  num_class: 1296
 
 data:
   subset: multisigner
@@ -61,9 +60,11 @@ data:
         transforms: 
         - _target_: ${CT}.video.ToTensor
           keys: [video, gloss]
-        - _target_: ${CT}.video.Standization
-          mean: [0.4513, 0.4580, 0.4668]
-          std: [0.3367, 0.3127, 0.3066]
+        - _target_: ${CT}.video.FrameScale
+          min: -1.
+          max: 1.
+        - _target_: ${CT}.video.CentralCrop
+          size: 224
     
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
