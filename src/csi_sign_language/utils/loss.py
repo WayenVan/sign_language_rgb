@@ -8,8 +8,7 @@ from einops import rearrange
 class GlobalLoss:
     def __init__(self, weights, temperature) -> None:
         #weigts: ctc_seq, ctc_conv, distill
-        self.CTC_seq = nn.CTCLoss()
-        self.CTC_conv = nn.CTCLoss()
+        self.CTC = nn.CTCLoss(blank=0, reduction='none')
         self.distll = SelfDistill(temperature)
         self.weights = weights
     
@@ -20,8 +19,8 @@ class GlobalLoss:
         input_length = output['video_length']
 
         conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
-        seq_loss = self.CTC_seq(seq_out, target, input_length, target_length)
-        conv_loss = self.CTC_conv(conv_out, target, input_length, target_length)
+        seq_loss = self.CTC(seq_out, target, input_length.int(), target_length.int()).mean()
+        conv_loss = self.CTC(conv_out, target, input_length.int(), target_length.int()).mean()
         distll_loss = self.distll(seq_out, conv_out)
 
         seq_loss, conv_loss, distll_loss = self._filter_nan((seq_loss, conv_loss, distll_loss))

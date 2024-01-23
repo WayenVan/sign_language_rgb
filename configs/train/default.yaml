@@ -14,6 +14,7 @@ epoch: 40
 message_interval: 50
 non_block: True
 pin_memory: True
+num_workers: 6
 
 #if continuos read model
 is_resume: False
@@ -83,7 +84,7 @@ data:
   train_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 4
+    num_workers: ${num_workers}
     pin_memory: ${pin_memory}
     shuffle: True
     dataset: ${data.train_set}
@@ -92,7 +93,7 @@ data:
   val_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 4
+    num_workers: ${num_workers}
     pin_memory: ${pin_memory}
     dataset: ${data.val_set}
     collate_fn: ${data.collate_fn}

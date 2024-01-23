@@ -21,7 +21,7 @@ logger = logging.getLogger('main')
 import numpy as np
 
 
-@hydra.main(version_base=None, config_path='../configs/train', config_name='default_lmdb.yaml')
+@hydra.main(version_base=None, config_path='../configs/train', config_name='default.yaml')
 def main(cfg: DictConfig):
     torch.cuda.manual_seed_all(cfg.seed)
     torch.manual_seed(cfg.seed)
