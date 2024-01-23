@@ -105,11 +105,3 @@ class ResnetLSTM(nn.Module):
             conv_out=conv_out,
             video_length=video_length 
         )
-    
-    @staticmethod
-    def _make_video_mask(video_length: torch.Tensor, temporal_dim):
-        batch_size = video_length.size(dim=0)
-        mask = torch.ones(batch_size, temporal_dim)
-        for idx in range(batch_size):
-            mask[idx, :video_length[idx]] = 0
-        return mask.bool().to(video_length.device)

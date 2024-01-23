@@ -17,15 +17,13 @@ class Trainner():
     
     def __init__(
         self,
-        num_class: int,
         device,
         logger,
-        verbose=False
+        message_interval,
         ) -> None:
 
-        self.NUM_CLASS = int(num_class)
         self.device = device
-        self.verbose=verbose
+        self.message_interval = message_interval
         self.logger: logging.Logger = logger.getChild(__class__.__name__)
         if self.device == 'cuda':
             self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
@@ -61,7 +59,7 @@ class Trainner():
                 loss.backward()
                 opt.step()
                 
-            if self.verbose:
+            if self.message_interval != -1 and idx % self.message_interval == 0:
                 self.logger.info(f'iteration index: {idx}, batch loss: {loss.item()}')
             
             losses.append(loss.item())

@@ -158,7 +158,7 @@ def create_glossdictionary(annotations):
     def tokens():
         for annotation in annotations['annotation']:
             yield annotation.split()
-    vocab = build_vocab_from_iterator(tokens(), special_first=True, specials=['<PAD>'])
+    vocab = build_vocab_from_iterator(tokens(), special_first=True, specials=['<blank>'])
     return vocab
     
 def generate_vocab(data_root, output_root):

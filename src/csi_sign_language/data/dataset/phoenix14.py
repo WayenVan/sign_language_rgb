@@ -192,14 +192,16 @@ class CollateFn:
         self.length_gloss = length_gloss
     
     def __call__(self, data) -> Any:
+        #sort the data by video length in decreasing way for onxx
+        data = sorted(data, key=lambda x: len(x['video']), reverse=True)
         
         video_batch = [item['video'] for item in data]
         gloss_batch = [item['gloss'] for item in data]
         gloss_label = [item['gloss_label'] for item in data]
         
         video, v_length = self._padding_temporal(video_batch, self.length_video)
-        gloss, g_length = self._padding_temporal(gloss_batch, self.length_gloss)
-        
+        g_length = torch.tensor([len(item) for item in gloss_batch], dtype=torch.int32)
+        gloss = torch.concat(gloss_batch)
         return dict(
             video=video,
             gloss=gloss,

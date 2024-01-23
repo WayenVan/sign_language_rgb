@@ -7,26 +7,29 @@ CT: csi_sign_language.data.transforms
 
 seed: 3407
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
-vocab_dir: /home/jingyan/Documents/sign_language_rgb/dataset/pheonix14-multi-vocab.txt
 device: cuda
 verbose: True
 epoch: 40
+#-1 when we don want message out
+message_interval: 50
 non_block: True
 pin_memory: True
 
 #if continuos read model
 is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-19/01-47-00/checkpoint.pt
-  
 
 model:
-  _target_: ${csi}.models.model.SLRModel
-  loss_weight: [1., 1., 25.]
-  loss_temp: 8
-  backbone: 
-    _target_: ${csi}.models.backbone.ResnetLSTM
-    n_class: 1296
-    n_layers: 4
+  _target_: vac.slr_network.SLRModel
+  num_classes: 1296
+  c2d_type: 'resnet18'
+  conv_type: 2
+  use_bn: False
+  #SMKD
+  share_classifier: False
+  weight_norm: False
+  loss_weights:
+    SeqCTC: 1.0
 
 optimizer:
   _target_: torch.optim.Adam
@@ -37,15 +40,14 @@ lr_scheduler:
   _target_: torch.optim.lr_scheduler.LambdaLR
   lr_lambda: 
     _target_: ${csi}.utils.lr_scheduler.WarmUpLr
-    initial_lambda: 0.1
-    warm_up_rounds: 2
-    decay_factor: 0.9
+    initial_lambda: 0.001
+    warm_up_rounds: 0
+    decay_factor: 0.8
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner
-  num_class: 1296
   device: ${device}
-  verbose: ${verbose}
+  message_interval: ${message_interval}
 
 inferencer:
   _target_: ${csi}.engines.inferencer.Inferencer
