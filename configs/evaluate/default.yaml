@@ -3,14 +3,16 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-18/22-29-37/checkpoint.pt
+checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-23/17-18-50
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
+phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
+
+device: cuda
 
 inferencer:
-  _target_: ${csi}.engines.inferencers.Inferencer
+  _target_: ${csi}.engines.inferencer.Inferencer
   device: ${device}
-  num_class: 1296
 
 data:
   subset: multisigner

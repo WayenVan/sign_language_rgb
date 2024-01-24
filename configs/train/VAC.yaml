@@ -14,6 +14,7 @@ epoch: 40
 message_interval: 50
 non_block: True
 pin_memory: True
+num_workers: 7
 
 #if continuos read model
 is_resume: False
@@ -39,7 +40,7 @@ optimizer:
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.LambdaLR
   lr_lambda: 
-    _target_: ${csi}.utils.lr_scheduler.WarmUpLr
+    _target_: ${csi}.engines.lr_scheduler.WarmUpLr
     initial_lambda: 0.001
     warm_up_rounds: 0
     decay_factor: 0.8
@@ -86,7 +87,7 @@ data:
   train_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 4
+    num_workers: ${num_workers}
     pin_memory: ${pin_memory}
     shuffle: True
     dataset: ${data.train_set}
@@ -95,7 +96,7 @@ data:
   val_loader:
     _target_: torch.utils.data.DataLoader
     batch_size: 2
-    num_workers: 4
+    num_workers: ${num_workers}
     pin_memory: ${pin_memory}
     dataset: ${data.val_set}
     collate_fn: ${data.collate_fn}

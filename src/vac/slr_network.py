@@ -105,9 +105,14 @@ class SLRModel(nn.Module):
             "video_length": lgt,
             "conv_out": conv1d_outputs['conv_logits'],
             "seq_out": outputs,
-            "conv_out_label": conv_pred,
-            "seq_out_label": pred,
+            "conv_out_label": [[v[0] for v in item] for item in conv_pred],
+            "seq_out_label": [[v[0] for v in item] for item in pred],
         }
+
+    def inference(self, *args, **kwargs):
+        with torch.no_grad():
+            ret = self.forward(*args, **kwargs)
+        return ret['seq_out_label']
 
     def criterion(self, ret_dict, label, label_lgt):
         loss = 0

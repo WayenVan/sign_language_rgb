@@ -2,6 +2,7 @@ import Levenshtein as L
 from typing import *
 #calculate levenshtein_distance
 import numpy as np
+from itertools import groupby
 
 def leven_dist(ref, hyp):
     m = len(ref)
@@ -30,8 +31,7 @@ def wer(refs: List[List[Hashable]], hyps: List[List[Hashable]]):
     """
     assert len(refs) == len(hyps)
     n = sum([len(ref) for ref in refs])
-    total_levenshtein = sum([L.distance(ref, hyp) for ref, hyp in list(zip(refs, hyps))])
-
+    total_levenshtein = sum([L.distance(ref, hyp, weights=(1, 1, 1)) for ref, hyp in list(zip(refs, hyps))])
     return total_levenshtein/n
 
 def wer_mean(refs: List[List[Hashable]], hyps: List[List[Hashable]]):

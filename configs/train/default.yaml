@@ -17,8 +17,8 @@ pin_memory: True
 num_workers: 6
 
 #if continuos read model
-is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-19/01-47-00/checkpoint.pt
+is_resume: True
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-23/17-18-50/checkpoint.pt
 
 model:
   _target_: ${csi}.models.model.SLRModel
@@ -37,7 +37,7 @@ optimizer:
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.LambdaLR
   lr_lambda: 
-    _target_: ${csi}.utils.lr_scheduler.WarmUpLr
+    _target_: ${csi}.engines.lr_scheduler.WarmUpLr
     initial_lambda: 0.001
     warm_up_rounds: 0
     decay_factor: 0.8

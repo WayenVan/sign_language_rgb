@@ -8,7 +8,7 @@ from ..modules.unet import *
 from ..modules.tconv import *
 from torch.cuda.amp.autocast_mode import autocast
 from ..utils.decode import CTCDecoder
-from ..utils.loss import GlobalLoss
+from ..modules.loss import GlobalLoss
 
 
 class SLRModel(nn.Module):

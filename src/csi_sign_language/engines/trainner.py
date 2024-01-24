@@ -11,7 +11,7 @@ from ..utils.metrics import wer
 from ..utils.decode import CTCDecoder
 from ..utils.data import *
 from typing import *
-from ..utils.loss import GlobalLoss
+from ..modules.loss import GlobalLoss
 
 class Trainner():
     

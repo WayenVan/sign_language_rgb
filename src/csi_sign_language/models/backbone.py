@@ -9,7 +9,7 @@ from ..modules.tconv import *
 from ..modules.bilstm import BiLSTMLayer
 from torch.cuda.amp.autocast_mode import autocast
 from ..utils.decode import CTCDecoder
-from ..utils.loss import GlobalLoss
+from ..modules.loss import GlobalLoss
 
 class ResnetTransformer(nn.Module):
     
