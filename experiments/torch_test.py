@@ -15,3 +15,7 @@ print(torch.transpose(random, 0, -1).size())
 
 a = torch.tensor([0.1134, 0.0978, 0.0940])
 print(a.sqrt())
+print(a.device)
+a = torch.tensor([0.], requires_grad=True).to(a.device)
+a = torch.tensor
+a.backward()

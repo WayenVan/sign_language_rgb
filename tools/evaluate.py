@@ -30,7 +30,7 @@ def main(cfg: DictConfig):
     
     inferencer: Inferencer = instantiate(cfg.inferencer, logger=logger)
     hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
-    hypothesis = [post_process(item) for item in hypothesis]
+    hypothesis = post_process(hypothesis)
     wer_value = wer_calculation(ground_truth, hypothesis)
     logger.info(f'validation finished, wer: {wer_value}')
     

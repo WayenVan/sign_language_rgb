@@ -17,8 +17,8 @@ pin_memory: True
 num_workers: 7
 
 #if continuos read model
-is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-19/01-47-00/checkpoint.pt
+is_resume: True
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-24/23-31-40/checkpoint.pt
 
 model:
   _target_: vac.slr_network.SLRModel
@@ -43,7 +43,7 @@ lr_scheduler:
     _target_: ${csi}.engines.lr_scheduler.WarmUpLr
     initial_lambda: 0.001
     warm_up_rounds: 0
-    decay_factor: 0.8
+    decay_factor: 0.99
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner

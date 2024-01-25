@@ -76,8 +76,8 @@ def main(cfg: DictConfig):
     best_wer_value = 1000
     for i in range(cfg.epoch):
         real_epoch = last_epoch + i + 1
-            
-        logger.info(f'epoch {real_epoch}')
+        lr = lr_scheduler.get_lr()
+        logger.info(f'epoch {real_epoch}, lr={lr}')
         mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
         train_wer = wer_calculation(gt_train, hyp_train)
         logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}')

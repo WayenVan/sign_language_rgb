@@ -131,6 +131,9 @@ class SLRModel(nn.Module):
                 loss += weight * self.loss['distillation'](ret_dict["conv_out"],
                                                            ret_dict["seq_out"].detach(),
                                                            use_blank=False)
+        if np.isinf(loss.item()) or np.isnan(loss.item()):
+            loss = torch.nan_to_num(loss, nan=0., posinf=0., neginf=0.)
+
         return loss
 
     def criterion_init(self):
