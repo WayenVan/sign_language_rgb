@@ -7,7 +7,7 @@ from ..models.model import *
 from einops import rearrange
 import numpy as np
 from ..utils.inspect import *
-from ..utils.metrics import wer
+from ..evaluation.wer import wer
 from ..utils.decode import CTCDecoder
 from ..utils.data import *
 from typing import *

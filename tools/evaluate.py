@@ -6,9 +6,9 @@ from hydra.utils import instantiate
 
 import torch
 from csi_sign_language.engines.inferencer import Inferencer
-from csi_sign_language.utils.metrics import wer, wer_mean
-from csi_sign_language.utils.post_process_ph14 import post_process
-from csi_sign_language.utils.wer_evaluation import wer_calculation
+from csi_sign_language.evaluation.ph14.post_process import process
+from csi_sign_language.evaluation.ph14.wer_evaluation_sclite import glosses2ctm, get_phoenix_wer, eval
+from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
 import hydra
 import os
 import json
@@ -17,7 +17,7 @@ logger = logging.getLogger('main')
 @hydra.main(version_base=None, config_path='../configs/evaluate', config_name='default.yaml')
 def main(cfg: DictConfig):
     result = OmegaConf.create()
-    save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+    work_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     train_cfg = OmegaConf.load(cfg.train_config)
 
     test_loader = instantiate(cfg.data.test_loader)
@@ -29,16 +29,28 @@ def main(cfg: DictConfig):
     model.load_state_dict(checkpoint['model_state'])
     
     inferencer: Inferencer = instantiate(cfg.inferencer, logger=logger)
-    hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
-    hypothesis = post_process(hypothesis)
-    wer_value = wer_calculation(ground_truth, hypothesis)
-    logger.info(f'validation finished, wer: {wer_value}')
+    ids, hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
     
-    result.wer = wer_value
-    result.results = [{'hypothesis': h, 'ground_truth': gt} for h, gt in zip(hypothesis, ground_truth)]
-    result = OmegaConf.to_container(result)
-    with open(os.path.join(save_dir, 'result.json'), 'w') as f:
-        json.dump(result, f, indent=4)
+    ret = []
+    for gt, pre, post in list(zip(ground_truth, hypothesis, process(hypothesis))):
+        ret.append(dict(
+            gt=gt,
+            pre=pre,
+            post=post
+        ))
+    
+    with open(os.path.join(work_dir, 'result.json'), 'w') as f:
+        json.dump(ret, f, indent=4)
+    
+    print(wer_calculation(ground_truth, process(hypothesis)))
+            
+    # glosses2ctm(ids, hypothesis, os.path.join(work_dir, 'hyp.ctm'))
+    # re = get_phoenix_wer(work_dir, 'hyp.ctm', test_loader.dataset.get_stm(), tmp_prefix='.', res_dir=cfg.evaluation_tool)
+    wer_value = eval(ids, work_dir, hypothesis, test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
+    print(wer_value[0])
+
+
+
 
 if __name__ == '__main__':
     main()

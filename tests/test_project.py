@@ -1,7 +1,7 @@
 import sys
 sys.path.append('src')
 from omegaconf import OmegaConf
-from csi_sign_language.utils.metrics import leven_dist
+from csi_sign_language.evaluation.wer import leven_dist
 from tqdm import tqdm
 
 def test_wer():

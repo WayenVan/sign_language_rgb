@@ -16,9 +16,9 @@ from einops import rearrange
 from csi_sign_language.utils.data import VideoGenerator
 from omegaconf import OmegaConf
 import json
-from csi_sign_language.utils.lmdb_tool import store_numpy_array, retrieve_numpy_array
+from csi_sign_language.utils.lmdb_tool import store_data, retrieve_data
 import lmdb
-
+import shutil
 
 
 @click.command()
@@ -36,10 +36,20 @@ def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size):
     info.email = '2533494w@student.gla.ac.uk'
     
     subset_root = os.path.join(output_root, subset)
+    os.makedirs(subset_root, exist_ok=True)
+    
+    #put ground truth to the root
+    if subset == 'multisigner':
+        data_root_subset = os.path.join(data_root, 'phoenix-2014-multisigner')
+    if subset == 'si5':
+        data_root_subset = os.path.join(data_root, 'phoenix-2014-signerindependent-SI5')
+
+    shutil.copy(os.path.join(data_root_subset, 'evaluation/phoenix2014-groundtruth-dev.stm'), subset_root)
+    shutil.copy(os.path.join(data_root_subset, 'evaluation/phoenix2014-groundtruth-test.stm'), subset_root)
     multi_signer = True if subset == 'multisigner' else False
     v = vocab if subset == 'multisigner' else vocab_SI5
     info['vocab'] = v.get_itos()
-    os.makedirs(subset_root, exist_ok=True)
+
     for mode in ('train', 'dev', 'test'):
         annotations, feature_dir, max_lgt_v, max_lgt_g= get_basic_info(data_root, mode, multisigner=multi_signer)
         data_length = len(annotations)
@@ -47,6 +57,7 @@ def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size):
         info[mode] = {}
         info[mode]['max_length_video'] = max_lgt_v
         info[mode]['max_length_gloss'] = max_lgt_g
+        os.makedirs(os.path.join(subset_root, mode), exist_ok=True)
         if multiprocess:
             keys = run_mp_cmd(partial(process_data, mode, v, frame_size, annotations, feature_dir, subset, subset_root), range(data_length), chunk_size=chunk_size)
         else:
@@ -59,23 +70,18 @@ def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size):
         json.dump(info_d, f, indent=4)
             
 def process_data(mode, v, frame_size, annotations, feature_dir, subset, subset_root, idxes):
-    env = lmdb.open(os.path.join(subset_root, 'feature_database'), map_size=1099511627776)
+    env = lmdb.open(os.path.join(subset_root, mode,'feature_database'), map_size=1099511627776)
     keys = []
     for idx in idxes:
-        video, gloss, gloss_label = get_single_data(idx, annotations, v, feature_dir, frame_size)
-        video_key = f'{subset}-{mode}-{idx}-video'
-        gloss_key = f'{subset}-{mode}-{idx}-gloss'
-        keys.append(dict(
-            video_key=video_key,
-            gloss_key=gloss_key,
-            video_shape=video.shape,
-            video_dtype=str(video.dtype),
-            gloss_shape=gloss.shape,
-            gloss_dtype=str(gloss.dtype),
-            gloss_label=gloss_label
-        ))
-        store_numpy_array(env, video_key, video)
-        store_numpy_array(env, gloss_key, gloss)
+        id, video, signer, gloss_labels = get_single_data(idx, annotations, v, feature_dir, frame_size)
+        data = dict(
+            id=id,
+            video=video,
+            signer=signer,
+            gloss_labels=gloss_labels
+        )
+        store_data(env, id, data)
+        keys.append(id)
     env.close()
     return keys
 
@@ -88,11 +94,11 @@ def run_mp_cmd(func, data_indexes, chunk_size):
     return keys
 
 
-def get_single_data(idx, annotations, gloss_vocab,feature_dir, frame_size=(224, 224)):
-    anno = annotations['annotation'].iloc[idx]
-    anno_str: List[str] = anno.split()
-    anno: List[int] = gloss_vocab(anno_str)
-    anno: np.ndarray = np.asarray(anno)
+def get_single_data(idx, annotations, gloss_vocab, feature_dir, frame_size=(224, 224)):
+    anno_str: List[str] = annotations['annotation'].iloc[idx].split()
+    id: str = annotations['id'][idx]
+    signer: str = annotations['signer'][idx]
+
 
     folder: str = annotations['folder'].iloc[idx]
     frame_files: List[str] = get_frame_file_list_from_annotation(feature_dir, folder)
@@ -102,14 +108,10 @@ def get_single_data(idx, annotations, gloss_vocab,feature_dir, frame_size=(224, 
     # [t, h, w, c]
     frames: np.ndarray = np.stack(frames)
 
-    # padding
-    # frames, frames_mask = padding(frames, 0, length_video, 'back')
-    # anno, anno_mask = padding(anno, 0, length_gloss, 'back')
-    
     frames = rearrange(frames, 't h w c -> t c h w')
     
     
-    return frames, anno, anno_str
+    return id, frames, signer, anno_str
     
     
 def get_basic_info(data_root, type='train', multisigner=True,):

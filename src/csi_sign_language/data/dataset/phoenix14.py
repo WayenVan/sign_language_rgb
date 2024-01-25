@@ -17,7 +17,7 @@ from ...utils.data import VideoGenerator, padding, load_vocab
 from typing import *
 from abc import ABC, abstractmethod
 
-from ...utils.lmdb_tool import retrieve_numpy_array
+from ...utils.lmdb_tool import retrieve_data
 import json
 import yaml
 import lmdb
@@ -149,23 +149,29 @@ class MyPhoenix14Dataset(Dataset):
         self.video_length = video_length
         self.gloss_length = gloss_length
         self.lmdb_env = None
+    
+    def get_stm(self):
+        return os.path.join(self.subset_root, f'phoenix2014-groundtruth-{self.mode}.stm')
         
     def __getitem__(self, index) -> Any:
         if self.lmdb_env is None:
             self._init_db()
         
-        data = self.data_id[index]
-        video = retrieve_numpy_array(self.lmdb_env, data['video_key'], data['video_shape'], data['video_dtype'])
-        gloss = retrieve_numpy_array(self.lmdb_env, data['gloss_key'], data['gloss_shape'], data['gloss_dtype'])
-        gloss_label = data['gloss_label']
+        id = self.data_id[index]
+        data = retrieve_data(self.lmdb_env, id)
+        video = data['video']
+        gloss_label = data['gloss_labels']
+        gloss = np.array(self.vocab(gloss_label), dtype='int32')
     
         ret = dict(
+            id=id,
             video=video.astype('float32')/255., #[t c h w]
             gloss=gloss,
             gloss_label=gloss_label)
         
         if self.transform is not None:
             ret = self.transform(ret)
+
         return ret
         
     def __len__(self):
@@ -173,7 +179,7 @@ class MyPhoenix14Dataset(Dataset):
     
     def _init_db(self):
         self.lmdb_env = lmdb.open(
-            os.path.join(self.data_root, self.subset, 'feature_database'), 
+            os.path.join(self.data_root, self.subset, self.mode, 'feature_database'), 
             readonly=True,
             lock=False,
             create=False)
@@ -198,11 +204,13 @@ class CollateFn:
         video_batch = [item['video'] for item in data]
         gloss_batch = [item['gloss'] for item in data]
         gloss_label = [item['gloss_label'] for item in data]
+        ids = [item['id'] for item in data]
         
         video, v_length = self._padding_temporal(video_batch, self.length_video)
         g_length = torch.tensor([len(item) for item in gloss_batch], dtype=torch.int32)
         gloss = torch.concat(gloss_batch)
         return dict(
+            id=ids,
             video=video,
             gloss=gloss,
             video_length=v_length,

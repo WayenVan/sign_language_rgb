@@ -6,7 +6,9 @@ CT: csi_sign_language.data.transforms
 checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-25/12-17-15
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
+
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
+evaluation_tool: /home/jingyan/Documents/sign_language_rgb/evaluation/ph14
 
 device: cuda
 

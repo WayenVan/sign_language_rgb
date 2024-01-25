@@ -22,6 +22,7 @@ class Inferencer():
     def do_inference(self, model: Module, loader) -> List[List[str]]:
         
         model.eval()
+        ids = []
         ground_truth = []
         hypothesis = []
         for idx, data in enumerate(tqdm(loader)):
@@ -32,6 +33,7 @@ class Inferencer():
                 hyp = model.inference(video, video_length)
             hypothesis += hyp
             ground_truth += data['gloss_label']
+            ids += data['id']
             
-        return hypothesis, ground_truth
+        return ids, hypothesis, ground_truth
     

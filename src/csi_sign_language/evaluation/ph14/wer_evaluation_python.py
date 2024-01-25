@@ -6,8 +6,6 @@ from typing import List
 # Reference: https://github.com/ustc-slr/DilatedSLR/blob/master/lib/lib_metric.py
 # More about ASR evaluation: https://www.nist.gov/system/files/documents/2021/08/03/OpenASR20_EvalPlan_v1_5.pdf
 
-
-
 def get_wer_delsubins(ref, hyp, merge_same=False, align_results=False,
                       penalty={'ins': 1, 'del': 1, 'sub': 1}):
     # whether merge glosses before evaluation

@@ -12,9 +12,9 @@ from torch.optim.lr_scheduler import LambdaLR
 from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.utils.data import flatten_concatenation
-from csi_sign_language.utils.metrics import wer
+from csi_sign_language.evaluation.wer import wer
 from csi_sign_language.utils.post_process_ph14 import post_process
-from csi_sign_language.utils.wer_evaluation import wer_calculation
+from csi_sign_language.utils.wer_evaluation_python import wer_calculation
 import hydra
 import os
 import shutil

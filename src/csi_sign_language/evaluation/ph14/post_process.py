@@ -1,11 +1,13 @@
 from typing import List
 from itertools import groupby
 import re
+import os
+import numpy as np
 
-def post_process(output: List[List[str]]):
 
+def process(output: List[List[str]]):
     return [apply_regex(item) for item in output]
-
+    
 def apply_regex(output: List[str]):
     output_s = ' '.join(output)
 
@@ -22,7 +24,7 @@ def apply_regex(output: List[str]):
     output_s = re.sub(r'__LEFTHAND__', r'', output_s)
     
     output_s = re.sub(r'WIE AUSSEHEN', r'WIE-AUSSEHEN', output_s)
-    output_s = re.sub(r'ZEIGEN ', r'ZEIGEN-BILDSCHIRM', output_s)
+    output_s = re.sub(r'ZEIGEN ', r'ZEIGEN-BILDSCHIRM ', output_s)
     output_s = re.sub(r'ZEIGEN$', r'ZEIGEN-BILDSCHIRM', output_s)
 
     output_s = re.sub(r'^([A-Z]) ([A-Z][+ ])', r'\1+\2', output_s)
@@ -50,9 +52,6 @@ def apply_regex(output: List[str]):
     #remove multiple spaces, strip trunc the whitespaces in the end
     # return re.split(r'\s+', output_s.strip())
     return output_s.split()
-
-def merge_duplicate(l: List[str]):
-    return [item[0] for item in groupby(l)]
 
 if __name__ == "__main__":
     print(apply_regex(['Sdfsdf', 'S', 'H', '   ']))
