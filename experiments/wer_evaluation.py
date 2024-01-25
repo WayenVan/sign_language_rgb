@@ -13,7 +13,6 @@ def get_wer_delsubins(ref, hyp, merge_same=False, align_results=False,
     # whether merge glosses before evaluation
     hyp = hyp if not merge_same else [x[0] for x in groupby(hyp)]
 
-    # handle situation that hyp is empty []
     assert len(ref) > 0
     if len(hyp) == 0:
         return ref, ['*' for i in range(len(ref))]
@@ -76,6 +75,7 @@ def get_wer_delsubins(ref, hyp, merge_same=False, align_results=False,
     aligned_gt = []
     aligned_pred = []
     results = []
+
     for i in range(bt_path[-1][0][0]):
         aligned_gt.append(ref[i])
         aligned_pred.append('*' * len(ref[i]))
@@ -109,7 +109,7 @@ def get_wer_delsubins(ref, hyp, merge_same=False, align_results=False,
     return aligned_gt, aligned_pred
 
 
-def calculate_stats(gt, lstm_pred):
+def calculate_stats(gt, lstm_pred, conv_pred=None):
     stat_ret = {
         'wer': 0,
         'cnt': 0,
@@ -146,8 +146,10 @@ def wer_calculation(gts: List[List[str]], predicts: List[List[str]]):
         )
         results_list.append(sent_stat)
     results = sum_dict(results_list)
+    
     return results['wer'] / results['cnt'] * 100
 
 
 if __name__ == '__main__':
-    get_wer_delsubins(['a', 'b', 'c'], [])
+    get_wer_delsubins(['a', 'b', 'c'], ['b'])
+    print(wer_calculation([['a', 'b']], [[]]))
