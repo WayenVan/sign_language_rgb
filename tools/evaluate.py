@@ -6,7 +6,7 @@ from hydra.utils import instantiate
 
 import torch
 from csi_sign_language.engines.inferencer import Inferencer
-from csi_sign_language.evaluation.ph14.post_process import process
+from csi_sign_language.evaluation.ph14.post_process import post_process
 from csi_sign_language.evaluation.ph14.wer_evaluation_sclite import glosses2ctm, get_phoenix_wer, eval
 from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
 import hydra
@@ -32,7 +32,7 @@ def main(cfg: DictConfig):
     ids, hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
     
     ret = []
-    for gt, pre, post in list(zip(ground_truth, hypothesis, process(hypothesis))):
+    for gt, pre, post in list(zip(ground_truth, hypothesis, post_process(hypothesis))):
         ret.append(dict(
             gt=gt,
             pre=pre,
@@ -42,7 +42,7 @@ def main(cfg: DictConfig):
     with open(os.path.join(work_dir, 'result.json'), 'w') as f:
         json.dump(ret, f, indent=4)
     
-    print(wer_calculation(ground_truth, process(hypothesis)))
+    print(wer_calculation(ground_truth, post_process(hypothesis)))
             
     # glosses2ctm(ids, hypothesis, os.path.join(work_dir, 'hyp.ctm'))
     # re = get_phoenix_wer(work_dir, 'hyp.ctm', test_loader.dataset.get_stm(), tmp_prefix='.', res_dir=cfg.evaluation_tool)

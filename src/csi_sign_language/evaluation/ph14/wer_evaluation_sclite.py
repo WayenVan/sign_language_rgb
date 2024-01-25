@@ -18,7 +18,9 @@ def get_phoenix_wer(work_dir, hyp, gt, tmp_prefix, res_dir):
     python_file = os.path.join(res_dir, 'mergectmstm.py')
     
     cmd = "sh {:s} {:s} {:s} {:s} {:s} {:s}".format(shell_file, work_dir, hyp, gt, tmp_prefix, python_file)
-    print(os.system(cmd))
+    if os.system(cmd) != 0:
+        raise Exception('sclit cmd runing failed')
+        
     result_file = os.path.join(work_dir, '{:s}.out.{:s}.sys'.format(tmp_prefix, os.path.basename(hyp)))
 
     with open(result_file, 'r') as fid:
@@ -49,3 +51,4 @@ def glosses2ctm(ids: List[str], glosses: List[List[str]], path: str):
 def eval(ids, work_dir, hypothesis, stm_path, ctm_file_name, res_dir):
     glosses2ctm(ids, hypothesis, os.path.join(work_dir, ctm_file_name))
     re = get_phoenix_wer(work_dir,ctm_file_name, stm_path, tmp_prefix='.', res_dir=res_dir)
+    return re

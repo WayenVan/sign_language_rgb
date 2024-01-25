@@ -12,9 +12,8 @@ from torch.optim.lr_scheduler import LambdaLR
 from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.utils.data import flatten_concatenation
-from csi_sign_language.evaluation.wer import wer
-from csi_sign_language.utils.post_process_ph14 import post_process
-from csi_sign_language.utils.wer_evaluation_python import wer_calculation
+from csi_sign_language.evaluation.ph14.post_process import post_process
+from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
 import hydra
 import os
 import shutil
@@ -76,11 +75,15 @@ def main(cfg: DictConfig):
     best_wer_value = 1000
     for i in range(cfg.epoch):
         real_epoch = last_epoch + i + 1
+
+        #train
         lr = lr_scheduler.get_lr()
         logger.info(f'epoch {real_epoch}, lr={lr}')
         mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
         train_wer = wer_calculation(gt_train, hyp_train)
         logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}')
+
+        #validation
         hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
         hypothesis = post_process(hypothesis)
         val_wer = wer_calculation(ground_truth, hypothesis)

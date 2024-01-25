@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 
-def process(output: List[List[str]]):
+def post_process(output: List[List[str]]):
     return [apply_regex(item) for item in output]
     
 def apply_regex(output: List[str]):
