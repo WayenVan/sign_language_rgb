@@ -54,6 +54,6 @@ def apply_regex(output: List[str]):
     return output_s.split()
 
 if __name__ == "__main__":
-    print(apply_regex(['Sdfsdf', 'S', 'H', '   ']))
+    print(apply_regex(['S', 'H', 'C', '   ']))
     print('a      b  c '.split())
 

@@ -77,14 +77,14 @@ def main(cfg: DictConfig):
         real_epoch = last_epoch + i + 1
 
         #train
-        lr = lr_scheduler.get_lr()
+        lr = lr_scheduler.get_last_lr()
         logger.info(f'epoch {real_epoch}, lr={lr}')
         mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
         train_wer = wer_calculation(gt_train, hyp_train)
         logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}')
 
         #validation
-        hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
+        ids, hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
         hypothesis = post_process(hypothesis)
         val_wer = wer_calculation(ground_truth, hypothesis)
         logger.info(f'validation finished, wer: {val_wer}')

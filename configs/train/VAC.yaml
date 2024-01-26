@@ -8,16 +8,15 @@ CT: csi_sign_language.data.transforms
 seed: 3407
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
 device: cuda
-verbose: True
 epoch: 40
 #-1 when we don want message out
 message_interval: 50
-non_block: True
-pin_memory: True
-num_workers: 7
+non_block: False
+pin_memory: False
+num_workers: 4
 
 #if continuos read model
-is_resume: True
+is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-24/23-31-40/checkpoint.pt
 
 model:

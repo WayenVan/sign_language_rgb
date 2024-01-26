@@ -17,12 +17,12 @@ pin_memory: True
 num_workers: 6
 
 #if continuos read model
-is_resume: True
+is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-23/17-18-50/checkpoint.pt
 
 model:
   _target_: ${csi}.models.model.SLRModel
-  loss_weight: [1., 0., 0.]
+  loss_weight: [1., 1., 25.]
   loss_temp: 8
   backbone: 
     _target_: ${csi}.models.backbone.ResnetLSTM

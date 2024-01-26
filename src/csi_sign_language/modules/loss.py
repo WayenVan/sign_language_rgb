@@ -18,25 +18,26 @@ class GlobalLoss:
         seq_out = output['seq_out']
         input_length = output['video_length']
 
+        
         conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
-        seq_loss = self.CTC(seq_out, target, input_length.int(), target_length.int()).mean()
-        conv_loss = self.CTC(conv_out, target, input_length.int(), target_length.int()).mean()
+        seq_loss = self.CTC(seq_out, target, input_length.cpu().int(), target_length.cpu().int())
+        conv_loss = self.CTC(conv_out, target, input_length.cpu().int(), target_length.cpu().int())
         distll_loss = self.distll(seq_out, conv_out)
 
-        seq_loss, conv_loss, distll_loss = self._filter_nan((seq_loss, conv_loss, distll_loss))
+        seq_loss, conv_loss, distll_loss = self._filter_nan(seq_loss, conv_loss, distll_loss)
         
-        return self.weights[0]*seq_loss + \
-            self.weights[1]*conv_loss + \
+        return self.weights[0]*seq_loss.mean() + \
+            self.weights[1]*conv_loss.mean() + \
             self.weights[2]*distll_loss
     
-    def _filter_nan(self, losses: Tuple):
+    def _filter_nan(self, *losses):
         ret = []
-        for idx, loss in enumerate(losses):
-            if np.isnan(loss.item()) or np.isinf(loss.item()):
-                print(f'warning, loss is nan or inf, index {idx}, value {loss.item()}')
-                ret.append(0)
-            else:
-                ret.append(loss)
+        for loss in losses:
+            if torch.all(torch.isinf(loss)).item():
+                loss: torch.Tensor
+                print('loss is inf')
+                loss = torch.nan_to_num(loss, posinf=0.)
+            ret.append(loss)
         return tuple(ret)
             
 
