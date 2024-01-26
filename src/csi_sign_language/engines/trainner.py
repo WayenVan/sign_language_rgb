@@ -51,6 +51,12 @@ class Trainner():
                     outputs = model(video, video_length)
                     loss = model.criterion(outputs)
             
+            #remove nan:
+            if torch.isnan(loss) or torch.isinf(loss):
+                self.logger.warn(f"loss is {loss.item()}")
+                self.logger.warn(f"data_id {data['id']}")
+                continue
+            
             if self.device == 'cuda':
                 self.scaler.scale(loss).backward()
                 self.scaler.step(opt)

@@ -1,7 +1,8 @@
 hydra:
-  run: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
+  run: 
+    dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
   
-description: resnet + LSTM
+description: VAC
 
 csi: csi_sign_language
 transform: torchvision.transforms
@@ -19,8 +20,8 @@ pin_memory: False
 num_workers: 4
 
 #if continuos read model
-is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-24/23-31-40/checkpoint.pt
+is_resume: True
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-01-26_04-05-24/train_VAC/checkpoint.pt
 
 model:
   _target_: vac.slr_network.SLRModel

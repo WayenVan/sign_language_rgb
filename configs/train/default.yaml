@@ -20,9 +20,9 @@ non_block: True
 pin_memory: True
 num_workers: 6
 
-#if continuos read model
+#if continuos read model as previous configured
 is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-23/17-18-50/checkpoint.pt
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/staged/00-39-07
 
 model:
   _target_: ${csi}.models.model.SLRModel

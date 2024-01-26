@@ -43,15 +43,15 @@ def main(cfg: DictConfig):
     model: Module = instantiate(cfg.model, vocab=vocab)
     #move model before optimizer initialize
     model.to(cfg.device, non_blocking=cfg.non_block)
-    opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
     #initialize record list
+    opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
     losses_train = []
     wer_train = []
     wer_values = []
     losses = []
     last_epoch = -1
-    
 
+    
     #load checkpoint
     if cfg.is_resume:
         logger.info('loading checkpoint')
@@ -59,14 +59,14 @@ def main(cfg: DictConfig):
         last_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['model_state'])
         opt.load_state_dict(checkpoint['optimizer_state'])
+        for pg in opt.param_groups:
+            if pg['initial_lr'] != opt.defaults['lr']:
+                pg['initial_lr'] = opt.defaults['lr']
         wer_values = checkpoint['wer']
         losses = checkpoint['loss']
+
     
-    
-    lr_scheduler: LambdaLR = instantiate(
-        cfg.lr_scheduler, 
-        opt,
-        last_epoch=last_epoch)
+    lr_scheduler: LambdaLR = instantiate(cfg.lr_scheduler, opt, last_epoch=last_epoch)
     
     logger.info('building trainner and inferencer')
     trainer: Trainner = instantiate(cfg.trainner, logger=logger)
