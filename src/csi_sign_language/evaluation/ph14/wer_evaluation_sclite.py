@@ -3,16 +3,16 @@ import numpy as np
 from typing import List
 
 
-
 def get_phoenix_wer(work_dir, hyp, gt, tmp_prefix, res_dir):
     """calculate wer of ph14 dataset in a given working directory
 
     :param work_dir: the working directory
     :param hyp: the file name of hypothesis.ctm, it shoulde be relative directory to work_dir
     :param gt: the absulot directory of the groundtruth .stm file
-    :param tmp_prefix: _description_
-    :param res_dir: _description_
-    :return: _description_
+    :param tmp_prefix: the prefix of all output files, should not contain '/'
+    :param res_dir: the resources to help evalute, it should contained a shell script, and a python script,
+    the provided resources should contained in evaluation/ph14
+    :return: erros, average subs, insertions and deletions.
     """
     shell_file = os.path.join(res_dir, 'phoenix_eval.sh')
     python_file = os.path.join(res_dir, 'mergectmstm.py')

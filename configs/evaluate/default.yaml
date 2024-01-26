@@ -1,3 +1,8 @@
+hydra:
+  run: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
+
+description: MyModel
+
 csi: csi_sign_language
 transform: torchvision.transforms
 T: torchvision.transforms

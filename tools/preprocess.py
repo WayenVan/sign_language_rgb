@@ -27,8 +27,9 @@ import shutil
 @click.option('--frame_size', nargs=2, default=(256, 256))
 @click.option('--subset', default='multisigner')
 @click.option('--multiprocess', default=True)
-@click.option('--chunk_size', default=4, help='the chunk size of data submitted to each process to handle')
-def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size):
+@click.option('--chunk_size', default=2, help='the chunk size of data submitted to each process to handle')
+@click.option('--num_p', default=10, help="number of process to create")
+def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size, num_p):
     
     vocab, vocab_SI5 = generate_vocab(data_root, output_root)
     info = OmegaConf.create()
@@ -59,7 +60,7 @@ def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size):
         info[mode]['max_length_gloss'] = max_lgt_g
         os.makedirs(os.path.join(subset_root, mode), exist_ok=True)
         if multiprocess:
-            keys = run_mp_cmd(partial(process_data, mode, v, frame_size, annotations, feature_dir, subset, subset_root), range(data_length), chunk_size=chunk_size)
+            keys = run_mp_cmd(partial(process_data, mode, v, frame_size, annotations, feature_dir, subset, subset_root), range(data_length), num_p=num_p,chunk_size=chunk_size)
         else:
             keys = process_data(list(range(data_length)), info, mode, v, frame_size, annotations, feature_dir, subset, subset_root)
         
@@ -85,9 +86,9 @@ def process_data(mode, v, frame_size, annotations, feature_dir, subset, subset_r
     env.close()
     return keys
 
-def run_mp_cmd(func, data_indexes, chunk_size):
+def run_mp_cmd(func, data_indexes, num_p, chunk_size):
     process_args = [data_indexes[i:i + chunk_size] for i in range(0, len(data_indexes), chunk_size)]  
-    with Pool() as p:
+    with Pool(num_p) as p:
         keys = []
         for result in tqdm(p.imap(func, process_args), total=len(process_args)):
             keys += result 

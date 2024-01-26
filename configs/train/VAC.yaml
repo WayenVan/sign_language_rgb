@@ -1,3 +1,6 @@
+hydra:
+  run: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
+  
 description: resnet + LSTM
 
 csi: csi_sign_language
