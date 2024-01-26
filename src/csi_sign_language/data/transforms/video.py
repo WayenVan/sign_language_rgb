@@ -109,7 +109,7 @@ class RandomCrop(object):
                     clip]
             w1 = 0
         else:
-            w1 = random.randint(0, im_w - crop_w + 1)
+            w1 = random.randint(0, im_w - crop_w)
 
         if crop_h > im_h:
             pad = crop_h - im_h
@@ -117,7 +117,7 @@ class RandomCrop(object):
                     clip]
             h1 = 0
         else:
-            h1 = random.randint(0, im_h - crop_h + 1)
+            h1 = random.randint(0, im_h - crop_h)
 
         data['video'] = np.stack([img[:, h1:h1 + crop_h, w1:w1 + crop_w] for img in clip])
         return data
