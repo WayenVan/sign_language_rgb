@@ -52,7 +52,7 @@ def main(cfg: DictConfig):
     last_epoch = -1
 
     #load checkpoint
-    if cfg.is_resume or cfg.load_weigths:
+    if cfg.is_resume or cfg.load_weights:
         logger.info('loading checkpoint')
         checkpoint = torch.load(cfg.checkpoint)
         model.load_state_dict(checkpoint['model_state'])

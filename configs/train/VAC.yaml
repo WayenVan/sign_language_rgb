@@ -22,7 +22,7 @@ num_workers: 4
 #if continuos read model
 load_weights: True
 is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-01-26_04-05-24/train_VAC/checkpoint.pt
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/staged/2024-01-26_16-50-13/train_VAC/checkpoint.pt
 
 model:
   _target_: vac.slr_network.SLRModel
