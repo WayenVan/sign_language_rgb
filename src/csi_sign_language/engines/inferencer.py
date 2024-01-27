@@ -20,7 +20,7 @@ class Inferencer():
         self.logger = logger.getChild(__class__.__name__)
 
     def do_inference(self, model: Module, loader) -> List[List[str]]:
-        
+        model.to(self.device)
         model.eval()
         ids = []
         ground_truth = []

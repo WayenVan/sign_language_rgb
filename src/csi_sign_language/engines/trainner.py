@@ -29,7 +29,7 @@ class Trainner():
             self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
         
     def do_train(self, model, train_loader, opt, non_blocking=False):
-        
+        model.to(self.device)
         model.train()
         self.logger.info('start training')
         losses = []
