@@ -1,5 +1,6 @@
 hydra:
-  run: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
+  run: 
+    dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
 
 description: VAC
 
@@ -8,7 +9,7 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-25/12-17-15
+checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/staged/2024-01-26_16-50-13/train_VAC
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
 
@@ -28,13 +29,14 @@ data:
   video_transform: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.ToTensor
-          keys: [video, gloss]
         - _target_: ${CT}.video.FrameScale
           min: -1.
           max: 1.
         - _target_: ${CT}.video.CentralCrop
           size: 224
+        - _target_: ${CT}.video.ToTensor
+          keys: [video, gloss]
+
   test_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}

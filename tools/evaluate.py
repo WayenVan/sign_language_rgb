@@ -38,14 +38,12 @@ def main(cfg: DictConfig):
             pre=pre,
             post=post
         ))
-    
     with open(os.path.join(work_dir, 'result.json'), 'w') as f:
         json.dump(ret, f, indent=4)
-    
+
     print(wer_calculation(ground_truth, post_process(hypothesis)))
-            
-    # glosses2ctm(ids, hypothesis, os.path.join(work_dir, 'hyp.ctm'))
-    # re = get_phoenix_wer(work_dir, 'hyp.ctm', test_loader.dataset.get_stm(), tmp_prefix='.', res_dir=cfg.evaluation_tool)
+    
+    #better detail provided by sclite.
     wer_value = eval(ids, work_dir, hypothesis, test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
     print(wer_value[0])
 

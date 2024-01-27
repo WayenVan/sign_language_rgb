@@ -51,19 +51,17 @@ def main(cfg: DictConfig):
     losses = []
     last_epoch = -1
 
-    
     #load checkpoint
-    if cfg.is_resume:
+    if cfg.is_resume or cfg.load_weigths:
         logger.info('loading checkpoint')
         checkpoint = torch.load(cfg.checkpoint)
-        last_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['model_state'])
-        opt.load_state_dict(checkpoint['optimizer_state'])
-        for pg in opt.param_groups:
-            if pg['initial_lr'] != opt.defaults['lr']:
-                pg['initial_lr'] = opt.defaults['lr']
         wer_values = checkpoint['wer']
         losses = checkpoint['loss']
+    
+    if cfg.is_resume:
+        last_epoch = checkpoint['epoch']
+        opt.load_state_dict(checkpoint['optimizer_state'])
 
     
     lr_scheduler: LambdaLR = instantiate(cfg.lr_scheduler, opt, last_epoch=last_epoch)
@@ -98,7 +96,7 @@ def main(cfg: DictConfig):
             best_wer_value = val_wer
             torch.save({
                 'epoch': real_epoch,
-                'model_state': model.state_dict(),
+                'model_state': model.cpu().state_dict(),
                 'optimizer_state': opt.state_dict(),
                 'wer': wer_values,
                 'wer_train': wer_train,

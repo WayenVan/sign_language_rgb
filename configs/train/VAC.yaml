@@ -20,6 +20,7 @@ pin_memory: False
 num_workers: 4
 
 #if continuos read model
+load_weights: True
 is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-01-26_04-05-24/train_VAC/checkpoint.pt
 
@@ -37,16 +38,16 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-4
+  lr: 1e-5
   weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.LambdaLR
   lr_lambda: 
     _target_: ${csi}.engines.lr_scheduler.WarmUpLr
-    initial_lambda: 0.001
+    initial_lambda: 1.
     warm_up_rounds: 0
-    decay_factor: 0.99
+    decay_factor: 0.95
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner

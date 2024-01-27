@@ -9,6 +9,9 @@ def post_process(output: List[List[str]]):
     return [apply_regex(item) for item in output]
     
 def apply_regex(output: List[str]):
+    """After investigation the shell file, we find that many of these scripts are useless, thus we comment them all
+    """
+    
     output_s = ' '.join(output)
 
     output_s = re.sub(r'loc-', r'', output_s)
@@ -27,33 +30,31 @@ def apply_regex(output: List[str]):
     output_s = re.sub(r'ZEIGEN ', r'ZEIGEN-BILDSCHIRM ', output_s)
     output_s = re.sub(r'ZEIGEN$', r'ZEIGEN-BILDSCHIRM', output_s)
 
-    output_s = re.sub(r'^([A-Z]) ([A-Z][+ ])', r'\1+\2', output_s)
-    output_s = re.sub(r'[ +]([A-Z]) ([A-Z]) ', r' \1+\2 ', output_s)
-    output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
-    output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
-    output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
-    output_s = re.sub(r'([ +]SCH) ([A-Z][ +])', r'\1+\2', output_s)
-    output_s = re.sub(r'([ +]NN) ([A-Z][ +])', r'\1+\2', output_s)
-    output_s = re.sub(r'([ +][A-Z]) (NN[ +])', r'\1+\2', output_s)
-    output_s = re.sub(r'([ +][A-Z]) ([A-Z]$)', r'\1+\2', output_s)
+    # output_s = re.sub(r'^([A-Z]) ([A-Z][+ ])', r'\1+\2', output_s)
+    # output_s = re.sub(r'[ +]([A-Z]) ([A-Z]) ', r' \1+\2 ', output_s)
+    # output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
+    # output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
+    # output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
+    # output_s = re.sub(r'([ +]SCH) ([A-Z][ +])', r'\1+\2', output_s)
+    # output_s = re.sub(r'([ +]NN) ([A-Z][ +])', r'\1+\2', output_s)
+    # output_s = re.sub(r'([ +][A-Z]) (NN[ +])', r'\1+\2', output_s)
+    # output_s = re.sub(r'([ +][A-Z]) ([A-Z]$)', r'\1+\2', output_s)
     output_s = re.sub(r'([A-Z][A-Z])RAUM', r'\1', output_s)
     output_s = re.sub(r'-PLUSPLUS', r'', output_s)
     
-    output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
-    output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
-    output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
-    output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
+    # output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
+    # output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
+    # output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
+    # output_s = re.sub(r'(?<![\w-])(\b[A-Z]+(?![\w-])) \1(?![\w-])', r'\1', output_s)
 
     output_s = re.sub(r'__EMOTION__', r'', output_s)
     output_s = re.sub(r'__PU__', r'', output_s)
     output_s = re.sub(r'__LEFTHAND__', r'', output_s)
     output_s = re.sub(r'__EPENTHESIS__', r'', output_s)
     
-    #remove multiple spaces, strip trunc the whitespaces in the end
-    # return re.split(r'\s+', output_s.strip())
     return output_s.split()
 
 if __name__ == "__main__":
-    print(apply_regex(['S', 'H', 'C', '   ']))
+    print(apply_regex(['S', 'S+H', 'C', 'WRW']))
     print('a      b  c '.split())
 
