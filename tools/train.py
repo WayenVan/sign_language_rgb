@@ -1,9 +1,10 @@
 from omegaconf import OmegaConf, DictConfig
+import time
 import sys
 import logging
 sys.path.append('src')
 from hydra.utils import instantiate
-
+import uuid
 import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.nn import Module
@@ -45,23 +46,21 @@ def main(cfg: DictConfig):
     model.to(cfg.device, non_blocking=cfg.non_block)
     #initialize record list
     opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
-    losses_train = []
-    wer_train = []
-    wer_values = []
-    losses = []
+    metas = []
     last_epoch = -1
+    train_id = uuid.uuid1()
 
     #load checkpoint
     if cfg.is_resume or cfg.load_weights:
         logger.info('loading checkpoint')
         checkpoint = torch.load(cfg.checkpoint)
         model.load_state_dict(checkpoint['model_state'])
-        wer_values = checkpoint['wer']
-        losses = checkpoint['loss']
+        metas = checkpoint['meta']
     
     if cfg.is_resume:
-        last_epoch = checkpoint['epoch']
+        last_epoch = metas[-1]['epoch']
         opt.load_state_dict(checkpoint['optimizer_state'])
+        train_id = metas[-1]['train_id']
 
     
     lr_scheduler: LambdaLR = instantiate(cfg.lr_scheduler, opt, last_epoch=last_epoch)
@@ -72,14 +71,18 @@ def main(cfg: DictConfig):
     logger.info('training loop start')
     best_wer_value = 1000
     for i in range(cfg.epoch):
+        meta = {}
         real_epoch = last_epoch + i + 1
 
         #train
         lr = lr_scheduler.get_last_lr()
         logger.info(f'epoch {real_epoch}, lr={lr}')
+
+        start_time = time.time()
         mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
+        train_time = time.time() - start_time
         train_wer = wer_calculation(gt_train, hyp_train)
-        logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}')
+        logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}, total time: {train_time}')
 
         #validation
         ids, hypothesis, ground_truth = inferencer.do_inference(model, val_loader)
@@ -87,21 +90,24 @@ def main(cfg: DictConfig):
         val_wer = wer_calculation(ground_truth, hypothesis)
         logger.info(f'validation finished, wer: {val_wer}')
         
-        wer_values.append(val_wer)
-        losses.append(mean_loss.item())
-        wer_train.append(train_wer)
-        losses_train.append(mean_loss.item())
-
+        #save essential informations 
+        metas.append(dict(
+            train_wer=train_wer,
+            val_wer=val_wer,
+            lr = lr,
+            train_loss=mean_loss.item(),
+            epoch=real_epoch,
+            train_time=train_time,
+            train_id=train_id
+        ))
+        
+        
         if val_wer < best_wer_value:
             best_wer_value = val_wer
             torch.save({
-                'epoch': real_epoch,
                 'model_state': model.cpu().state_dict(),
                 'optimizer_state': opt.state_dict(),
-                'wer': wer_values,
-                'wer_train': wer_train,
-                'loss': losses,
-                'loss_train': losses_train,
+                'meta': metas
                 }, os.path.join(save_dir, 'checkpoint.pt'))
             logger.info(f'best checkpoint saved')
         lr_scheduler.step()
