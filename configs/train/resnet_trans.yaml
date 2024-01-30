@@ -12,7 +12,7 @@ CT: csi_sign_language.data.transforms
 seed: 3407
 phoenix14_root: preprocessed/ph14_lmdb
 device: cuda
-epoch: 40
+epoch: 80
 #-1 when we don want message out
 message_interval: 50
 non_block: False
@@ -20,7 +20,7 @@ pin_memory: False
 num_workers: 4
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/staged/2024-01-28_15-06-00/train_transformer/checkpoint.pt
 
@@ -33,20 +33,17 @@ model:
     n_class: 1296
     layers: 2
   loss_temp: 8
-  loss_weight: [1.0, 0., 0.]
+  loss_weight: [1.0, 1., 25.]
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 5e-7
+  lr: 1e-4
   weight_decay: 0.0001
 
 lr_scheduler:
-  _target_: torch.optim.lr_scheduler.LambdaLR
-  lr_lambda: 
-    _target_: ${csi}.engines.lr_scheduler.WarmUpLr
-    initial_lambda: 1.
-    warm_up_rounds: 0
-    decay_factor: 0.99
+  _target_: torch.optim.lr_scheduler.StepLR
+  step_size: 20
+  gamma: 0.2
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner
