@@ -1,5 +1,6 @@
 hydra:
-  run: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
+  run: 
+    dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
 
 description: MyModel
 
@@ -8,10 +9,11 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/2024-01-23/17-18-50
+checkpoint_dir: outputs/staged/2024-01-29_16-10-02/train_transformer
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
+evaluation_tool: /home/jingyan/Documents/sign_language_rgb/evaluation/ph14
 
 device: cuda
 

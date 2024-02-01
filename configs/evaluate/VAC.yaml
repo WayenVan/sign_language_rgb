@@ -9,7 +9,7 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/staged/2024-01-26_16-50-13/train_VAC
+checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/staged/2024-01-27_13-08-49/train_VAC
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
 

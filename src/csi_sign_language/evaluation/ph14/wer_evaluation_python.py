@@ -122,7 +122,7 @@ def calculate_stats(gt, lstm_pred):
 
 def sent_evaluation(gt: List[str], prediction: List[str], penalty: dict):
     gt, predict = get_wer_delsubins(gt, prediction,
-                                      merge_same=True,
+                                      merge_same=False,
                                       penalty=penalty)
     return calculate_stats(gt, predict)
 

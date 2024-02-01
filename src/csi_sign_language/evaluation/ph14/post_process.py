@@ -5,9 +5,14 @@ import os
 import numpy as np
 
 
-def post_process(output: List[List[str]]):
-    return [apply_regex(item) for item in output]
+def post_process(output: List[List[str]], regex=True, merge=True):
+    if apply_regex:
+        output = [apply_regex(item) for item in output] 
     
+    if merge_same:
+        output = [merge_same(item) for item in output]
+    return output
+
 def apply_regex(output: List[str]):
     """After investigation the shell file, we find that many of these scripts are useless, thus we comment them all
     """
@@ -30,15 +35,15 @@ def apply_regex(output: List[str]):
     output_s = re.sub(r'ZEIGEN ', r'ZEIGEN-BILDSCHIRM ', output_s)
     output_s = re.sub(r'ZEIGEN$', r'ZEIGEN-BILDSCHIRM', output_s)
 
-    # output_s = re.sub(r'^([A-Z]) ([A-Z][+ ])', r'\1+\2', output_s)
-    # output_s = re.sub(r'[ +]([A-Z]) ([A-Z]) ', r' \1+\2 ', output_s)
-    # output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
-    # output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
-    # output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
-    # output_s = re.sub(r'([ +]SCH) ([A-Z][ +])', r'\1+\2', output_s)
-    # output_s = re.sub(r'([ +]NN) ([A-Z][ +])', r'\1+\2', output_s)
-    # output_s = re.sub(r'([ +][A-Z]) (NN[ +])', r'\1+\2', output_s)
-    # output_s = re.sub(r'([ +][A-Z]) ([A-Z]$)', r'\1+\2', output_s)
+    output_s = re.sub(r'^([A-Z]) ([A-Z][+ ])', r'\1+\2', output_s)
+    output_s = re.sub(r'[ +]([A-Z]) ([A-Z]) ', r' \1+\2 ', output_s)
+    output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
+    output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
+    output_s = re.sub(r'([ +][A-Z]) ([A-Z][ +])', r'\1+\2', output_s)
+    output_s = re.sub(r'([ +]SCH) ([A-Z][ +])', r'\1+\2', output_s)
+    output_s = re.sub(r'([ +]NN) ([A-Z][ +])', r'\1+\2', output_s)
+    output_s = re.sub(r'([ +][A-Z]) (NN[ +])', r'\1+\2', output_s)
+    output_s = re.sub(r'([ +][A-Z]) ([A-Z]$)', r'\1+\2', output_s)
     output_s = re.sub(r'([A-Z][A-Z])RAUM', r'\1', output_s)
     output_s = re.sub(r'-PLUSPLUS', r'', output_s)
     
@@ -53,6 +58,10 @@ def apply_regex(output: List[str]):
     output_s = re.sub(r'__EPENTHESIS__', r'', output_s)
     
     return output_s.split()
+
+def merge_same(output: List[str]):
+    return [x[0] for x in groupby(output)]
+
 
 if __name__ == "__main__":
     print(apply_regex(['S', 'S+H', 'C', 'WRW']))

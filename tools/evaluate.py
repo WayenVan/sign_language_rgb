@@ -3,7 +3,7 @@ import sys
 import logging
 sys.path.append('src')
 from hydra.utils import instantiate
-
+from matplotlib import pyplot as plt
 import torch
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
@@ -32,8 +32,9 @@ def main(cfg: DictConfig):
     ids, hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
     
     ret = []
-    for gt, pre, post in list(zip(ground_truth, hypothesis, post_process(hypothesis))):
+    for id, gt, pre, post in list(zip(ids, ground_truth, hypothesis, post_process(hypothesis))):
         ret.append(dict(
+            id=id,
             gt=gt,
             pre=pre,
             post=post
@@ -44,10 +45,28 @@ def main(cfg: DictConfig):
     print(wer_calculation(ground_truth, post_process(hypothesis)))
     
     #better detail provided by sclite.
-    wer_value = eval(ids, work_dir, hypothesis, test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
+    wer_value = eval(ids, work_dir, post_process(hypothesis, regex=False), test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
     print(wer_value[0])
+    
+    meta = checkpoint['meta']
+    epoch = [m['epoch'] for m in meta]
+    loss = [m['train_loss'] for m in meta]
+    wer = [m['val_wer'] for m in meta]
+    fig, axe = plt.subplots()
+    lins1 = axe.plot(epoch, loss, label='loss')
+    axe2 = axe.twinx()
+    lins2 = axe2.plot(epoch, wer, color='r', label='WER')
+    
+    lns = lins1 + lins2
+    labs = [l.get_label() for l in lns]
+    axe.legend(lns, labs, loc=0)
 
-
+    axe.set_xlabel('epoch')
+    axe.set_ylabel('loss')
+    axe2.set_ylabel('WER')
+    fig.savefig(os.path.join(work_dir, 'fig.png'))
+    
+    
 
 
 if __name__ == '__main__':
