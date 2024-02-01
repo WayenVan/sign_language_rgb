@@ -9,6 +9,22 @@ import numbers
 import random
 import copy
 
+class Resize:
+    def __init__(self, h, w) -> None:
+        self.h = h
+        self.w = w
+        
+    def __call__(self, data) -> Any:
+        video: np.ndarray = data['video']
+        modified = []
+        for frame in video:
+            frame = rearrange(frame, 'c h w -> h w c')
+            frame = cv2.resize(frame, (self.h, self.w), interpolation=cv2.INTER_LINEAR)
+            frame = rearrange(frame, 'h w c -> c h w')
+            modified.append(frame)
+        data['video'] = np.stack(modified)
+        return data
+    
 class Standization:
 
     def __init__(self, mean, std, epsilon=1e-5) -> None:

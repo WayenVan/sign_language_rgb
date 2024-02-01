@@ -27,7 +27,6 @@ class Inferencer():
         hypothesis = []
         for idx, data in enumerate(tqdm(loader)):
             video = data['video'].to(self.device)
-            video = rearrange(video, 'n t c h w -> t n c h w') #batch first
             video_length: torch.Tensor = data['video_length'].to(self.device)
             with torch.no_grad():
                 hyp = model.inference(video, video_length)

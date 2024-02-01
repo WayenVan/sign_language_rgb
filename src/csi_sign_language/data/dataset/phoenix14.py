@@ -209,6 +209,9 @@ class CollateFn:
         video, v_length = self._padding_temporal(video_batch, self.length_video)
         g_length = torch.tensor([len(item) for item in gloss_batch], dtype=torch.int32)
         gloss = torch.concat(gloss_batch)
+        
+        video = rearrange(video, 'b t c h w -> t b c h w')
+        
         return dict(
             id=ids,
             video=video,
