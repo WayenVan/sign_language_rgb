@@ -10,7 +10,61 @@ from ..modules.bilstm import BiLSTMLayer
 from torch.cuda.amp.autocast_mode import autocast
 from ..utils.decode import CTCDecoder
 from ..modules.loss import GlobalLoss
+from ..modules.lithrnet.build import build_litehrnet
+from ..modules.lithrnet.litehrnet import IterativeHeadDownSample
 
+class HrnetLSTM(nn.Module):
+    
+    def __init__(
+        self,
+        n_class,
+        n_layers,
+        hr_checkpoint,
+        d_model = 512
+        ) -> None:
+        super().__init__()
+
+        self.lrnet = build_litehrnet(hr_checkpoint)
+        self.header = IterativeHeadDownSample(self.lrnet.stages_spec['num_channels'][-1], self.lrnet.conv_cfg, self.lrnet.norm_cfg)
+        outchannel = self.lrnet.stages_spec['num_channels'][-1][-1]
+        self.forward_conv = nn.Sequential(
+            nn.Conv2d(outchannel, d_model, 3, padding=(1, 1)),
+            nn.BatchNorm2d(d_model),
+            nn.ReLU(inplace=True),
+            nn.AdaptiveAvgPool2d((1,1)),
+            nn.Flatten(-3))
+        
+        self.tconv = TemporalConv(d_model, 2*d_model)
+        self.rnn = BiLSTMLayer(2*d_model, hidden_size=2*d_model, num_layers=n_layers, bidirectional=True)
+        self.fc_conv = nn.Linear(2*d_model, n_class)
+        self.fc = nn.Linear(2*d_model, n_class)
+    
+    
+    def forward(self, x, video_length):
+        """
+        :param x: [t, n, c, h, w]
+        :param video_length: [n]
+        """
+        batch_size = x.size(dim=1)
+        x = rearrange(x, 't n c h w -> (t n) c h w')
+        x = self.lrnet(x)
+        x = self.header(x)[-1]
+        x = self.forward_conv(x)
+        x = rearrange(x, '(t n) c -> n c t', n=batch_size)
+
+        x, video_length = self.tconv(x, video_length)
+        x = rearrange(x, 'n c t -> t n c')
+        conv_out = self.fc_conv(x)
+        
+        x = self.rnn(x, video_length)['predictions']
+        x = self.fc(x)
+
+        return dict(
+            seq_out=x,
+            conv_out=conv_out,
+            video_length=video_length 
+        )
+        
 class ResnetTransformer(nn.Module):
     
     def __init__(

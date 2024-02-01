@@ -38,7 +38,6 @@ class Trainner():
         for idx, data in enumerate(tqdm(train_loader)):
             opt.zero_grad()
             video = data['video'].to(self.device, non_blocking=non_blocking)
-            video = rearrange(video, 'n t c h w -> t n c h w') #batch first
             gloss = data['gloss'].to(self.device, non_blocking=non_blocking)
             video_length: torch.Tensor = data['video_length'].to(self.device)
             gloss_length: torch.Tensor = data['gloss_length'].to(self.device)
