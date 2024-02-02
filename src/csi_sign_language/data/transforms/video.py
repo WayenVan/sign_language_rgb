@@ -19,7 +19,7 @@ class Resize:
         modified = []
         for frame in video:
             frame = rearrange(frame, 'c h w -> h w c')
-            frame = cv2.resize(frame, (self.h, self.w), interpolation=cv2.INTER_LINEAR)
+            frame = cv2.resize(frame, (self.w, self.h), interpolation=cv2.INTER_LINEAR)
             frame = rearrange(frame, 'h w c -> c h w')
             modified.append(frame)
         data['video'] = np.stack(modified)

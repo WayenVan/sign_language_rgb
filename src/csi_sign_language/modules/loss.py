@@ -24,7 +24,7 @@ class GlobalLoss:
         conv_loss = self.CTC(conv_out, target, input_length.cpu().int(), target_length.cpu().int())
         distll_loss = self.distll(seq_out, conv_out)
 
-        seq_loss, conv_loss, distll_loss = self._filter_nan(seq_loss, conv_loss, distll_loss)
+        # seq_loss, conv_loss, distll_loss = self._filter_nan(seq_loss, conv_loss, distll_loss)
         
         return self.weights[0]*seq_loss.mean() + \
             self.weights[1]*conv_loss.mean() + \

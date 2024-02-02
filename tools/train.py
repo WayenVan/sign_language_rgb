@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 from omegaconf import OmegaConf, DictConfig
 import time
 import sys
@@ -45,7 +47,7 @@ def main(cfg: DictConfig):
     #move model before optimizer initialize
     model.to(cfg.device, non_blocking=cfg.non_block)
     #initialize record list
-    opt: Optimizer = instantiate(cfg.optimizer, model.parameters())
+    opt: Optimizer = instantiate(cfg.optimizer, filter(lambda p: p.requires_grad, model.parameters()))
     metas = []
     last_epoch = -1
     train_id = uuid.uuid1()

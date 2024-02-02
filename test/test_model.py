@@ -14,7 +14,7 @@ def test_hrnet_rnn():
     video = data['video'].to(cfg.device)
     lgt = data['video_length'].to(cfg.device)
 
-    model(video, lgt)
+    output = model(video, lgt)
 
     return
 

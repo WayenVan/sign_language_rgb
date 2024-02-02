@@ -16,11 +16,11 @@ seed: 3407
 device: cuda
 epoch: 80
 #-1 when we don want message out
-message_interval: 50
+message_interval: 100
 non_block: False
 pin_memory: False
 num_workers: 4
-batch_size: 1
+batch_size: 2
 
 #if continuos read model
 load_weights: False
@@ -39,7 +39,7 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-4
+  lr: 5e-5
   weight_decay: 0.0001
 
 lr_scheduler:
