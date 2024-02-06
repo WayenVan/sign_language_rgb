@@ -3,15 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import List
 from einops import rearrange
-from ..modules.resnet import *
-from ..modules.tconv import *
-from ..modules.bilstm import BiLSTMLayer
+from ...modules.resnet.resnet import *
+from ...modules.tconv import *
+from ...modules.bilstm import BiLSTMLayer
 from torch.cuda.amp.autocast_mode import autocast
-from ..utils.decode import CTCDecoder
-from ..modules.loss import GlobalLoss
-from ..modules.lithrnet.build import build_litehrnet
-from ..modules.lithrnet.litehrnet import IterativeHeadDownSample
-from ..modules.sthrnet import STHrnet
+from ...utils.decode import CTCDecoder
+from ...modules.loss import GlobalLoss
+from ...modules.lithrnet.build import build_litehrnet
+from ...modules.lithrnet.litehrnet import IterativeHeadDownSample
+from ...modules.sthrnet import STHrnet
+
 
 class HrnetLSTM(nn.Module):
     
@@ -21,7 +22,7 @@ class HrnetLSTM(nn.Module):
         n_layers,
         hr_checkpoint,
         d_model = 512,
-        if_freeze = False,
+        if_freeze = True,
         norm_eval = False
         ) -> None:
         super().__init__()
@@ -29,22 +30,16 @@ class HrnetLSTM(nn.Module):
         self.norm_eval = norm_eval
         self.if_freeze = if_freeze
 
-        self.sthrnet = STHrnet(hr_checkpoint)
+        self.sthrnet = STHrnet(hr_checkpoint, if_freeze)
         d_model = self.sthrnet.outchannel
         
-        self.tconv = TemporalConv(d_model, 2*d_model, conv_type=3)
+        self.tconv = TemporalConv(d_model, 2*d_model)
         self.rnn = BiLSTMLayer(2*d_model, hidden_size=2*d_model, num_layers=n_layers, bidirectional=True)
         self.fc_conv = nn.Linear(2*d_model, n_class)
         self.fc = nn.Linear(2*d_model, n_class)
     
     def train(self, mode: bool = True):
         super().train(mode)
-        
-        if self.if_freeze:
-            self.sthrnet.freeze_lrnet()
-        else:
-            self.sthrnet.unfreeze_lrnet()
-        
         if mode and self.norm_eval:
             for m in self.modules():
                 if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):

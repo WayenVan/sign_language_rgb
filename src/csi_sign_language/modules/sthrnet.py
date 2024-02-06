@@ -8,8 +8,11 @@ class STHrnet(nn.Module):
     def __init__(
         self,
         hr_checkpoint,
+        freeze_hrnet=True,
         ) -> None:
         super().__init__()
+        
+        self.freeze = freeze_hrnet
         
         #should be a lr net without header
         self.lrnet = build_litehrnet(hr_checkpoint)
@@ -51,8 +54,8 @@ class STHrnet(nn.Module):
         x = self.lrnet.stem(x)
 
         x = rearrange(x, '(t n) c h w -> n c t h w', n=N)
-        x = self.temporal_pool(x)
-        video_length = video_length // 2
+        # x = self.temporal_pool(x)
+        # video_length = video_length // 2
         x = rearrange(x, 'n c t h w -> (t n) c h w')
 
         y_list = [x]
@@ -80,3 +83,10 @@ class STHrnet(nn.Module):
         x = rearrange(x, '(t n) c -> t n c', n=N)
         #x [t n c]
         return x, video_length
+    
+    def train(self, mode: bool = True): 
+        super().train(mode)
+        if self.freeze:
+            self.freeze_lrnet()
+        else:
+            self.unfreeze_lrnet()

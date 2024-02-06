@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import List
 from einops import rearrange
-from ..modules.resnet import *
+from ..modules.resnet.resnet import *
 from ..modules.tconv import *
 from torch.cuda.amp.autocast_mode import autocast
 from ..utils.decode import CTCDecoder

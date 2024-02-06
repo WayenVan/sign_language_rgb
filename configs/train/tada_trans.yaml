@@ -2,7 +2,7 @@ hydra:
   run: 
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
   
-description: transformer
+description: TadaWithTransformer
 
 csi: csi_sign_language
 transform: torchvision.transforms
@@ -19,7 +19,7 @@ epoch: 80
 message_interval: 100
 non_block: False
 pin_memory: False
-num_workers: 4
+num_workers: 8
 batch_size: 2
 
 #if continuos read model
@@ -30,16 +30,16 @@ checkpoint: outputs/staged/2024-01-28_15-06-00/train_transformer/checkpoint.pt
 model:
   _target_: ${csi}.models.model.SLRModel
   backbone: 
-    _target_: ${csi}.models.backbone.HrnetLSTM
+    _target_: ${csi}.models.backbones.tadabased.TadaConvTransformer
+    n_head: 8
     n_class: 1296
     n_layers: 2
-    hr_checkpoint: ${hr_checkpoint}
   loss_temp: 8
   loss_weight: [1.0, 0., 0.]
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 5e-5
+  lr: 1e-4
   weight_decay: 0.0001
 
 lr_scheduler:
@@ -63,18 +63,15 @@ data:
   video_transform: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.Standization
-          mean: [0.485, 0.456, 0.406]
-          std: [0.229, 0.224, 0.225]
         - _target_: ${CT}.video.RandomCrop
           size: 224
         - _target_: ${CT}.video.RandomHorizontalFlip
           prob: 0.5
         - _target_: ${CT}.video.TemporalRescale
           temp_scaling: 0.2
-        - _target_: ${CT}.video.Resize
-          h: 256
-          w: 192
+        - _target_: ${CT}.video.FrameScale
+          min: -1.
+          max: 1.
         - _target_: ${CT}.video.ToTensor
           keys: [video, gloss]
     
