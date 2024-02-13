@@ -6,17 +6,15 @@ import numpy as np
 
 
 def post_process(output: List[List[str]], regex=True, merge=True):
-    if apply_regex:
+    if regex:
         output = [apply_regex(item) for item in output] 
-    
-    if merge_same:
+    if merge:
         output = [merge_same(item) for item in output]
     return output
 
 def apply_regex(output: List[str]):
     """After investigation the shell file, we find that many of these scripts are useless, thus we comment them all
     """
-    
     output_s = ' '.join(output)
 
     output_s = re.sub(r'loc-', r'', output_s)

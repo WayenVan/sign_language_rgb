@@ -44,8 +44,8 @@ def main(cfg: DictConfig):
 
     print(wer_calculation(ground_truth, post_process(hypothesis)))
     
-    #better detail provided by sclite.
-    wer_value = eval(ids, work_dir, post_process(hypothesis, regex=False), test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
+    #better detail provided by sclite. need to merge for better performance
+    wer_value = eval(ids, work_dir, post_process(hypothesis, regex=False, merge=True), test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
     print(wer_value[0])
     
     meta = checkpoint['meta']
