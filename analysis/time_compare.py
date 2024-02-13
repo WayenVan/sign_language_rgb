@@ -66,8 +66,31 @@ def resnet():
 
     for key in storage.keys():
         print(f"{key} value: {storage[key]['delta']: E}")
+
+def x3d():
+    cfg = OmegaConf.load("configs/train/x3d_lstm.yaml")
+    dataloader = instantiate(cfg.data.train_loader)
+    model: torch.nn.Module = instantiate(cfg.model, vocab=dataloader.dataset.get_vocab()).cuda()
+
+    storage = {}
+        
+
+    for name, m in model.named_modules():
+        if re.match(r'backbone.[a-z\_]+$', name) or re.match(r'backbone.res_stages.[0-9]$', name):
+            m.register_forward_pre_hook(partial(pre_forward, name=name, storage=storage))
+            m.register_forward_hook(partial(forward, name=name, storage=storage))
+
+
+    data = next(iter(dataloader))
+    with torch.autocast('cuda'):
+        video = data['video'].cuda()
+        lgt = data['video_length'].cuda()
+        model(video, lgt)
+
+    for key in storage.keys():
+        print(f"{key} value: {storage[key]['delta']: E}")
     
 if __name__ == "__main__":
-    hrnet_rnn()
+    x3d()
     print('-----------------')
     resnet()

@@ -19,13 +19,13 @@ epoch: 80
 message_interval: 100
 non_block: False
 pin_memory: False
-num_workers: 8
+num_workers: 5
 batch_size: 2
 
 #if continuos read model
-load_weights: False
+load_weights: True
 is_resume: False
-checkpoint: outputs/staged/2024-01-28_15-06-00/train_transformer/checkpoint.pt
+checkpoint: outputs/train/2024-02-06_23-28-01/train_TadaWithTransformer/checkpoint.pt
 
 model:
   _target_: ${csi}.models.model.SLRModel
@@ -39,13 +39,13 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-4
+  lr: 1e-6
   weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
   step_size: 20
-  gamma: 0.2
+  gamma: 0.1
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner

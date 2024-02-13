@@ -58,6 +58,7 @@ def main(cfg: DictConfig):
         checkpoint = torch.load(cfg.checkpoint)
         model.load_state_dict(checkpoint['model_state'])
         metas = checkpoint['meta']
+        _log_history(checkpoint, logger)
     
     if cfg.is_resume:
         last_epoch = metas[-1]['epoch']
@@ -73,7 +74,6 @@ def main(cfg: DictConfig):
     logger.info('training loop start')
     best_wer_value = 1000
     for i in range(cfg.epoch):
-        meta = {}
         real_epoch = last_epoch + i + 1
 
         #train
@@ -115,7 +115,13 @@ def main(cfg: DictConfig):
         lr_scheduler.step()
         logger.info(f'finish one epoch')
 
-
-        
+def _log_history(checkpoint, logger: logging.Logger):
+    logger.info('-----------showing training history--------------')
+    for info in checkpoint['meta']:
+        logger.info(f"train id: {info['train_id']}")
+        logger.info(f"epoch: {info['epoch']}")
+        logger.info("lr: {}, train loss: {}, train wer: {}, val wer: {}".format(info['lr'], info['train_loss'], info['train_wer'], info['val_wer']))
+    logger.info('-----------finish history------------------------')
+    
 if __name__ == '__main__':
     main()

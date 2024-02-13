@@ -9,7 +9,7 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-checkpoint_dir: outputs/staged/2024-01-29_16-10-02/train_transformer
+checkpoint_dir: outputs/train/2024-02-07_13-49-54/train_TadaWithTransformer
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
