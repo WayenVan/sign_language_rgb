@@ -31,7 +31,7 @@ class Trainner():
         if self.device == 'cuda':
             self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
         
-    def do_train(self, model, train_loader, opt, non_blocking=False):
+    def do_train(self, model, train_loader, opt, non_blocking=False, data_excluded=None):
         model.to(self.device)
         model.train()
         self.logger.info('start training')
@@ -40,6 +40,14 @@ class Trainner():
         gt = []
         for idx, data in enumerate(tqdm(train_loader)):
             opt.zero_grad()
+
+            #remove bad data
+            if data_excluded != None:
+                if any(id in data_excluded for id in data['id']):
+                    self.logger.warn(f"data excluded: {data['id']}")
+                    del data
+                    continue
+
             video = data['video'].to(self.device, non_blocking=non_blocking)
             gloss = data['gloss'].to(self.device, non_blocking=non_blocking)
             video_length: torch.Tensor = data['video_length'].to(self.device)

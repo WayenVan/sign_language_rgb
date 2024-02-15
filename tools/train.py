@@ -82,7 +82,7 @@ def main(cfg: DictConfig):
         logger.info(f'epoch {real_epoch}, lr={lr}')
 
         start_time = time.time()
-        mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block)
+        mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block, data_excluded=cfg.data.excluded)
         train_time = time.time() - start_time
         train_wer = wer_calculation(gt_train, hyp_train)
         logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}, total time: {train_time}')
