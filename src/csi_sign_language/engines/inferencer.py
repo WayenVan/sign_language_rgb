@@ -1,23 +1,21 @@
 import torch
-from torch.utils.data import DataLoader, Dataset
 from torch.nn import Module
-import torchtext.vocab as v
 from tqdm import tqdm
-from einops import rearrange
 import logging
 from typing import *
 from ..utils.data import *
-from csi_sign_language.utils.decode import CTCDecoder
 class Inferencer():
     
     def __init__(
             self,
             device,
-            logger: logging.Logger
+            logger: logging.Logger,
+            use_amp=True
         ) -> None:
         
         self.device=device
         self.logger = logger.getChild(__class__.__name__)
+        self.use_amp = use_amp
 
     def do_inference(self, model: Module, loader) -> List[List[str]]:
         model.to(self.device)
@@ -28,8 +26,13 @@ class Inferencer():
         for idx, data in enumerate(tqdm(loader)):
             video = data['video'].to(self.device)
             video_length: torch.Tensor = data['video_length'].to(self.device)
-            with torch.no_grad():
-                hyp = model.inference(video, video_length)
+            with torch.inference_mode():
+                if self.use_amp and self.device == 'cuda':
+                    with torch.autocast('cuda'):
+                        hyp = model.inference(video, video_length)
+                else:
+                    hyp = model.inference(video, video_length)
+
             hypothesis += hyp
             ground_truth += data['gloss_label']
             ids += data['id']

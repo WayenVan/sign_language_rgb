@@ -7,16 +7,16 @@ from matplotlib import pyplot as plt
 import torch
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
-from csi_sign_language.evaluation.ph14.wer_evaluation_sclite import glosses2ctm, get_phoenix_wer, eval
+from csi_sign_language.evaluation.ph14.wer_evaluation_sclite import eval
 from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
 import hydra
 import os
 import json
+
 logger = logging.getLogger('main')
 
 @hydra.main(version_base=None, config_path='../configs/evaluate', config_name='default.yaml')
 def main(cfg: DictConfig):
-    result = OmegaConf.create()
     work_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     train_cfg = OmegaConf.load(cfg.train_config)
 
@@ -67,7 +67,5 @@ def main(cfg: DictConfig):
     fig.savefig(os.path.join(work_dir, 'fig.png'))
     
     
-
-
 if __name__ == '__main__':
     main()

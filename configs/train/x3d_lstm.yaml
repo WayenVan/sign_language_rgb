@@ -2,7 +2,7 @@ hydra:
   run: 
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
   
-description: TadaWithTransformer
+description: x3d_with_LSTM
 
 csi: csi_sign_language
 transform: torchvision.transforms
@@ -10,7 +10,6 @@ T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
 phoenix14_root: preprocessed/ph14_lmdb
-hr_checkpoint: resources/litehrnet_18_coco_256x192_.pth
 
 seed: 3407
 device: cuda
@@ -20,12 +19,12 @@ message_interval: 100
 non_block: False
 pin_memory: False
 num_workers: 5
-batch_size: 2
+batch_size: 3
 
 #if continuos read model
-load_weights: False
+load_weights: True
 is_resume: False
-checkpoint: outputs/train/2024-02-06_23-28-01/train_TadaWithTransformer/checkpoint.pt
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-02-14_16-49-11/train_x3d_with_LSTM/checkpoint.pt
 
 model:
   _target_: ${csi}.models.model.SLRModel
@@ -39,13 +38,13 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-4
+  lr: 1e-6
   weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
   step_size: 20
-  gamma: 0.1
+  gamma: 0.5
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner
@@ -98,7 +97,7 @@ data:
     batch_size: ${batch_size}
     num_workers: ${num_workers}
     pin_memory: ${pin_memory}
-    shuffle: True
+    shuffle: true
     dataset: ${data.train_set}
     collate_fn: ${data.collate_fn}
 
@@ -109,5 +108,3 @@ data:
     pin_memory: ${pin_memory}
     dataset: ${data.val_set}
     collate_fn: ${data.collate_fn}
-
-

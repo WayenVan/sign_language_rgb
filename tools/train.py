@@ -11,16 +11,14 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
-from torch.optim.lr_scheduler import LambdaLR
+from torch.optim.lr_scheduler import LRScheduler
 from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
-from csi_sign_language.utils.data import flatten_concatenation
 from csi_sign_language.evaluation.ph14.post_process import post_process
 from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
 import hydra
 import os
 import shutil
-from itertools import chain
 logger = logging.getLogger('main')
 import numpy as np
 
@@ -47,7 +45,6 @@ def main(cfg: DictConfig):
     #move model before optimizer initialize
     model.to(cfg.device, non_blocking=cfg.non_block)
     #initialize record list
-    opt: Optimizer = instantiate(cfg.optimizer, filter(lambda p: p.requires_grad, model.parameters()))
     metas = []
     last_epoch = -1
     train_id = uuid.uuid1()
@@ -59,6 +56,10 @@ def main(cfg: DictConfig):
         model.load_state_dict(checkpoint['model_state'])
         metas = checkpoint['meta']
         _log_history(checkpoint, logger)
+
+    #!important, this train will set the parameter states in the model.
+    model.train()
+    opt: Optimizer = instantiate(cfg.optimizer, filter(lambda p: p.requires_grad, model.parameters()))
     
     if cfg.is_resume:
         last_epoch = metas[-1]['epoch']
@@ -66,7 +67,7 @@ def main(cfg: DictConfig):
         train_id = metas[-1]['train_id']
 
     
-    lr_scheduler: LambdaLR = instantiate(cfg.lr_scheduler, opt, last_epoch=last_epoch)
+    lr_scheduler: LRScheduler = instantiate(cfg.lr_scheduler, opt, last_epoch=last_epoch)
     
     logger.info('building trainner and inferencer')
     trainer: Trainner = instantiate(cfg.trainner, logger=logger)
@@ -112,6 +113,7 @@ def main(cfg: DictConfig):
                 'meta': metas
                 }, os.path.join(save_dir, 'checkpoint.pt'))
             logger.info(f'best checkpoint saved')
+
         lr_scheduler.step()
         logger.info(f'finish one epoch')
 

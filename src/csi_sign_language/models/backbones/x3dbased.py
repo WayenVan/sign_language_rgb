@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import copy
 from ...modules.bilstm import BiLSTMLayer
-from einops import rearrange
+from einops import rearrange, repeat
 
 from csi_sign_language.utils.object import add_attributes
 
@@ -52,12 +52,15 @@ class X3dLSTM(nn.Module):
 
         x3d = torch.hub.load('facebookresearch/pytorchvideo', x3d_type, pretrained=True)
         self.move_x3d_layers(x3d)
+        del x3d
+        
         self.projection = Conv_Pool_Proejction(self.x3d_out_channels, d_model, self.conv_neck_channels, dropout=dropout)
 
         self.rnn = BiLSTMLayer(d_model, hidden_size=d_model, num_layers=n_layers, bidirectional=True)
         self.fc_conv = nn.Linear(d_model, n_class)
         self.fc = nn.Linear(d_model, n_class)
-    
+        
+
     @property
     def x3d_spec(self):
         return dict(
@@ -74,7 +77,9 @@ class X3dLSTM(nn.Module):
     def move_x3d_layers(self, x3d: nn.Module):
         blocks = x3d.blocks
         self.stem = copy.deepcopy(blocks[0])
-        self.res_stages = nn.ModuleList(blocks[1:-1])
+        self.res_stages = nn.ModuleList(
+            [copy.deepcopy(block) for block in blocks[1:-1]]
+            )
 
     def forward(self, x, video_length):
         """
@@ -88,13 +93,14 @@ class X3dLSTM(nn.Module):
         x = self.stem(x)
         for stage in self.res_stages:
             x = stage(x)
+        
         x, video_length= self.projection(x, video_length)
         x = rearrange(x, 'n c t -> t n c')
         conv_out = self.fc_conv(x)
 
         x = self.rnn(x, video_length)['predictions']
         seq_out = self.fc(x)
-
+        
         return dict(
             seq_out = seq_out,
             conv_out = conv_out,

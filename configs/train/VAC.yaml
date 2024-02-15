@@ -20,7 +20,7 @@ pin_memory: False
 num_workers: 4
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/staged/2024-01-26_16-50-13/train_VAC/checkpoint.pt
 
