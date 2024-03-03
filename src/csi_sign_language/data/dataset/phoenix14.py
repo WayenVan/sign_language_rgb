@@ -193,9 +193,10 @@ class MyPhoenix14Dataset(Dataset):
 
 class CollateFn:
     
-    def __init__(self, length_video=None, length_gloss=None) -> None:
+    def __init__(self, gloss_mode='padding', length_video=None, length_gloss=None) -> None:
         self.length_video = length_video
         self.length_gloss = length_gloss
+        self.gloss_mode = gloss_mode
     
     def __call__(self, data) -> Any:
         #sort the data by video length in decreasing way for onxx
@@ -207,10 +208,14 @@ class CollateFn:
         ids = [item['id'] for item in data]
         
         video, v_length = self._padding_temporal(video_batch, self.length_video)
-        g_length = torch.tensor([len(item) for item in gloss_batch], dtype=torch.int32)
-        gloss = torch.concat(gloss_batch)
         
-        video = rearrange(video, 'b t c h w -> t b c h w')
+        if self.gloss_mode=='concat':
+            g_length = torch.tensor([len(item) for item in gloss_batch], dtype=torch.int32)
+            gloss = torch.concat(gloss_batch)
+        elif self.gloss_mode=='padding':
+            gloss, g_length = self._padding_temporal(gloss_batch, self.length_gloss)
+        
+        video = rearrange(video, 'b t c h w -> b c t h w')
         
         return dict(
             id=ids,

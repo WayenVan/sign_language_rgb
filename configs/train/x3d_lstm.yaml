@@ -24,7 +24,7 @@ batch_size: 3
 #if continuos read model
 load_weights: True
 is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-02-15_02-49-55/train_x3d_with_LSTM/checkpoint.pt
+checkpoint: outputs/train/2024-02-15_19-52-12/train_x3d_with_LSTM/checkpoint.pt
 
 model:
   _target_: ${csi}.models.model.SLRModel
@@ -38,7 +38,7 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 3e-5
+  lr: 1e-5
   weight_decay: 0.0001
 
 lr_scheduler:

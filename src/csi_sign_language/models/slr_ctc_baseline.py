@@ -16,7 +16,7 @@ class SLRModel(nn.Module):
         vocab,
         loss_weight,
         loss_temp,
-        ctc_search_type = 'beam',
+        ctc_search_type = 'greedy',
         return_label=True,
         **kwargs
         ) -> None:
@@ -41,11 +41,10 @@ class SLRModel(nn.Module):
     
     def criterion(self, outputs, target, target_length): 
         return self.loss(outputs, target, target_length)
-    
+    @torch.no_grad()
     def inference(self, *args, **kwargs) -> List[List[str]]:
-        with torch.no_grad():
-            outputs = self.backbone(*args, **kwargs)
-            y_predict = outputs['seq_out']
-            video_length = outputs['video_length']
-            y_predict = torch.nn.functional.log_softmax(y_predict, -1).detach().cpu()
+        outputs = self.backbone(*args, **kwargs)
+        y_predict = outputs['seq_out']
+        video_length = outputs['video_length']
+        y_predict = torch.nn.functional.log_softmax(y_predict, -1).detach().cpu()
         return self.decoder(y_predict, video_length)

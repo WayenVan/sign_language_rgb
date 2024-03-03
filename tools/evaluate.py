@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from omegaconf import OmegaConf, DictConfig
 import sys
 import logging

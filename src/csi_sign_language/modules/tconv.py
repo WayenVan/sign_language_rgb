@@ -6,9 +6,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class TemporalConv(nn.Module):
+class TemporalConv1D(nn.Module):
     def __init__(self, input_size, hidden_size, conv_type=2):
-        super(TemporalConv, self).__init__()
+        super(TemporalConv1D, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.conv_type = conv_type
@@ -49,27 +49,11 @@ class TemporalConv(nn.Module):
         return feat_len
 
     def forward(self, frame_feat, lgt):
+        """
+
+        :param frame_feat: [n c t]
+        :param lgt: [n]
+        """
         visual_feat = self.temporal_conv(frame_feat)
         lgt = self.update_lgt(lgt)
         return visual_feat, lgt
-
-class TemporalAveragePooling1D(nn.Module):
-    
-    def __init__(self, kernel_size, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.kernal_size = kernel_size
-        
-        modules = []
-        for ks in self.kernal_size:
-            if ks[0] == 'P':
-                modules.append(nn.AvgPool1d(kernel_size=int(ks[1]), ceil_mode=False))
-            elif ks[0] == 'K':
-                modules.append(nn.AvgPool1d(kernel_size=int(ks[1]), stride=1, padding=0))
-            else:
-                raise Exception(f'unsupportted kernal type {ks[0]}')
-            
-        self.layers = nn.Sequential(*modules)
-        
-    def forward(self, x):
-        #N, C, T
-        return self.layers(x)
