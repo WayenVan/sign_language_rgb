@@ -12,12 +12,9 @@ class GlobalLoss:
         self.distll = SelfDistill(temperature)
         self.weights = weights
     
-    def __call__(self, output, target, target_length) -> Any:
+    def __call__(self, conv_out, seq_out, length, target, target_length) -> Any:
         #[t, n, c] logits
-        conv_out = output['conv_out']
-        seq_out = output['seq_out']
-        input_length = output['video_length']
-        
+        input_length = length
         conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
 
         loss = 0
@@ -27,7 +24,6 @@ class GlobalLoss:
             loss += self.CTC(conv_out, target, input_length.cpu().int(), target_length.cpu().int()).mean() * self.weights[1]
         if self.weights[2] > 0.:
             loss += self.distll(seq_out, conv_out) * self.weights[2]
-
         return loss    
     
     def _filter_nan(self, *losses):
@@ -40,8 +36,6 @@ class GlobalLoss:
             ret.append(loss)
         return tuple(ret)
             
-
-        
 
 class SelfDistill:
 

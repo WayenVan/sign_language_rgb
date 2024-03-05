@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import copy
+from ...modules.bilstm import BiLSTMLayer
+from ...modules.x3d import X3d
 from einops import rearrange, repeat
 
 from csi_sign_language.utils.object import add_attributes
@@ -29,7 +31,7 @@ class Conv_Pool_Proejction(nn.Module):
 
     def forward(self, x, video_length):
         # n, c, t, h, w
-        # n
+        # n, l
         x = self.drop(x)
         x = self.project1(x)
         x = self.project2(x)
@@ -41,53 +43,25 @@ class Conv_Pool_Proejction(nn.Module):
         return x, video_length
 
 
-class X3d(nn.Module):
+class X3dEncoder(nn.Module):
 
-    def __init__(self, x3d_type='x3d_s', *args, **kwargs) -> None:
+    def __init__(self, out_channels, dropout, header_neck_channels=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
+        if header_neck_channels is None:
+            header_neck_channels = out_channels
 
-        self.input_size_spatial = self.x3d_spec[x3d_type]['input_shape']
-        self.x3d_out_channels, self.conv_neck_channels = self.x3d_spec[x3d_type]['channels']
-
-        x3d = torch.hub.load('facebookresearch/pytorchvideo', x3d_type, pretrained=True)
-        self.move_x3d_layers(x3d)
-        del x3d
-        self.spec = self.x3d_spec[x3d_type]
-
-    @property
-    def x3d_spec(self):
+        self.x3d = X3d()
+        self.header = Conv_Pool_Proejction(self.x3d.x3d_out_channels, header_neck_channels, dropout)
+    
+    def forward(self, x, t_length):
+        stem_out, stages_out = self.x3d(x)
+        x = stages_out[-1]
+        x, t_length = self.header(x, t_length)
+        
         return dict(
-            x3d_m=dict(
-                channels=(192, 432),
-                input_shape=(224, 224)
-                ),
-            x3d_s=dict(
-                channels=(192, 432),
-                input_shape=(160, 160)
-                ),
+            out=x,
+            t_length=t_length,
+            stem=stem_out,
+            stages_out=stages_out
         )
-
-    def move_x3d_layers(self, x3d: nn.Module):
-        blocks = x3d.blocks
-        self.stem = copy.deepcopy(blocks[0])
-        self.res_stages = nn.ModuleList(
-            [copy.deepcopy(block) for block in blocks[1:-1]]
-            )
-
-    def forward(self, x):
-        """
-        :param x: [n, c, t, h, w]
-        """
-        N, C, T, H, W = x.shape
-        assert (H, W) == self.input_size_spatial, f"expect size {self.input_size_spatial}, got size ({H}, {W})"
-        stages_out = []
-
-        x = self.stem(x)
-        stem_out = x
-
-        for stage in self.res_stages:
-            x = stage(x)
-            stages_out.append(x)
-
-        return stem_out, stages_out
