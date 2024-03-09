@@ -8,6 +8,7 @@ import torch
 import numbers
 import random
 import copy
+from PIL import Image
 
 class Resize:
     def __init__(self, h, w, size) -> None:
@@ -169,6 +170,26 @@ class RandomVerticalFlip(object):
         if flag:
             clip = np.flip(clip, axis=-2)
             clip = np.ascontiguousarray(copy.deepcopy(clip))
+        data[self.key] = np.array(clip)
+        return data
+
+class RandomRotate(object):
+
+    def __init__(self, prob, degree_range, key='video'):
+        self.degrees_range = degree_range
+        self.prob = prob
+        self.key = key
+
+    def __call__(self, data):
+        clip = data[self.key]
+        #t, c, h, w
+        flag = random.random() < self.prob
+        if flag:
+            clip = rearrange(clip, 't c h w -> t h w c')
+            degree =  random.uniform(self.degrees_range[0], self.degrees_range[1])
+            clip = [np.array(Image.fromarray(frame).rotate(degree, expand=False)) for frame in clip]
+            clip = np.array(clip)
+            clip = rearrange(clip, 't h w c -> t c h w')
         data[self.key] = np.array(clip)
         return data
 
