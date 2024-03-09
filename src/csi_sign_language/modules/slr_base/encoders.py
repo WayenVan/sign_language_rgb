@@ -155,7 +155,7 @@ class CnnFLowFusion(nn.Module):
             nn.LeakyReLU(inplace=True))
         self.joint_conv = nn.Sequential(
             nn.Conv3d(x3d_channels + flow_channels, x3d_channels, 1, 1),
-            nn.BatchNorm3d(flow_channels),
+            nn.BatchNorm3d(x3d_channels),
             nn.LeakyReLU(inplace=True))
         
     def forward(self, features, flow, t_length):
@@ -167,35 +167,35 @@ class CnnFLowFusion(nn.Module):
         """
         N = features.size(0)
         
+        mask = torch.ones_like(flow)
         for idx, length in enumerate(t_length.cpu().tolist()):
-            flow[idx][:, length:] = 0.
+            mask[idx][:, length:] = 0.
+        flow = flow * mask
         
         flow = self.flow_conv(flow)
-        cat_feature = torch.cat(features, flow, dim=1)
+        cat_feature = torch.cat([features, flow], dim=1)
         fused_features = self.joint_conv(cat_feature)
         return fused_features + features
         
 
-class X3DFlowDecoder(nn.Module):
+class X3DFlowEncoder(nn.Module):
     
-    def __init__(self, out_channels, rgb_max, fusion_layers: List[List], flownet_checkpoint, *args, **kwargs) -> None:
+    def __init__(self, out_channels, color_range, fusion_layers: List[List], flownet_checkpoint, freeze_flownet=True, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        
-        if not (isinstance(fusion_layers, list) and isinstance(fusion_layers[0], (tuple, list))):
-            raise Exception("fusion_layers format error")
+        add_attributes(self, locals())
 
         self.temporal_shift = TemporalShift()
         self.flatten_tn = Rearrange('f n c t h w -> (n t) c f h w')
-        self.flow_net = FlowNet2SD(rgb_max)
+        self.flownet = FlowNet2SD(color_range)
         self.x3d = X3d()
-        self.proejct = Conv_Pool_Proejction(self.x3d.x3d_out_channels, out_channels)
+        self.proejct = Conv_Pool_Proejction(self.x3d.x3d_out_channels, out_channels, neck_channels=out_channels*2)
 
         self._create_fusion_layers(fusion_layers)
         self._load_flownet(flownet_checkpoint)
         
     def _load_flownet(self, checkpoint):
         checkpoint = torch.load(checkpoint)
-        self.flow_down_conv.load_state_dict(checkpoint['state_dict'])
+        self.flownet.load_state_dict(checkpoint['state_dict'])
         
     
     def _create_fusion_layers(self, fusion_layers):
@@ -206,12 +206,12 @@ class X3DFlowDecoder(nn.Module):
     def forward(self, x, t_length):
         #n c t h w
         N, C, T, H, W = x.shape
-        flow_input = self.shift(x, t_length)
+        flow_input = self.temporal_shift(x, t_length)
         flow_input = self.flatten_tn(flow_input)
-        flow_out = self.flow_net(flow_input)
-        flow_out = [rearrange(f, '(n t) d h w -> n d t h w') for f in flow_out]
+        flow_out = self.flownet(flow_input)
+        flow_out = [rearrange(f, '(n t) d h w -> n d t h w', n=N) for f in flow_out]
         
-        self._x3d_fusion(x, t_length)
+        x = self._x3d_fusion(x, flow_out, t_length)
         x, t_length = self.proejct(x, t_length)
         
         return dict(
@@ -219,18 +219,25 @@ class X3DFlowDecoder(nn.Module):
             t_length=t_length,
             flow=flow_out
         )
-        
+
+    def train(self, mode=True):
+        super().train(mode)
+        for p in self.flownet.parameters():
+            if self.freeze_flownet:
+                p.requires_grad = False
+            else:
+                p.requires_grad = True
+    
 
     def _x3d_fusion(self, x, flows, t_length):
         """
         :param x: [n, c, t, h, w]
         """
         N, C, T, H, W = x.shape
-        assert (H, W) == self.input_size_spatial, f"expect size {self.input_size_spatial}, got size ({H}, {W})"
         stages_out = []
 
         x = self.x3d.stem(x)
-        x = self.fusion_layers[0](F.max_pool3d(x, (1, 2, 2)), flows[0], t_length)
+        x = self.fusion_layers[0](x, F.max_pool3d(flows[0], (1, 2, 2)), t_length)
         stem_out = x
 
         for idx, stage in enumerate(self.x3d.res_stages):

@@ -15,10 +15,10 @@ seed: 3407
 device: cuda
 epoch: 80
 #-1 when we don want message out
-message_interval: 150
+message_interval: 100
 non_block: False
 pin_memory: False
-num_workers: 5
+num_workers: 8
 batch_size: 2
 vocab_size: 1296
 
@@ -32,15 +32,21 @@ model:
   loss_temp: 8
   loss_weight: [1.0, 0., 0.]
   backbone: 
-    _target_: ${csi}.modules.slr_streams.base_stream.BaseStream
+    _target_: ${csi}.modules.slr_base.base_stream.BaseStream
     encoder: 
-      _target_: ${csi}.modules.slr_streams.encoders.FlowNetEncoder
-      rgb_max: 255
-      output_channels: 1024
+      _target_: ${csi}.modules.slr_base.encoders.X3DFlowEncoder
+      color_range: [-1., 1.]
+      out_channels: 1024
       flownet_checkpoint: resources/FlowNet2-SD_checkpoint.pth.tar
-      is_freeze_flownet: False
+      freeze_flownet: True
+      fusion_layers:
+        - [24, 24]
+        - [24, 24]
+        - [48, 48]
+        - [96, 48]
+        - [192, 48]
     decoder:
-      _target_: ${csi}.modules.slr_streams.decoders.TransformerDecoder
+      _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
       n_class: ${vocab_size}
       d_model: 1024
       n_heads: 8
@@ -80,13 +86,18 @@ data:
         - _target_: ${CT}.video.Resize
           h: 192
           w: 192
+        - _target_: ${CT}.video.RandomHorizontalFlip
+          prob: 0.5
+        - _target_: ${CT}.video.RandomRotate
+          prob: 0.7
+          angle_range: [-15, 15]
         - _target_: ${CT}.video.FrameScale
           min: -1.
           max: 1.
-        - _target_: ${CT}.video.RandomHorizontolFlip
-          prob: 0.4
+          input_range: [0, 255]
         - _target_: ${CT}.video.ToTensor
           keys: [video, gloss]
+          dtypes: [float32, default]
 
   transform_val: 
         _target_: ${T}.Compose
@@ -99,22 +110,24 @@ data:
         - _target_: ${CT}.video.FrameScale
           min: -1.
           max: 1.
+          input_range: [0, 255]
         - _target_: ${CT}.video.ToTensor
           keys: [video, gloss]
+          dtypes: [float32, default]
     
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}
     subset: ${data.subset}
     mode: train
-    transform: ${data.video_transform}
+    transform: ${data.transform_train}
 
   val_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}
     subset: ${data.subset}
     mode: dev
-    transform: ${data.video_transform}
+    transform: ${data.transform_val}
 
 
   train_loader:

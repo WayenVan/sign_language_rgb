@@ -100,7 +100,7 @@ class Phoenix14Dataset(BasePhoenix14Dataset):
         
         
         ret = dict(
-            video=frames, #[t, h, w, c]
+            video=frames.astype('uint8'), #[t, h, w, c]
             annotation = anno, #[s]
             video_mask = frames_mask, #[t]
             annotation_mask = anno_mask #[s]
@@ -165,7 +165,7 @@ class MyPhoenix14Dataset(Dataset):
     
         ret = dict(
             id=id,
-            video=video.astype('float32')/255., #[t c h w]
+            video=video, #[t c h w], uint8, 0-255
             gloss=gloss,
             gloss_label=gloss_label)
         

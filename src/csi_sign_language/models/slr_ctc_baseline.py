@@ -7,7 +7,7 @@ from ..modules.resnet.resnet import *
 from ..modules.tconv import *
 from torch.cuda.amp.autocast_mode import autocast
 from ..utils.decode import CTCDecoder
-from ..modules.slr_streams.base_stream import BaseStream
+from ..modules.slr_base.base_stream import BaseStream
 
 class GlobalLoss:
     def __init__(self, weights, temperature) -> None:

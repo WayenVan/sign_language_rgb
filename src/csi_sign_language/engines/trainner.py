@@ -15,7 +15,7 @@ class Trainner():
         device,
         logger,
         message_interval,
-        use_amp=True,
+        use_amp=True
         ) -> None:
 
         self.device = device

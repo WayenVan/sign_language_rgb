@@ -11,7 +11,7 @@ import copy
 from PIL import Image
 
 class Resize:
-    def __init__(self, h, w, size) -> None:
+    def __init__(self, h, w) -> None:
         self.h = h
         self.w = w
         
@@ -62,25 +62,35 @@ class TemporalDownSampleT:
         return data
         
 class FrameScale:
-    def __init__(self, min, max, key) -> None:
+    def __init__(self, min, max, input_range, key='video') -> None:
         self.min = min
         self.max = max
         self.key = key
+        self.input_range = input_range
 
     def __call__(self, data) -> Any:
         video = data[self.key]
-        data[self.key] = self.min + video * (self.max - self.min)
+        video.astype('float32')
+        data[self.key] = self.min + (self.max - self.min) * (video - self.input_range[0]) / (self.input_range[1] - self.input_range[0])
         return data
 
 class ToTensor:
-    def __init__(self, keys) -> None:
+    def __init__(self, keys, dtypes) -> None:
         self.keys = keys
+        self.dtypes = dict(zip(keys, dtypes))
+        
+        self.str2dtype = {
+            'float32': torch.float32,
+            'float64': torch.double,
+            'default': None
+        }
     
     def __call__(self, data) -> Any:
         for k, v in data.items():
             if k in self.keys:
-                data[k] = torch.tensor(v)
+                data[k] = torch.tensor(v, dtype=self.str2dtype[self.dtypes[k]])
         return data
+    
     
 
 class CentralCrop:
@@ -175,23 +185,46 @@ class RandomVerticalFlip(object):
 
 class RandomRotate(object):
 
-    def __init__(self, prob, degree_range, key='video'):
-        self.degrees_range = degree_range
+    def __init__(self, prob, angle_range, key='video'):
+        self.angle_range = angle_range
         self.prob = prob
         self.key = key
 
     def __call__(self, data):
-        clip = data[self.key]
         #t, c, h, w
         flag = random.random() < self.prob
         if flag:
+            clip = data[self.key]
+            T, C, H, W = clip.shape
+            angle =  random.uniform(self.angle_range[0], self.angle_range[1])
             clip = rearrange(clip, 't c h w -> t h w c')
-            degree =  random.uniform(self.degrees_range[0], self.degrees_range[1])
-            clip = [np.array(Image.fromarray(frame).rotate(degree, expand=False)) for frame in clip]
+            clip = [self.rotate_and_crop(frame, angle, 0, 0, H, W) for frame in clip]
             clip = np.array(clip)
             clip = rearrange(clip, 't h w c -> t c h w')
-        data[self.key] = np.array(clip)
+            data[self.key] = clip
         return data
+    
+    @staticmethod
+    def rotate_and_crop(image, angle, crop_x, crop_y, crop_width, crop_height):
+        # Read the image
+        original_image = image
+
+        # Get image dimensions
+        height, width = original_image.shape[:2]
+
+        # Calculate the center of the image
+        center = (width // 2, height // 2)
+
+        # Define the rotation matrix using the center of the image
+        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1)
+
+        # Rotate the image
+        rotated_image = cv2.warpAffine(original_image, rotation_matrix, (width, height))
+
+        # Crop the rotated image
+        cropped_image = rotated_image[crop_y:crop_y + crop_height, crop_x:crop_x + crop_width]
+
+        return cropped_image
 
 
 class TemporalRescale(object):
