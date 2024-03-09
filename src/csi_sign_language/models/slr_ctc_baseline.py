@@ -84,7 +84,7 @@ class SLRModel(nn.Module):
         return backbone_out
     
     def criterion(self, outputs, target, target_length): 
-        return self.loss(outputs['encoder']['out'], outputs['out'], target, target_length)
+        return self.loss(outputs['encoder_out']['out'], outputs['out'], outputs['t_length'], target, target_length)
 
     @torch.no_grad()
     def inference(self, *args, **kwargs) -> List[List[str]]:

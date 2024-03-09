@@ -5,6 +5,7 @@ import torch.optim as optim
 import copy
 from ...modules.bilstm import BiLSTMLayer
 from einops import rearrange, repeat
+from einops.layers.torch import Rearrange
 
 from csi_sign_language.utils.object import add_attributes
 
@@ -14,6 +15,7 @@ class BaseStream(nn.Module):
     def __init__(self, encoder, decoder, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.encoder = encoder
+        self.rearrange = Rearrange('n c t -> t n c')
         self.decoder = decoder
 
     def forward(self, x, t_length):
@@ -23,7 +25,7 @@ class BaseStream(nn.Module):
         """
         encoder_out = self.encoder(x, t_length)
 
-        x = rearrange(encoder_out['out'], 'n c t -> t n c')
+        x = self.rearrange(encoder_out['out'])
         t_length = encoder_out['t_length']
         decoder_out = self.decoder(x, t_length)
 

@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from ..trainsformer import TransformerEncoder
+from ..transformer import TransformerEncoder
 from ..tconv import TemporalConv1D
 from ...utils.object import add_attributes
 from einops import rearrange, repeat

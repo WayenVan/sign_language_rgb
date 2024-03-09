@@ -3,15 +3,10 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from logging import Logger
 from tqdm import tqdm
-from ..models.model import *
-from einops import rearrange
 import numpy as np
 from ..utils.inspect import *
-from ..evaluation.wer import wer
-from ..utils.decode import CTCDecoder
 from ..utils.data import *
 from typing import *
-from ..modules.loss import GlobalLoss
 
 class Trainner():
     
@@ -83,7 +78,7 @@ class Trainner():
                 self.logger.info(f'iteration index: {idx}, batch loss: {loss.item()}')
             
             losses.append(loss.item())
-            hyp += outputs['seq_out_label']
+            hyp += outputs['out_labels']
             gt += data['gloss_label']
         
         opt.zero_grad()

@@ -11,11 +11,12 @@ class TransformerDecoder(nn.Module):
         self.tf = TransformerEncoder(d_model, d_feedforward, n_heads, n_layers)
         self.header = nn.Linear(d_model, n_class)
         
-    def forward(self, x, seq_length):
-        x = self.tf(x, seq_length)
+    def forward(self, x, t_length):
+        x = self.tf(x, t_length)
         seq_out = x
         x = self.header(x)
         return dict(
             out = x,
+            t_length = t_length,
             seq_out = seq_out
         )

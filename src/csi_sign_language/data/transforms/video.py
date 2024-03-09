@@ -10,7 +10,7 @@ import random
 import copy
 
 class Resize:
-    def __init__(self, h, w) -> None:
+    def __init__(self, h, w, size) -> None:
         self.h = h
         self.w = w
         
@@ -61,13 +61,14 @@ class TemporalDownSampleT:
         return data
         
 class FrameScale:
-    def __init__(self, min, max) -> None:
+    def __init__(self, min, max, key) -> None:
         self.min = min
         self.max = max
+        self.key = key
 
     def __call__(self, data) -> Any:
-        video = data['video']
-        data['video'] = self.min + video * (self.max - self.min)
+        video = data[self.key]
+        data[self.key] = self.min + video * (self.max - self.min)
         return data
 
 class ToTensor:
@@ -103,7 +104,7 @@ class RandomCrop(object):
         selected randomly at each call.
     """
 
-    def __init__(self, size):
+    def __init__(self, size, key='video'):
         if isinstance(size, numbers.Number):
             if size < 0:
                 raise ValueError('If size is a single number, it must be positive')
@@ -112,6 +113,7 @@ class RandomCrop(object):
             if len(size) != 2:
                 raise ValueError('If size is a sequence, it must be of len 2.')
         self.size = size
+        self.key = key
 
     def __call__(self, data):
         clip = data['video']
@@ -135,22 +137,41 @@ class RandomCrop(object):
         else:
             h1 = random.randint(0, im_h - crop_h)
 
-        data['video'] = np.stack([img[:, h1:h1 + crop_h, w1:w1 + crop_w] for img in clip])
+        data[self.key] = np.stack([img[:, h1:h1 + crop_h, w1:w1 + crop_w] for img in clip])
         return data
+
 class RandomHorizontalFlip(object):
 
-    def __init__(self, prob):
+    def __init__(self, prob, key='video'):
         self.prob = prob
+        self.key = key
 
     def __call__(self, data):
-        clip = data['video']
-        # B, H, W, 3
+        clip = data[self.key]
+        #t, c, h, w
         flag = random.random() < self.prob
         if flag:
             clip = np.flip(clip, axis=-1)
             clip = np.ascontiguousarray(copy.deepcopy(clip))
-        data['video'] = np.array(clip)
+        data[self.key] = np.array(clip)
         return data
+
+class RandomVerticalFlip(object):
+
+    def __init__(self, prob, key='video'):
+        self.prob = prob
+        self.key = key
+
+    def __call__(self, data):
+        clip = data[self.key]
+        #t, c, h, w
+        flag = random.random() < self.prob
+        if flag:
+            clip = np.flip(clip, axis=-2)
+            clip = np.ascontiguousarray(copy.deepcopy(clip))
+        data[self.key] = np.array(clip)
+        return data
+
 
 class TemporalRescale(object):
 

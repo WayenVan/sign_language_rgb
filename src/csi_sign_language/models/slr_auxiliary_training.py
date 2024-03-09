@@ -8,7 +8,6 @@ from ..modules.resnet.resnet import *
 from ..modules.tconv import *
 from torch.cuda.amp.autocast_mode import autocast
 from ..utils.decode import CTCDecoder
-from ..modules.loss import GlobalLoss
 
 
 class SLRModel(nn.Module):
