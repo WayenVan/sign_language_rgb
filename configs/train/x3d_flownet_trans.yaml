@@ -2,7 +2,7 @@ hydra:
   run: 
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
   
-description: x3d_with_LSTM
+description: x3d_with_flownet
 
 csi: csi_sign_language
 transform: torchvision.transforms
@@ -23,9 +23,9 @@ batch_size: 2
 vocab_size: 1296
 
 #if continuos read model
-load_weights: False
+load_weights: True
 is_resume: False
-checkpoint: outputs/train/2024-02-15_19-52-12/train_x3d_with_LSTM/checkpoint.pt
+checkpoint: outputs/train/2024-03-11_17-13-04/train_x3d_with_flownet/checkpoint.pt
 
 model:
   _target_: ${csi}.models.slr_ctc_baseline.SLRModel
@@ -55,13 +55,13 @@ model:
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-4
+  lr: 5e-5
   weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  step_size: 30
-  gamma: 0.5
+  step_size: 20
+  gamma: 0.8
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner
@@ -81,16 +81,19 @@ data:
   transform_train: 
         _target_: ${T}.Compose
         transforms: 
+        - _target_: ${CT}.video.RandomBrightJitter
+          prob: 1
+          factor_range: [0.8, 1.2]
+        - _target_: ${CT}.video.RandomHorizontalFlip
+          prob: 0.5
+        - _target_: ${CT}.video.RandomRotate
+          prob: 0.7
+          angle_range: [-90, 90]
         - _target_: ${CT}.video.RandomCrop
           size: 224
         - _target_: ${CT}.video.Resize
           h: 192
           w: 192
-        - _target_: ${CT}.video.RandomHorizontalFlip
-          prob: 0.5
-        - _target_: ${CT}.video.RandomRotate
-          prob: 0.7
-          angle_range: [-15, 15]
         - _target_: ${CT}.video.FrameScale
           min: -1.
           max: 1.

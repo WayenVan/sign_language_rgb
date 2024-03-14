@@ -2,7 +2,7 @@ hydra:
   run: 
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
   
-description: x3d_with_LSTM
+description: x3d_trans
 
 csi: csi_sign_language
 transform: torchvision.transforms
@@ -18,33 +18,43 @@ epoch: 80
 message_interval: 100
 non_block: False
 pin_memory: False
-num_workers: 5
-batch_size: 3
+num_workers: 8
+batch_size: 2
+vocab_size: 1296
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
-checkpoint: outputs/train/2024-02-15_19-52-12/train_x3d_with_LSTM/checkpoint.pt
+checkpoint: outputs/train/2024-03-11_17-13-04/train_x3d_with_flownet/checkpoint.pt
 
 model:
-  _target_: ${csi}.models.model.SLRModel
-  backbone: 
-    _target_: ${csi}.models.backbones.x3dbased.X3dLSTM
-    d_model: 1024
-    n_class: 1296
-    n_layers: 2
+  _target_: ${csi}.models.slr_ctc_baseline.SLRModel
   loss_temp: 8
   loss_weight: [1.0, 0., 0.]
+  backbone: 
+    _target_: ${csi}.modules.slr_base.base_stream.BaseStream
+    encoder: 
+      _target_: ${csi}.modules.slr_base.encoders.X3dEncoder
+      out_channels: 1024
+      dropout: 0.2
+      n_downsamplet: 2
+    decoder:
+      _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
+      n_class: ${vocab_size}
+      d_model: 1024
+      n_heads: 16
+      n_layers: 6
+      d_feedforward: 2048
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 1e-5
+  lr: 1e-4
   weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  step_size: 30
-  gamma: 0.5
+  step_size: 40
+  gamma: 0.8
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner
@@ -60,37 +70,60 @@ data:
   subset: multisigner
   collate_fn: 
     _target_: ${csi}.data.dataset.phoenix14.CollateFn
-  video_transform: 
+
+  transform_train: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.RandomCrop
-          size: 224
+        - _target_: ${CT}.video.RandomBrightJitter
+          prob: 0.7
+          factor_range: [0.8, 1.2]
         - _target_: ${CT}.video.RandomHorizontalFlip
           prob: 0.5
+        - _target_: ${CT}.video.RandomRotate
+          prob: 0.7
+          angle_range: [-90, 90]
+        - _target_: ${CT}.video.RandomCrop
+          size: 224
         - _target_: ${CT}.video.Resize
-          h: 160
-          w: 160
-        - _target_: ${CT}.video.TemporalRescale
-          temp_scaling: 0.2
+          h: 192
+          w: 192
         - _target_: ${CT}.video.FrameScale
           min: -1.
           max: 1.
+          input_range: [0, 255]
         - _target_: ${CT}.video.ToTensor
           keys: [video, gloss]
+          dtypes: [float32, default]
+
+  transform_val: 
+        _target_: ${T}.Compose
+        transforms: 
+        - _target_: ${CT}.video.CentralCrop
+          size: 224
+        - _target_: ${CT}.video.Resize
+          h: 192
+          w: 192
+        - _target_: ${CT}.video.FrameScale
+          min: -1.
+          max: 1.
+          input_range: [0, 255]
+        - _target_: ${CT}.video.ToTensor
+          keys: [video, gloss]
+          dtypes: [float32, default]
     
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}
     subset: ${data.subset}
     mode: train
-    transform: ${data.video_transform}
+    transform: ${data.transform_train}
 
   val_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}
     subset: ${data.subset}
     mode: dev
-    transform: ${data.video_transform}
+    transform: ${data.transform_val}
 
 
   train_loader:

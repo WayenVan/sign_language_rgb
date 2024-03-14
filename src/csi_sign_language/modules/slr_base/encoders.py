@@ -15,20 +15,24 @@ from csi_sign_language.utils.object import add_attributes
 
 class Conv_Pool_Proejction(nn.Module):
 
-    def __init__(self, in_channels, out_channels, neck_channels, dropout=0.5, *args, **kwargs) -> None:
+    def __init__(self, in_channels, out_channels, neck_channels, n_downsample=2, dropout=0.5, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
         self.drop = nn.Dropout(p=dropout, inplace=False)
-        self.project1 = self.make_projection_layer(in_channels, neck_channels)
-        self.project2 = self.make_projection_layer(neck_channels, neck_channels)
-        self.linear = nn.Conv3d(neck_channels, out_channels, kernel_size=1, padding=0)
-        self.spatial_pool = nn.AdaptiveAvgPool3d(output_size=(None, 1, 1))
+        self.proj1 = nn.Conv3d(in_channels, neck_channels, kernel_size=1, padding=0)
+
+        self.downsamples = nn.ModuleList([
+            self.make_maxpool_cnn(neck_channels, neck_channels) for i in range(n_downsample)
+        ])
+
+        self.proj2 = nn.Conv3d(neck_channels, out_channels, kernel_size=1, padding=0)
+        self.spatial_pool = nn.AdaptiveMaxPool3d(output_size=(None, 1, 1))
         self.flatten = nn.Flatten(-3)
 
     @staticmethod
-    def make_projection_layer(in_channels, out_channels):
+    def make_maxpool_cnn(in_channels, out_channels):
         return nn.Sequential(
-            nn.AvgPool3d((4, 3, 3), stride=(2, 1, 1), padding=1),
+            nn.MaxPool3d((4, 3, 3), stride=(2, 1, 1), padding=1),
             nn.Conv3d(in_channels, out_channels,  kernel_size=1, stride=1),
             nn.BatchNorm3d(out_channels),
             nn.LeakyReLU(inplace=True)
@@ -38,26 +42,29 @@ class Conv_Pool_Proejction(nn.Module):
         # n, c, t, h, w
         # n, l
         x = self.drop(x)
-        x = self.project1(x)
-        x = self.project2(x)
-        x = self.spatial_pool(x)
-        x = self.linear(x)
-        x = self.flatten(x)
+        x = self.proj1(x)
         
-        video_length = video_length//2//2
+        for down in self.downsamples:
+            x = down(x)
+
+        x = self.proj2(x)
+        x = self.spatial_pool(x)
+        x = self.flatten(x)
+
+        video_length = video_length//(2*self.n_downsample)
         return x, video_length
 
 
 class X3dEncoder(nn.Module):
 
-    def __init__(self, out_channels, dropout, header_neck_channels=None, *args, **kwargs) -> None:
+    def __init__(self, out_channels, dropout, x3d_type='x3d_m', n_downsamplet=2, header_neck_channels=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
         if header_neck_channels is None:
             header_neck_channels = out_channels
 
-        self.x3d = X3d()
-        self.header = Conv_Pool_Proejction(self.x3d.x3d_out_channels, header_neck_channels, dropout)
+        self.x3d = X3d(x3d_type)
+        self.header = Conv_Pool_Proejction(self.x3d.x3d_out_channels, out_channels, header_neck_channels, n_downsamplet, dropout)
     
     def forward(self, x, t_length):
         stem_out, stages_out = self.x3d(x)
@@ -180,7 +187,7 @@ class CnnFLowFusion(nn.Module):
 
 class X3DFlowEncoder(nn.Module):
     
-    def __init__(self, out_channels, color_range, fusion_layers: List[List], flownet_checkpoint, freeze_flownet=True, *args, **kwargs) -> None:
+    def __init__(self, out_channels, color_range, fusion_layers: List[List], flownet_checkpoint, freeze_flownet=True, freeze_x3d=False, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
 
@@ -222,11 +229,12 @@ class X3DFlowEncoder(nn.Module):
 
     def train(self, mode=True):
         super().train(mode)
+
         for p in self.flownet.parameters():
-            if self.freeze_flownet:
-                p.requires_grad = False
-            else:
-                p.requires_grad = True
+                p.requires_grad = not self.freeze_flownet
+
+        for p in self.x3d.parameters():
+                p.requires_grad = not self.freeze_x3d
     
 
     def _x3d_fusion(self, x, flows, t_length):

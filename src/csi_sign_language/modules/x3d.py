@@ -7,40 +7,6 @@ from einops import rearrange, repeat
 
 from csi_sign_language.utils.object import add_attributes
 
-class Conv_Pool_Proejction(nn.Module):
-
-    def __init__(self, in_channels, out_channels, neck_channels, dropout=0.5, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        add_attributes(self, locals())
-        self.drop = nn.Dropout(p=dropout, inplace=False)
-        self.project1 = self.make_projection_layer(in_channels, neck_channels)
-        self.project2 = self.make_projection_layer(neck_channels, neck_channels)
-        self.linear = nn.Conv3d(neck_channels, out_channels, kernel_size=1, padding=0)
-        self.spatial_pool = nn.AdaptiveAvgPool3d(output_size=(None, 1, 1))
-        self.flatten = nn.Flatten(-3)
-
-    @staticmethod
-    def make_projection_layer(in_channels, out_channels):
-        return nn.Sequential(
-            nn.AvgPool3d((4, 3, 3), stride=(2, 1, 1), padding=1),
-            nn.Conv3d(in_channels, out_channels,  kernel_size=1, stride=1),
-            nn.BatchNorm3d(out_channels)
-        )
-
-    def forward(self, x, video_length):
-        # n, c, t, h, w
-        # n
-        x = self.drop(x)
-        x = self.project1(x)
-        x = self.project2(x)
-        x = self.spatial_pool(x)
-        x = self.linear(x)
-        x = self.flatten(x)
-        
-        video_length = video_length//2//2
-        return x, video_length
-
-
 class X3d(nn.Module):
 
     def __init__(self, x3d_type='x3d_s', *args, **kwargs) -> None:
@@ -80,7 +46,7 @@ class X3d(nn.Module):
         :param x: [n, c, t, h, w]
         """
         N, C, T, H, W = x.shape
-        assert (H, W) == self.input_size_spatial, f"expect size {self.input_size_spatial}, got size ({H}, {W})"
+        # assert (H, W) == self.input_size_spatial, f"expect size {self.input_size_spatial}, got size ({H}, {W})"
         stages_out = []
 
         x = self.stem(x)

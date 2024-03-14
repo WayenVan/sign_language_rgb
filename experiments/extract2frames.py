@@ -22,7 +22,7 @@ def main(t, tp):
     frame_t, frame_tp = video[t], video[tp]
 
     for i, frame in enumerate((frame_tp, frame_t)):
-        frame = Image.fromarray((frame*255.).astype(np.uint8))   
+        frame = Image.fromarray(frame)   
         frame.save(f'resources/{i}.jpg')
 
 

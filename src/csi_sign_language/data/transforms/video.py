@@ -52,14 +52,6 @@ class Standization:
     def _rearrange(self, x):
         return rearrange(x, '(t c h w) -> t c h w', t=1, h=1, w=1)
             
-
-class TemporalDownSampleT:
-    def __init__(self, step) -> None:
-        self.s = step
-        
-    def __call__(self, data) -> Any:
-        data['video'] = data['video'][::self.s]
-        return data
         
 class FrameScale:
     def __init__(self, min, max, input_range, key='video') -> None:
@@ -226,7 +218,58 @@ class RandomRotate(object):
 
         return cropped_image
 
+class RandomBrightJitter:
+    
+    def __init__(self, prob, factor_range, key='video') -> None:
+        self.key = key
+        self.prob = prob
+        self.factor_range = factor_range
+    
+    def __call__(self, data):
+        #t, c, h, w
+        flag = random.random() < self.prob
+        if flag:
+            clip = data[self.key]
+            factor = random.uniform(self.factor_range[0], self.factor_range[1])
+            clip = rearrange(clip, 't c h w -> t h w c')
+            clip = [self._cv_bright(frame, factor) for frame in clip]
+            clip = np.array(clip)
+            clip = rearrange(clip, 't h w c -> t c h w')
+            data[self.key] = clip
+        return data
+    
+    def _cv_bright(self, img, factor):
+        #[h, w, rbg]
+        hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        # Scale the brightness channel
+        hsv[:,:,2] = np.clip(hsv[:,:,2] * factor, 0, 255).astype(np.uint8)
+        # Convert the image back to the BGR color space
+        jittered_image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+        return jittered_image
 
+class RandomGray:
+    
+    def __init__(self, prob, key='video') -> None:
+        self.key = key
+        self.prob = prob
+    
+    def __call__(self, data):
+        #t, c, h, w
+        flag = random.random() < self.prob
+        if flag:
+            clip = data[self.key]
+            clip = rearrange(clip, 't c h w -> t h w c')
+            clip = [self._cv_gray(frame) for frame in clip]
+            clip = np.array(clip)
+            clip = rearrange(clip, 't h w c -> t c h w')
+            data[self.key] = clip
+        return data
+    
+    def _cv_gray(self, img):
+        #[h, w, rbg]
+        return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        
+    
 class TemporalRescale(object):
 
     def __init__(self, temp_scaling=0.2, min_len=32, max_len=230):
@@ -250,4 +293,15 @@ class TemporalRescale(object):
         else:
             index = sorted(random.choices(range(vid_len), k=new_len))
         data['video'] = clip[index]
+        return data
+
+class TemporalDownsample:
+    
+    def __init__(self, stride, key='video') -> None:
+        self.key = key
+        self.stride = stride
+    
+    def __call__(self, data):
+        #t, c, h, w
+        data[self.key] = data[self.key][::self.stride]
         return data
