@@ -24,18 +24,17 @@ class Conv_Pool_Proejction(nn.Module):
         self.downsamples = nn.ModuleList([
             self.make_maxpool_cnn(neck_channels, neck_channels) for i in range(n_downsample)
         ])
-
         self.proj2 = nn.Conv3d(neck_channels, out_channels, kernel_size=1, padding=0)
-        self.spatial_pool = nn.AdaptiveMaxPool3d(output_size=(None, 1, 1))
+        self.spatial_pool = nn.AdaptiveAvgPool3d(output_size=(None, 1, 1))
         self.flatten = nn.Flatten(-3)
 
     @staticmethod
     def make_maxpool_cnn(in_channels, out_channels):
         return nn.Sequential(
-            nn.MaxPool3d((4, 3, 3), stride=(2, 1, 1), padding=1),
-            nn.Conv3d(in_channels, out_channels,  kernel_size=1, stride=1),
+            nn.Conv3d(in_channels, out_channels,  kernel_size=(3, 1, 1), stride=1, padding=(1, 0, 0), bias=False),
             nn.BatchNorm3d(out_channels),
-            nn.LeakyReLU(inplace=True)
+            nn.LeakyReLU(inplace=True),
+            nn.MaxPool3d((2, 1, 1), stride=(2, 1, 1)),
         )
 
     def forward(self, x, video_length):
@@ -57,7 +56,7 @@ class Conv_Pool_Proejction(nn.Module):
 
 class X3dEncoder(nn.Module):
 
-    def __init__(self, out_channels, dropout, x3d_type='x3d_m', n_downsamplet=2, header_neck_channels=None, *args, **kwargs) -> None:
+    def __init__(self, out_channels, dropout, x3d_type='x3d_s', n_downsamplet=2, header_neck_channels=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
         if header_neck_channels is None:

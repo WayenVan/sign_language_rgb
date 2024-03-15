@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 sys.path.append('src')
 from csi_sign_language.data.dataset.phoenix14 import MyPhoenix14Dataset, CollateFn
-from csi_sign_language.data.transforms.video import ToTensor
+from csi_sign_language.data.transforms.t_numpy import ToTensor
 
 @click.command()
 @click.option('--data_root', default='preprocessed/ph14_lmdb')

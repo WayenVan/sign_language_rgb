@@ -1,3 +1,4 @@
+
 hydra:
   run: 
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
@@ -19,7 +20,7 @@ message_interval: 100
 non_block: False
 pin_memory: False
 num_workers: 8
-batch_size: 2
+batch_size: 3
 vocab_size: 1296
 
 #if continuos read model
@@ -36,13 +37,13 @@ model:
     encoder: 
       _target_: ${csi}.modules.slr_base.encoders.X3dEncoder
       out_channels: 1024
-      dropout: 0.2
+      dropout: 0.5
       n_downsamplet: 2
     decoder:
       _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
       n_class: ${vocab_size}
       d_model: 1024
-      n_heads: 16
+      n_heads: 8
       n_layers: 6
       d_feedforward: 2048
 
@@ -74,26 +75,30 @@ data:
   transform_train: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.RandomBrightJitter
-          prob: 0.7
-          factor_range: [0.8, 1.2]
-        - _target_: ${CT}.video.RandomHorizontalFlip
-          prob: 0.5
-        - _target_: ${CT}.video.RandomRotate
-          prob: 0.7
-          angle_range: [-90, 90]
-        - _target_: ${CT}.video.RandomCrop
-          size: 224
-        - _target_: ${CT}.video.Resize
-          h: 192
-          w: 192
-        - _target_: ${CT}.video.FrameScale
-          min: -1.
-          max: 1.
-          input_range: [0, 255]
-        - _target_: ${CT}.video.ToTensor
-          keys: [video, gloss]
-          dtypes: [float32, default]
+        - _target_: ${CT}.common.ApplyByKey
+          key: video
+          transforms:
+          - _target_: ${CT}.common.Rearrange
+            pattern: "t c h w -> t h w c"
+          - _target_: ${CT}.t_numpy.RandomRotate
+            prob: 1.
+            angle_range: [-15, 15]
+          - _target_: ${CT}.t_numpy.RandomResizedCrop
+            size: 224
+            scale: [0.7, 1.0]
+            ratio: [0.75, 1.33333333333]
+          - _target_: ${CT}.t_numpy.ColorJitter
+            brightness: 0.4
+            contrast: 0.4
+            saturation: 0.4
+            hue: 0.1
+            consistent: True
+            p: 0.3
+          # - _target_: ${CT}.t_numpy.RandomGray
+          #   prob: 0.0
+        # - _target_: ${CT}.common.ToTensor
+        #   keys: [video, gloss]
+        #   dtypes: [float32, default]
 
   transform_val: 
         _target_: ${T}.Compose
