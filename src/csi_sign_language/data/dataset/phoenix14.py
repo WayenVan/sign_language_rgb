@@ -160,6 +160,7 @@ class MyPhoenix14Dataset(Dataset):
         id = self.data_id[index]
         data = retrieve_data(self.lmdb_env, id)
         video = data['video']
+        video = rearrange(video ,'t c h w -> t h w c')
         gloss_label = data['gloss_labels']
         gloss = np.array(self.vocab(gloss_label), dtype='int64')
     

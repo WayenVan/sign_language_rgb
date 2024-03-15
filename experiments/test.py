@@ -10,3 +10,6 @@ config = OmegaConf.load('configs/train/x3d_trans.yaml')
 dataset = instantiate(config.data.train_set)
 
 dataset[0]['video'].dtype
+from torchvision.transforms import InterpolationMode
+print(InterpolationMode.NEAREST)
+from torchvision.transforms.functional import adjust_brightness

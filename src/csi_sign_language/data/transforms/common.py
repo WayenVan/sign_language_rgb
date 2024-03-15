@@ -25,10 +25,8 @@ class Rearrange():
         return rearrange(data, self.pattern)
 
 class ToTensor:
-    def __init__(self, keys, dtypes) -> None:
-        self.keys = keys
-        self.dtypes = dict(zip(keys, dtypes))
-        
+    def __init__(self, dtype='default') -> None:
+        self.dtype = dtype 
         self.str2dtype = {
             'float32': torch.float32,
             'float64': torch.double,
@@ -36,20 +34,15 @@ class ToTensor:
         }
     
     def __call__(self, data):
-        for k, v in data.items():
-            if k in self.keys:
-                data[k] = torch.tensor(v, dtype=self.str2dtype[self.dtypes[k]])
+        data = torch.tensor(data, dtype=self.str2dtype[self.dtype])
         return data
 
-class FrameScale:
-    def __init__(self, min, max, input_range, key='video') -> None:
-        self.min = min
-        self.max = max
-        self.input_range = input_range
-
+class Rescale:
+    def __init__(self, input, output) -> None:
+        self.input = input
+        self.output = output
     def __call__(self, video):
-        video.astype('float32')
-        video = self.min + (self.max - self.min) * (video - self.input_range[0]) / (self.input_range[1] - self.input_range[0])
+        video = self.output[0] + (self.output[1] - self.output[0]) * (video - self.input[0]) / (self.input[1] - self.input[0])
         return video
 
 class CentralCrop:

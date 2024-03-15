@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
-from einops import rearrange
 from PIL import Image
-
 def numpy2pil(video):
     return [Image.fromarray(frame) for frame in video]
 

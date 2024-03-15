@@ -75,46 +75,51 @@ data:
   transform_train: 
         _target_: ${T}.Compose
         transforms: 
+          #process video data
         - _target_: ${CT}.common.ApplyByKey
           key: video
           transforms:
+          - _target_: ${CT}.common.ToTensor
+            dtype: float32
+          - _target_: ${CT}.common.Rescale
+            input: [0., 255.]
+            output: [0., 1.]
           - _target_: ${CT}.common.Rearrange
-            pattern: "t c h w -> t h w c"
-          - _target_: ${CT}.t_numpy.RandomRotate
-            prob: 1.
-            angle_range: [-15, 15]
-          - _target_: ${CT}.t_numpy.RandomResizedCrop
+            pattern: "t h w c -> t c h w"
+          - _target_: ${T}.RandomResizedCrop
             size: 224
             scale: [0.7, 1.0]
             ratio: [0.75, 1.33333333333]
-          - _target_: ${CT}.t_numpy.ColorJitter
+          - _target_: ${CT}.t_tensor.ColorJitter
             brightness: 0.4
             contrast: 0.4
             saturation: 0.4
             hue: 0.1
-            consistent: True
-            p: 0.3
-          # - _target_: ${CT}.t_numpy.RandomGray
-          #   prob: 0.0
-        # - _target_: ${CT}.common.ToTensor
-        #   keys: [video, gloss]
-        #   dtypes: [float32, default]
+            p: 0.5
+          #process gloss data
+        - _target_: ${CT}.common.ApplyByKey
+          key: gloss
+          transforms:
+          - _target_: ${CT}.common.ToTensor
 
   transform_val: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.CentralCrop
-          size: 224
-        - _target_: ${CT}.video.Resize
-          h: 192
-          w: 192
-        - _target_: ${CT}.video.FrameScale
-          min: -1.
-          max: 1.
-          input_range: [0, 255]
-        - _target_: ${CT}.video.ToTensor
-          keys: [video, gloss]
-          dtypes: [float32, default]
+        - _target_: ${CT}.common.ApplyByKey
+          key: video
+          transforms:
+          - _target_: ${CT}.common.ToTensor
+            dtype: float32
+          - _target_: ${CT}.common.Rearrange
+            pattern: "t h w c -> t c h w"
+          - _target_: ${T}.CenterCrop
+            size: 224
+          - _target_: ${CT}.common.Rearrange
+            pattern: "t c h w -> t h w c"
+        - _target_: ${CT}.common.ApplyByKey
+          key: gloss
+          transforms:
+          - _target_: ${CT}.common.ToTensor
     
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
