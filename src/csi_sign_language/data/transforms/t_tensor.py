@@ -98,7 +98,7 @@ class ColorJitter(object):
                             transform = self.get_params(self.brightness, self.contrast,
                                                         self.saturation, self.hue)
                         result.append(transform(img))
-            return result
+            return torch.stack(result, dim=0)
         else: # don't do ColorJitter, do nothing
             return imgmap 
         

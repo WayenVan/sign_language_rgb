@@ -23,16 +23,6 @@ class Resize:
             modified.append(frame)
         return np.stack(modified)
 
-class RandomResizedCrop(object):
-    
-    def __init__(self, size, scale=..., ratio=..., interpolation=InterpolationMode.BILINEAR, antialias="warn"):
-        self.t = torchvision.transforms.RandomResizedCrop(size, scale, ratio, interpolation, antialias)
-    
-    def __call__(self, video):
-        video = numpy2pil(video)
-        result = [self.t(video)]
-        result = pil2numpy(result)
-        return result
 
         
         

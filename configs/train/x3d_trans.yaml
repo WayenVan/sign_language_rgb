@@ -20,7 +20,7 @@ message_interval: 100
 non_block: False
 pin_memory: False
 num_workers: 8
-batch_size: 3
+batch_size: 2
 vocab_size: 1296
 
 #if continuos read model
@@ -90,12 +90,14 @@ data:
             size: 224
             scale: [0.7, 1.0]
             ratio: [0.75, 1.33333333333]
+          - _target_: ${T}.Resize
+            size: 192
           - _target_: ${CT}.t_tensor.ColorJitter
             brightness: 0.4
             contrast: 0.4
             saturation: 0.4
             hue: 0.1
-            p: 0.5
+            p: 0.0
           #process gloss data
         - _target_: ${CT}.common.ApplyByKey
           key: gloss
@@ -112,10 +114,15 @@ data:
             dtype: float32
           - _target_: ${CT}.common.Rearrange
             pattern: "t h w c -> t c h w"
+          - _target_: ${CT}.common.Rescale
+            input: [0., 255.]
+            output: [0., 1.]
           - _target_: ${T}.CenterCrop
             size: 224
-          - _target_: ${CT}.common.Rearrange
-            pattern: "t c h w -> t h w c"
+          - _target_: ${T}.Resize
+            size: 192
+          # - _target_: ${CT}.common.Rearrange
+          #   pattern: "t c h w -> t h w c"
         - _target_: ${CT}.common.ApplyByKey
           key: gloss
           transforms:
