@@ -36,9 +36,16 @@ model:
     _target_: ${csi}.modules.slr_base.base_stream.BaseStream
     encoder: 
       _target_: ${csi}.modules.slr_base.encoders.X3dEncoder
-      out_channels: 1024
-      dropout: 0.5
-      n_downsamplet: 2
+      x3d_type: x3d_s
+      x3d_header:
+        _target_: ${csi}.modules.x3d.Header
+        _args_: [192, 1024, 432]
+    neck:
+      _target_: ${csi}.modules.tconv.TemporalConv1D
+      input_size: 1024
+      out_size: 1024
+      bottleneck_size:  512
+      conv_type: ['K5', 'P2', 'K5', 'P2']
     decoder:
       _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
       n_class: ${vocab_size}
@@ -90,6 +97,7 @@ data:
             size: 224
             scale: [0.7, 1.0]
             ratio: [0.75, 1.33333333333]
+            antialias: True
           - _target_: ${T}.Resize
             size: 192
           - _target_: ${CT}.t_tensor.ColorJitter
@@ -97,7 +105,7 @@ data:
             contrast: 0.4
             saturation: 0.4
             hue: 0.1
-            p: 0.0
+            p: 0.5
           #process gloss data
         - _target_: ${CT}.common.ApplyByKey
           key: gloss

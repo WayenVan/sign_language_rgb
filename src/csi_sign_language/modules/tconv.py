@@ -7,20 +7,14 @@ import torch.nn.functional as F
 
 
 class TemporalConv1D(nn.Module):
-    def __init__(self, input_size, hidden_size, conv_type=2):
+    def __init__(self, input_size, out_size, bottleneck_size, conv_type=2):
         super(TemporalConv1D, self).__init__()
         self.input_size = input_size
-        self.hidden_size = hidden_size
+        self.hidden_size = bottleneck_size
+        self.out_size = out_size
         self.conv_type = conv_type
 
-        if self.conv_type == 0:
-            self.kernel_size = ['K3']
-        elif self.conv_type == 1:
-            self.kernel_size = ['K5', "P2"]
-        elif self.conv_type == 2:
-            self.kernel_size = ['K5', "P2", 'K5', "P2"]
-        elif self.conv_type == 3:
-            self.kernel_size = ['K5', 'K5', 'P2']
+        self.kernel_size = self.conv_type
 
         modules = []
         for layer_idx, ks in enumerate(self.kernel_size):
@@ -28,12 +22,23 @@ class TemporalConv1D(nn.Module):
             if ks[0] == 'P':
                 modules.append(nn.MaxPool1d(kernel_size=int(ks[1]), ceil_mode=False))
             elif ks[0] == 'K':
+                in_size = input_size if self._is_first_k(self.kernel_size, layer_idx) else bottleneck_size
+                o_size = out_size if self._is_last_k(self.kernel_size, layer_idx) else bottleneck_size
                 modules.append(
-                    nn.Conv1d(input_sz, self.hidden_size, kernel_size=int(ks[1]), stride=1, padding=0)
+                    nn.Conv1d(in_size, o_size, kernel_size=int(ks[1]), stride=1, padding=int(ks[1])//2)
                 )
-                modules.append(nn.BatchNorm1d(self.hidden_size))
+                modules.append(nn.BatchNorm1d(o_size))
                 modules.append(nn.ReLU(inplace=True))
+            else:
+                raise NotImplementedError
         self.temporal_conv = nn.Sequential(*modules)
+
+    @staticmethod
+    def _is_first_k(kernels, idx):
+        return all(kernels[i][0] != 'K' for i in range(idx))
+    @staticmethod
+    def _is_last_k(kernels, idx):
+        return all(kernels[i][0] != 'K' for i in range(idx+1, len(kernels)))
     
     def get_kernel_size(self):
         return self.kernel_size
@@ -45,7 +50,7 @@ class TemporalConv1D(nn.Module):
                 if ks[0] == 'P':
                     feat_len = feat_len // int(ks[1])
                 else:
-                    feat_len = feat_len - int(ks[1]) + 1
+                    feat_len = feat_len
         return feat_len
 
     def forward(self, frame_feat, lgt):

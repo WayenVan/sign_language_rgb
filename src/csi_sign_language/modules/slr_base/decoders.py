@@ -1,6 +1,5 @@
 
 import torch.nn as nn
-from ...modules.resnet.resnet import *
 from ...modules.tconv import *
 from ...modules.transformer import TransformerEncoder
 

@@ -1,7 +1,7 @@
 from einops import rearrange
 from torch import nn
-from .lithrnet.build import build_litehrnet
-from .lithrnet.litehrnet import IterativeHeadDownSample
+from .externals.lithrnet.build import build_litehrnet
+from .externals.lithrnet.litehrnet import IterativeHeadDownSample
 
 class STHrnet(nn.Module):
     

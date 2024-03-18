@@ -4,9 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import copy
-from ...modules.bilstm import BiLSTMLayer
 from ...modules.x3d import X3d
-from ...modules.flownet2.models import FlowNet2SDConvDown, FlowNet2SD
+from ...modules.externals.flownet2.models import FlowNet2SDConvDown, FlowNet2SD
 from ...modules.tconv import TemporalConv1D
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
@@ -56,25 +55,19 @@ class Conv_Pool_Proejction(nn.Module):
 
 class X3dEncoder(nn.Module):
 
-    def __init__(self, out_channels, dropout, x3d_type='x3d_s', n_downsamplet=2, header_neck_channels=None, *args, **kwargs) -> None:
+    def __init__(self, x3d_type='x3d_s', x3d_header=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
-        if header_neck_channels is None:
-            header_neck_channels = out_channels
-
-        self.x3d = X3d(x3d_type)
-        self.header = Conv_Pool_Proejction(self.x3d.x3d_out_channels, out_channels, header_neck_channels, n_downsamplet, dropout)
+        self.x3d = X3d(x3d_type, header=x3d_header)
     
     def forward(self, x, t_length):
-        stem_out, stages_out = self.x3d(x)
-        x = stages_out[-1]
-        x, t_length = self.header(x, t_length)
+        x,t_length, stem_out, stages_out = self.x3d(x, t_length)
         
         return dict(
-            out=x,
             t_length=t_length,
             stem=stem_out,
-            stages_out=stages_out
+            stages_out=stages_out,
+            out=x,
         )
         
 class TemporalShift(nn.Module):
