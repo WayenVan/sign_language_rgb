@@ -10,8 +10,8 @@ sys.path.append('src')
 
 @click.command()
 @click.option('--config-dir', default='configs/train')
-@click.option('-cn', default='x3d_trans.yaml')
-@click.option('-d', '--depth', default=4)
+@click.option('-cn', default='x3d_litflow_trans.yaml')
+@click.option('-d', '--depth', default=3)
 @click.option('--device', default='cuda')
 def main(config_dir, cn, depth, device):
     configfile = os.path.join(config_dir, cn)

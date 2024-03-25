@@ -6,11 +6,44 @@ import copy
 from einops import rearrange, repeat
 from einops.layers.torch import Reduce
 
-from csi_sign_language.utils.object import add_attributes
+from csi_sign_language.utils.misc import add_attributes
+
+class Conv_Pool_Proejction(nn.Module):
+
+    def __init__(self, in_channels, out_channels, neck_channels, dropout=0.5, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        add_attributes(self, locals())
+        self.drop = nn.Dropout(p=dropout, inplace=False)
+        self.project1 = self.make_projection_layer(in_channels, neck_channels)
+        self.project2 = self.make_projection_layer(neck_channels, neck_channels)
+        self.linear = nn.Conv3d(neck_channels, out_channels, kernel_size=1, padding=0)
+        self.spatial_pool = nn.AdaptiveAvgPool3d(output_size=(None, 1, 1))
+        self.flatten = nn.Flatten(-3)
+
+    @staticmethod
+    def make_projection_layer(in_channels, out_channels):
+        return nn.Sequential(
+            nn.AvgPool3d((4, 3, 3), stride=(2, 1, 1), padding=(0, 1, 1)),
+            nn.Conv3d(in_channels, out_channels,  kernel_size=1, stride=1),
+            nn.BatchNorm3d(out_channels)
+        )
+
+    def forward(self, x, video_length):
+        # n, c, t, h, w
+        # n, l
+        x = self.drop(x)
+        x = self.project1(x)
+        x = self.project2(x)
+        x = self.spatial_pool(x)
+        x = self.linear(x)
+        x = self.flatten(x)
+        
+        video_length = video_length//2//2
+        return x, video_length
 
 class Header(nn.Module):
     
-    def __init__(self, input_channels, out_channels, bottleneck_channels, pool='max', *args, **kwargs) -> None:
+    def __init__(self, input_channels, out_channels, bottleneck_channels, dropout=0.5, pool='max', *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
         self.conv = nn.Sequential(
@@ -18,11 +51,13 @@ class Header(nn.Module):
             nn.BatchNorm3d(bottleneck_channels),
             nn.LeakyReLU(inplace=True)
         )
+        self.dropout = nn.Dropout3d(dropout, inplace=False)
         self.pool = Reduce('n c t (h1 h2) (w1 w2) -> n c t h1 w1', pool, h1=1, w1=1)
         self.flatten = nn.Flatten(-3)
         self.fc = nn.Conv1d(bottleneck_channels, out_channels, 1)
 
     def forward(self, x, t_length):
+        x = self.dropout(x)
         x = self.conv(x)
         x = self.pool(x)
         x = self.flatten(x)
@@ -35,7 +70,7 @@ class HeaderTconv(nn.Module):
     def __init__(self, in_channels, out_channels, neck_channels, pool='max', n_downsample=2, dropout=0.5, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         add_attributes(self, locals())
-        self.drop = nn.Dropout(p=dropout, inplace=False)
+        self.drop = nn.Dropout3d(p=dropout, inplace=False)
         self.proj1 = nn.Conv3d(in_channels, neck_channels, kernel_size=1, padding=0)
 
         self.downsamples = nn.ModuleList([
@@ -71,6 +106,17 @@ class HeaderTconv(nn.Module):
         return x, video_length
 
 class X3d(nn.Module):
+    
+    x3d_spec = dict(
+        x3d_m=dict(
+            channels=(192, 432),
+            input_shape=(224, 224)
+            ),
+        x3d_s=dict(
+            channels=(192, 432),
+            input_shape=(160, 160)
+            ),
+    )
 
     def __init__(self, x3d_type='x3d_s', header=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -84,19 +130,6 @@ class X3d(nn.Module):
         del x3d
         self.spec = self.x3d_spec[x3d_type]
         self.header = header
-
-    @property
-    def x3d_spec(self):
-        return dict(
-            x3d_m=dict(
-                channels=(192, 432),
-                input_shape=(224, 224)
-                ),
-            x3d_s=dict(
-                channels=(192, 432),
-                input_shape=(160, 160)
-                ),
-        )
 
     def move_x3d_layers(self, x3d: nn.Module):
         blocks = x3d.blocks

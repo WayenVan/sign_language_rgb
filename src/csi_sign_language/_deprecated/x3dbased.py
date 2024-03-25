@@ -6,7 +6,7 @@ import copy
 from ...modules.bilstm import BiLSTMLayer
 from einops import rearrange, repeat
 
-from csi_sign_language.utils.object import add_attributes
+from csi_sign_language.utils.misc import add_attributes
 
 class Conv_Pool_Proejction(nn.Module):
 

@@ -23,7 +23,7 @@ batch_size: 2
 vocab_size: 1296
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
 checkpoint: outputs/train/2024-03-11_17-13-04/train_x3d_with_flownet/checkpoint.pt
 
@@ -81,43 +81,60 @@ data:
   transform_train: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.RandomBrightJitter
-          prob: 1
-          factor_range: [0.8, 1.2]
-        - _target_: ${CT}.video.RandomHorizontalFlip
-          prob: 0.5
-        - _target_: ${CT}.video.RandomRotate
-          prob: 0.7
-          angle_range: [-90, 90]
-        - _target_: ${CT}.video.RandomCrop
-          size: 224
-        - _target_: ${CT}.video.Resize
-          h: 192
-          w: 192
-        - _target_: ${CT}.video.FrameScale
-          min: -1.
-          max: 1.
-          input_range: [0, 255]
-        - _target_: ${CT}.video.ToTensor
-          keys: [video, gloss]
-          dtypes: [float32, default]
+          #process video data
+        - _target_: ${CT}.common.ApplyByKey
+          key: video
+          transforms:
+          - _target_: ${CT}.common.ToTensor
+            dtype: float32
+          - _target_: ${CT}.common.Rescale
+            input: [0., 255.]
+            output: [0., 1.]
+          - _target_: ${CT}.common.Rearrange
+            pattern: "t h w c -> t c h w"
+          - _target_: ${T}.RandomResizedCrop
+            size: 224
+            scale: [0.7, 1.0]
+            ratio: [0.75, 1.33333333333]
+            antialias: True
+          - _target_: ${T}.Resize
+            size: 192
+            #the input of color jitter should be rescaled into 0.-1.
+          - _target_: ${CT}.t_tensor.ColorJitter
+            brightness: 0.4
+            contrast: 0.4
+            saturation: 0.4
+            hue: 0.1
+            p: 0.5
+          #process gloss data
+        - _target_: ${CT}.common.ApplyByKey
+          key: gloss
+          transforms:
+          - _target_: ${CT}.common.ToTensor
 
   transform_val: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.CentralCrop
-          size: 224
-        - _target_: ${CT}.video.Resize
-          h: 192
-          w: 192
-        - _target_: ${CT}.video.FrameScale
-          min: -1.
-          max: 1.
-          input_range: [0, 255]
-        - _target_: ${CT}.video.ToTensor
-          keys: [video, gloss]
-          dtypes: [float32, default]
-    
+        - _target_: ${CT}.common.ApplyByKey
+          key: video
+          transforms:
+          - _target_: ${CT}.common.ToTensor
+            dtype: float32
+          - _target_: ${CT}.common.Rearrange
+            pattern: "t h w c -> t c h w"
+          - _target_: ${CT}.common.Rescale
+            input: [0., 255.]
+            output: [0., 1.]
+          - _target_: ${T}.CenterCrop
+            size: 224
+          - _target_: ${T}.Resize
+            size: 192
+          # - _target_: ${CT}.common.Rearrange
+          #   pattern: "t c h w -> t h w c"
+        - _target_: ${CT}.common.ApplyByKey
+          key: gloss
+          transforms:
+          - _target_: ${CT}.common.ToTensor
   train_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}

@@ -1,6 +1,8 @@
 
 import torch.nn as nn
 from ...modules.tconv import *
+
+from collections import namedtuple
 from ...modules.transformer import TransformerEncoder
 
 class TransformerDecoder(nn.Module):
@@ -15,13 +17,15 @@ class TransformerDecoder(nn.Module):
         x = self.tf(x, t_length)
         seq_out = x
         x = self.header(x)
-        return dict(
+        
+        ret = namedtuple('TransformerDecoderOut', ['out', 't_length', 'seq_out'])
+        return ret(
             out = x,
             t_length = t_length,
             seq_out = seq_out
         )
         
-    
+
     def train(self, mode: bool = True):
         super().train(mode)
         for p in self.parameters():

@@ -9,49 +9,9 @@ from ...modules.externals.flownet2.models import FlowNet2SDConvDown, FlowNet2SD
 from ...modules.tconv import TemporalConv1D
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
+from collections import namedtuple
 
-from csi_sign_language.utils.object import add_attributes
-
-class Conv_Pool_Proejction(nn.Module):
-
-    def __init__(self, in_channels, out_channels, neck_channels, n_downsample=2, dropout=0.5, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        add_attributes(self, locals())
-        self.drop = nn.Dropout(p=dropout, inplace=False)
-        self.proj1 = nn.Conv3d(in_channels, neck_channels, kernel_size=1, padding=0)
-
-        self.downsamples = nn.ModuleList([
-            self.make_maxpool_cnn(neck_channels, neck_channels) for i in range(n_downsample)
-        ])
-        self.proj2 = nn.Conv3d(neck_channels, out_channels, kernel_size=1, padding=0)
-        self.spatial_pool = nn.AdaptiveAvgPool3d(output_size=(None, 1, 1))
-        self.flatten = nn.Flatten(-3)
-
-    @staticmethod
-    def make_maxpool_cnn(in_channels, out_channels):
-        return nn.Sequential(
-            nn.Conv3d(in_channels, out_channels,  kernel_size=(3, 1, 1), stride=1, padding=(1, 0, 0), bias=False),
-            nn.BatchNorm3d(out_channels),
-            nn.LeakyReLU(inplace=True),
-            nn.MaxPool3d((2, 1, 1), stride=(2, 1, 1)),
-        )
-
-    def forward(self, x, video_length):
-        # n, c, t, h, w
-        # n, l
-        x = self.drop(x)
-        x = self.proj1(x)
-        
-        for down in self.downsamples:
-            x = down(x)
-
-        x = self.proj2(x)
-        x = self.spatial_pool(x)
-        x = self.flatten(x)
-
-        video_length = video_length//(2*self.n_downsample)
-        return x, video_length
-
+from csi_sign_language.utils.misc import add_attributes
 
 class X3dEncoder(nn.Module):
 
@@ -63,10 +23,9 @@ class X3dEncoder(nn.Module):
     def forward(self, x, t_length):
         x,t_length, stem_out, stages_out = self.x3d(x, t_length)
         
-        return dict(
+        ret = namedtuple('X3DEncoderOut', ['out', 't_length'])
+        return ret(
             t_length=t_length,
-            stem=stem_out,
-            stages_out=stages_out,
             out=x,
         )
         

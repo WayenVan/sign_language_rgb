@@ -152,6 +152,9 @@ class MyPhoenix14Dataset(Dataset):
     
     def get_stm(self):
         return os.path.join(self.subset_root, f'phoenix2014-groundtruth-{self.mode}.stm')
+    
+    def id2index(self, id):
+        return self.data_id.index(id)
         
     def __getitem__(self, index) -> Any:
         if self.lmdb_env is None:

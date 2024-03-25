@@ -5,6 +5,12 @@ from ..csi_typing import PaddingMode
 from collections import OrderedDict
 from torchtext.vocab import vocab
 
+def mapping_0_1(color_range, t):
+    """mapping color from other range to 0., 1.
+    """
+    return (t - color_range[0]) / (color_range[1] - color_range[0])
+
+
 def load_vocab(file_dir):
     with open(file_dir, 'r') as f:
         _dict = OrderedDict([(item.strip(), 1) for item in f])

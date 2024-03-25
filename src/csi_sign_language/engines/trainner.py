@@ -78,7 +78,7 @@ class Trainner():
                 self.logger.info(f'iteration index: {idx}, batch loss: {loss.item()}')
             
             losses.append(loss.item())
-            hyp += outputs['out_labels']
+            hyp += outputs.label
             gt += data['gloss_label']
         
         opt.zero_grad()

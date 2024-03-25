@@ -5,8 +5,10 @@ from typing import List, Any
 from einops import rearrange
 from ..utils.decode import CTCDecoder
 from ..modules.slr_base.base_stream import BaseStream
+from collections import namedtuple
 
 class GlobalLoss:
+
     def __init__(self, weights, temperature) -> None:
         #weigts: ctc_seq, ctc_conv, distill
         self.CTC = nn.CTCLoss(blank=0, reduction='none')
@@ -72,21 +74,28 @@ class SLRModel(nn.Module):
         self.decoder = CTCDecoder(self.vocab, blank_id=0, search_mode=ctc_search_type, log_probs_input=True)
     
     def forward(self, input, t_length, *args, **kwargs):
+        #define return tuple
+        SLRModelOut = namedtuple('SLRModelOut', ['backbone_out', 'label'])
+
         backbone_out = self.backbone(input, t_length)
         if self.return_label:
-            y_predict = backbone_out['out']
-            video_length = backbone_out['t_length']
+            y_predict = backbone_out.out
+            video_length = backbone_out.t_length
             y_predict = torch.nn.functional.log_softmax(y_predict, -1).detach().cpu()
-            backbone_out['out_labels'] = self.decoder(y_predict, video_length)
-        return backbone_out
+            label = self.decoder(y_predict, video_length)
+            return SLRModelOut(backbone_out, label)
+        return SLRModelOut(backbone_out, None)
     
     def criterion(self, outputs, target, target_length): 
-        return self.loss(outputs['encoder_out']['out'], outputs['out'], outputs['t_length'], target, target_length)
+        encoder_out = outputs.backbone_out.encoder_out.out
+        seq_out = outputs.backbone_out.out
+        t_length = outputs.backbone_out.t_length
+        return self.loss(encoder_out, seq_out, t_length, target, target_length)
 
     @torch.no_grad()
     def inference(self, *args, **kwargs) -> List[List[str]]:
         outputs = self.backbone(*args, **kwargs)
-        y_predict = outputs['out']
-        video_length = outputs['t_length']
+        y_predict = outputs.out
+        video_length = outputs.t_length
         y_predict = torch.nn.functional.log_softmax(y_predict, -1).detach().cpu()
         return self.decoder(y_predict, video_length)

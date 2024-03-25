@@ -9,13 +9,13 @@ transform: torchvision.transforms
 T: torchvision.transforms
 CT: csi_sign_language.data.transforms
 
-checkpoint_dir: outputs/train/2024-02-16_18-09-04/train_x3d_with_LSTM
+checkpoint_dir: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-03-22_15-45-56/train_x3d_trans
 train_config: ${checkpoint_dir}/.hydra/config.yaml
 checkpoint: ${checkpoint_dir}/checkpoint.pt
 phoenix14_root: /home/jingyan/Documents/sign_language_rgb/preprocessed/ph14_lmdb
 evaluation_tool: /home/jingyan/Documents/sign_language_rgb/evaluation/ph14
 
-device: cuda
+device: cpu
 
 inferencer:
   _target_: ${csi}.engines.inferencer.Inferencer
@@ -28,13 +28,27 @@ data:
   video_transform: 
         _target_: ${T}.Compose
         transforms: 
-        - _target_: ${CT}.video.ToTensor
-          keys: [video, gloss]
-        - _target_: ${CT}.video.FrameScale
-          min: -1.
-          max: 1.
-        - _target_: ${CT}.video.CentralCrop
-          size: 224
+        - _target_: ${CT}.common.ApplyByKey
+          key: video
+          transforms:
+          - _target_: ${CT}.common.ToTensor
+            dtype: float32
+          - _target_: ${CT}.common.Rearrange
+            pattern: "t h w c -> t c h w"
+          - _target_: ${CT}.common.Rescale
+            input: [0., 255.]
+            output: [0., 1.]
+          - _target_: ${T}.CenterCrop
+            size: 224
+          - _target_: ${T}.Resize
+            size: 192
+          # - _target_: ${CT}.common.Rearrange
+          #   pattern: "t c h w -> t h w c"
+        - _target_: ${CT}.common.ApplyByKey
+          key: gloss
+          transforms:
+          - _target_: ${CT}.common.ToTensor
+
   test_set: 
     _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
     data_root: ${phoenix14_root}
@@ -43,7 +57,7 @@ data:
     transform: ${data.video_transform}
   test_loader:
     _target_: torch.utils.data.DataLoader
-    batch_size: 2
-    num_workers: 4
+    batch_size: 1
+    num_workers: 3
     dataset: ${data.test_set}
     collate_fn: ${data.collate_fn}

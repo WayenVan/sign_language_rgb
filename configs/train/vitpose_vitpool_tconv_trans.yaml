@@ -1,4 +1,3 @@
-
 hydra:
   run: 
     dir: outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}/${hydra.job.name}_${description}
@@ -24,7 +23,7 @@ batch_size: 2
 vocab_size: 1296
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
 checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-03-21_22-02-05/train_x3d_trans/checkpoint.pt
 
@@ -35,15 +34,16 @@ model:
   backbone: 
     _target_: ${csi}.modules.slr_base.base_stream.BaseStream
     encoder: 
-      _target_: ${csi}.modules.slr_base.encoders.X3dEncoder
-      x3d_type: x3d_s
-      x3d_header:
-        _target_: ${csi}.modules.x3d.Header
-        _args_: [192, 1024, 432]
-        dropout: 0.5
+      _target_: ${csi}.modules.slr_base.vitpose_encoder.VitPoseEncoder
+      img_size: 224
+      color_range: [0, 1]
+      cfg_path: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192.py
+      checkpoint: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192-62d7a712_20230314.pth
+      drop_path_rate: 0.1
+      freeze_vitpose: True
     neck:
       _target_: ${csi}.modules.tconv.TemporalConv1D
-      input_size: 1024
+      input_size: 384
       out_size: 1024
       bottleneck_size:  512
       conv_type: ['K5', 'P2', 'K5', 'P2']
@@ -54,16 +54,15 @@ model:
       n_heads: 8
       n_layers: 6
       d_feedforward: 2048
-
 optimizer:
   _target_: torch.optim.Adam
-  lr: 4e-7
+  lr: 1e-4
   weight_decay: 0.0001
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  step_size: 15
-  gamma: 0.8
+  step_size: 40
+  gamma: 0.5
 
 trainner:
   _target_: ${csi}.engines.trainner.Trainner
@@ -99,8 +98,8 @@ data:
             scale: [0.7, 1.0]
             ratio: [0.75, 1.33333333333]
             antialias: True
-          - _target_: ${T}.Resize
-            size: 192
+          # - _target_: ${T}.Resize
+          #   size: 192
           - _target_: ${CT}.t_tensor.ColorJitter
             brightness: 0.4
             contrast: 0.4
@@ -128,8 +127,8 @@ data:
             output: [0., 1.]
           - _target_: ${T}.CenterCrop
             size: 224
-          - _target_: ${T}.Resize
-            size: 192
+          # - _target_: ${T}.Resize
+          #   size: 192
           # - _target_: ${CT}.common.Rearrange
           #   pattern: "t c h w -> t h w c"
         - _target_: ${CT}.common.ApplyByKey

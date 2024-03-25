@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 from omegaconf import OmegaConf, DictConfig
+from torch import nn
 import sys
 import logging
 sys.path.append('src')
@@ -13,6 +14,8 @@ from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculat
 import hydra
 import os
 import json
+
+from tensorboardX import SummaryWriter
 
 logger = logging.getLogger('main')
 
@@ -28,44 +31,48 @@ def main(cfg: DictConfig):
     model.to(cfg.device)
     checkpoint = torch.load(cfg.checkpoint)
     model.load_state_dict(checkpoint['model_state'])
+
+    #tensorboard
+    tbx_dir = os.path.join(work_dir, 'tensorboard')
+    os.mkdir(tbx_dir)
+    writer = SummaryWriter(tbx_dir)
+    _tbx_write_graph(writer, model, test_loader)
     
+    #inference
     inferencer: Inferencer = instantiate(cfg.inferencer, logger=logger)
     ids, hypothesis, ground_truth = inferencer.do_inference(model, test_loader)
     
-    ret = []
-    for id, gt, pre, post in list(zip(ids, ground_truth, hypothesis, post_process(hypothesis))):
-        ret.append(dict(
-            id=id,
-            gt=gt,
-            pre=pre,
-            post=post
-        ))
-    with open(os.path.join(work_dir, 'result.json'), 'w') as f:
-        json.dump(ret, f, indent=4)
-
+    
+    #wer calculated by python
     print(wer_calculation(ground_truth, post_process(hypothesis)))
     
     #better detail provided by sclite. need to merge for better performance
     wer_value = eval(ids, work_dir, post_process(hypothesis, regex=False, merge=True), test_loader.dataset.get_stm(), 'hyp.ctm', cfg.evaluation_tool)
     print(wer_value[0])
     
-    meta = checkpoint['meta']
-    epoch = [m['epoch'] for m in meta]
-    loss = [m['train_loss'] for m in meta]
-    wer = [m['val_wer'] for m in meta]
-    fig, axe = plt.subplots()
-    lins1 = axe.plot(epoch, loss, label='loss')
-    axe2 = axe.twinx()
-    lins2 = axe2.plot(epoch, wer, color='r', label='WER')
+    #evaluation of each result
+    wers_every = [wer_calculation([gt], [hypo]) for hypo, gt in zip(hypothesis, ground_truth)]
+    ret = []
+    for id, wer, gt, pre, post in list(zip(ids, wers_every, ground_truth, hypothesis, post_process(hypothesis))):
+        ret.append(dict(
+            id=id,
+            wer=wer,
+            gt=gt,
+            pre=pre,
+            post=post
+        ))
+    with open(os.path.join(work_dir, 'result.json'), 'w') as f:
+        json.dump(ret, f, indent=4)
     
-    lns = lins1 + lins2
-    labs = [l.get_label() for l in lns]
-    axe.legend(lns, labs, loc=0)
-
-    axe.set_xlabel('epoch')
-    axe.set_ylabel('loss')
-    axe2.set_ylabel('WER')
-    fig.savefig(os.path.join(work_dir, 'fig.png'))
+    
+    
+def _tbx_write_graph(writer: SummaryWriter, model: nn.Module, loader):
+    device = next(iter(model.parameters())).device
+    data = next(iter(loader))
+    video = data['video'].to(device)
+    video_length = data['video_length'].to(device)
+    writer.add_graph(model.backbone, (video, video_length))
+        
     
     
 if __name__ == '__main__':

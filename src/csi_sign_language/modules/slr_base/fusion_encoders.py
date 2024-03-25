@@ -3,15 +3,24 @@ from torch import nn
 from torch.nn import functional as F
 from einops import einsum
 
+import math
 from einops.layers.torch import Rearrange
 from .encoders import TemporalShift
+from ...utils.misc import add_attributes
+
+from ..externals.litflownet3 import LiteFlowNet3
+from ..x3d import X3d
+from typing import List
+from collections import namedtuple
+
+from einops import rearrange
 
 class Fusion(nn.Module):
 
     def __init__(self, x3d_channels, flow_propotion, corr_channels_in, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.c_x3d = x3d_channels
-        self.c_flow = x3d_channels * flow_propotion 
+        self.c_flow = int(x3d_channels * flow_propotion)
         self.c_corr = x3d_channels - self.c_flow
         
         self.c_corr_in =  corr_channels_in
@@ -25,10 +34,13 @@ class Fusion(nn.Module):
 
         self.corr_conv = nn.Sequential(
             nn.Conv3d(self.c_corr_in, self.c_corr, 1, 1),
-            nn.BatchNorm3d(x3d_channels),
+            nn.BatchNorm3d(self.c_corr),
             nn.LeakyReLU(inplace=True))
         
-        self.weights = nn.Parameter(torch.random(x3d_channels), requires_grad=True)
+        self.weights = nn.Parameter(torch.randn(x3d_channels), requires_grad=True)
+        
+    def _init_weights(self):
+        nn.init.kaiming_normal_(self.weights, a=math.sqrt(5))
         
     def forward(self, features, flow, corr, t_length):
         """
@@ -54,44 +66,60 @@ class Fusion(nn.Module):
     
 class X3DFlowEncoder(nn.Module):
     
-    def __init__(self, out_channels, color_range, fusion_layers: List[List], flownet_checkpoint, freeze_flownet=True, freeze_x3d=False, *args, **kwargs) -> None:
+    def __init__(
+        self, 
+        color_range, 
+        x3d_type,
+        x3d_header,
+        fusion_layers: List[List], 
+        flownet_checkpoint, 
+        freeze_flownet=True, 
+        freeze_x3d=False, 
+        *args, **kwargs) -> None:
+
         super().__init__(*args, **kwargs)
-        add_attributes(self, locals())
+        self.freeze_flownet = freeze_flownet
+        self.freeze_x3d = freeze_x3d
 
         self.temporal_shift = TemporalShift()
         self.flatten_tn = Rearrange('f n c t h w -> (n t) c f h w')
-        self.flownet = FlowNet2SD(color_range)
-        self.x3d = X3d()
-        self.proejct = Conv_Pool_Proejction(self.x3d.x3d_out_channels, out_channels, neck_channels=out_channels*2)
+        self.flownet = LiteFlowNet3(color_range)
+        
+        self.x3d = X3d(x3d_type, header=x3d_header)
 
         self._create_fusion_layers(fusion_layers)
         self._load_flownet(flownet_checkpoint)
         
     def _load_flownet(self, checkpoint):
         checkpoint = torch.load(checkpoint)
-        self.flownet.load_state_dict(checkpoint['state_dict'])
+        self.flownet.load_state_dict(checkpoint)
         
     
     def _create_fusion_layers(self, fusion_layers):
         self.fusion_layers = nn.ModuleList()
         for fusions in fusion_layers:
-            self.fusion_layers.append(Fusion(*fusions))
+            self.fusion_layers.append(Fusion(fusions[0],fusions[1],fusions[2]))
     
     def forward(self, x, t_length):
         #n c t h w
         N, C, T, H, W = x.shape
         flow_input = self.temporal_shift(x, t_length)
-        flow_input = self.flatten_tn(flow_input)
-        flow_out = self.flownet(flow_input)
-        flow_out = [rearrange(f, '(n t) d h w -> n d t h w', n=N) for f in flow_out]
+        flow_input = rearrange(flow_input, 'f n c t h w -> f (n t) c h w')
+        flows, corrs = self.flownet(flow_input[0], flow_input[1])
+        flows = [rearrange(f, '(n t) d h w -> n d t h w', n=N) for f in flows]
+        corrs = [rearrange(c, '(n t) d h w -> n d t h w', n=N) for c in corrs]
         
-        x = self._x3d_fusion(x, flow_out, t_length)
-        x, t_length = self.proejct(x, t_length)
+        #reverse
+        flows = flows[::-1]
+        corrs = corrs[::-1]
+
+        x = self._x3d_fusion(x, flows, corrs, t_length)
+        
         
         return dict(
             out=x,
             t_length=t_length,
-            flow=flow_out
+            flows=flows
         )
 
     def train(self, mode=True):
@@ -109,14 +137,13 @@ class X3DFlowEncoder(nn.Module):
         :param x: [n, c, t, h, w]
         """
         N, C, T, H, W = x.shape
-        stages_out = []
-
         x = self.x3d.stem(x)
 
         for idx, stage in enumerate(self.x3d.res_stages):
             x = stage(x)
             x = self.fusion_layers[idx](x, flows[idx], corrs[idx], t_length)
-            stages_out.append(x)
+        
+        x, t_length = self.x3d.header(x, t_length)
         
         return x
         

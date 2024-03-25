@@ -16,6 +16,7 @@ from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
 from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
+from csi_sign_language.utils.misc import is_debugging
 import hydra
 import os
 import shutil
@@ -27,12 +28,11 @@ import numpy as np
 def main(cfg: DictConfig):
     torch.cuda.manual_seed_all(cfg.seed)
     torch.manual_seed(cfg.seed)
-    
-    # env = lmdb.open(os.path.join(cfg.phoenix14_root, cfg.data.subset, 'feature_database'))
-    script = os.path.abspath(__file__)
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
-    
-    shutil.copyfile(script, os.path.join(save_dir, 'script.py'))
+    if is_debugging():
+        with open(os.path.join(save_dir, 'debug'), 'w'):
+            pass
+
     logger.info('building model and dataloaders')
     
     #initialize data 
@@ -92,6 +92,9 @@ def main(cfg: DictConfig):
         hypothesis = post_process(hypothesis)
         val_wer = wer_calculation(ground_truth, hypothesis)
         logger.info(f'validation finished, wer: {val_wer}')
+
+        lr_scheduler.step()
+        logger.info(f'finish one epoch')
         
         #save essential informations 
         metas.append(dict(
@@ -114,8 +117,6 @@ def main(cfg: DictConfig):
                 }, os.path.join(save_dir, 'checkpoint.pt'))
             logger.info(f'best checkpoint saved')
 
-        lr_scheduler.step()
-        logger.info(f'finish one epoch')
 
 def _log_history(checkpoint, logger: logging.Logger):
     logger.info('-----------showing training history--------------')
@@ -124,6 +125,7 @@ def _log_history(checkpoint, logger: logging.Logger):
         logger.info(f"epoch: {info['epoch']}")
         logger.info("lr: {}, train loss: {}, train wer: {}, val wer: {}".format(info['lr'], info['train_loss'], info['train_wer'], info['val_wer']))
     logger.info('-----------finish history------------------------')
+
     
 if __name__ == '__main__':
     main()
