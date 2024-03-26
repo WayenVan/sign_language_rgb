@@ -18,14 +18,14 @@ epoch: 80
 message_interval: 100
 non_block: False
 pin_memory: False
-num_workers: 8
+num_workers: 10
 batch_size: 2
 vocab_size: 1296
 
 #if continuos read model
-load_weights: False
+load_weights: True
 is_resume: False
-checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-03-21_22-02-05/train_x3d_trans/checkpoint.pt
+checkpoint: /home/jingyan/Documents/sign_language_rgb/outputs/train/2024-03-26_15-17-40/train_x3d_trans/checkpoint.pt
 
 model:
   _target_: ${csi}.models.slr_ctc_baseline.SLRModel
@@ -35,12 +35,12 @@ model:
     _target_: ${csi}.modules.slr_base.base_stream.BaseStream
     encoder: 
       _target_: ${csi}.modules.slr_base.vitpose_encoder.VitPoseEncoder
-      img_size: 224
+      img_size: 192
       color_range: [0, 1]
       cfg_path: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192.py
       checkpoint: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192-62d7a712_20230314.pth
-      drop_path_rate: 0.1
-      freeze_vitpose: True
+      drop_path_rate: 0.5
+      freeze_vitpose: False
     neck:
       _target_: ${csi}.modules.tconv.TemporalConv1D
       input_size: 384
@@ -61,7 +61,7 @@ optimizer:
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  step_size: 40
+  step_size: 15
   gamma: 0.5
 
 trainner:
@@ -74,7 +74,7 @@ inferencer:
   device: ${device}
 
 data:
-  excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
+  # excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
   subset: multisigner
   collate_fn: 
     _target_: ${csi}.data.dataset.phoenix14.CollateFn
@@ -88,6 +88,9 @@ data:
           transforms:
           - _target_: ${CT}.common.ToTensor
             dtype: float32
+          - _target_: ${CT}.common.TemporalAug
+            t_min: 0.5
+            t_max: 1.5
           - _target_: ${CT}.common.Rescale
             input: [0., 255.]
             output: [0., 1.]
@@ -98,8 +101,8 @@ data:
             scale: [0.7, 1.0]
             ratio: [0.75, 1.33333333333]
             antialias: True
-          # - _target_: ${T}.Resize
-          #   size: 192
+          - _target_: ${T}.Resize
+            size: 192
           - _target_: ${CT}.t_tensor.ColorJitter
             brightness: 0.4
             contrast: 0.4
@@ -127,8 +130,8 @@ data:
             output: [0., 1.]
           - _target_: ${T}.CenterCrop
             size: 224
-          # - _target_: ${T}.Resize
-          #   size: 192
+          - _target_: ${T}.Resize
+            size: 192
           # - _target_: ${CT}.common.Rearrange
           #   pattern: "t c h w -> t h w c"
         - _target_: ${CT}.common.ApplyByKey

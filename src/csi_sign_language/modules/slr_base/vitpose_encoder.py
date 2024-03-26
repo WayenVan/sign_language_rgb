@@ -30,9 +30,9 @@ class VitPoseEncoder(nn.Module):
         if vit_pool_arch is None:
             arch = {
                 'embed_dims': vit_out_channels,
-                'num_layers': 6,
-                'num_heads': 12,
-                'feedforward_channels': vit_out_channels * 4
+                'num_layers': 4,
+                'num_heads': 8,
+                'feedforward_channels': vit_out_channels * 2
             }
         else:
             arch = vit_pool_arch
