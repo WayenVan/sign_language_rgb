@@ -15,17 +15,18 @@ from torch.optim.lr_scheduler import LRScheduler
 from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
-from csi_sign_language.evaluation.ph14.wer_evaluation_python import wer_calculation
+from csi_sign_language.evaluation.wer_evaluation_python import wer_calculation
 from csi_sign_language.utils.misc import is_debugging
+from csi_sign_language.utils.git import save_git_diff_to_file, get_current_git_hash, save_git_hash
 import hydra
 import os
-import shutil
 logger = logging.getLogger('main')
 import numpy as np
 
 
-@hydra.main(version_base=None, config_path='../configs/train', config_name='default.yaml')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/resnet_trans')
 def main(cfg: DictConfig):
+    print(os.getcwd())
     torch.cuda.manual_seed_all(cfg.seed)
     torch.manual_seed(cfg.seed)
     save_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
@@ -33,17 +34,22 @@ def main(cfg: DictConfig):
         with open(os.path.join(save_dir, 'debug'), 'w'):
             pass
 
+    logger.info('saving git info')
+    save_git_hash(os.path.join(save_dir, 'git_version.bash'))
+    save_git_diff_to_file(os.path.join(save_dir, 'changes.patch'))
+
     logger.info('building model and dataloaders')
     
     #initialize data 
-    train_loader: DataLoader = instantiate(cfg.data.train_loader)
-    val_loader: DataLoader = instantiate(cfg.data.val_loader)
+    train_loader: DataLoader = instantiate(cfg.data.loader.train)
+    val_loader: DataLoader = instantiate(cfg.data.loader.val)
     vocab = train_loader.dataset.vocab
     
     #initialize trainning essential
     model: Module = instantiate(cfg.model, vocab=vocab)
     #move model before optimizer initialize
-    model.to(cfg.device, non_blocking=cfg.non_block)
+    model.to(cfg.device)
+
     #initialize record list
     metas = []
     last_epoch = -1
@@ -70,10 +76,11 @@ def main(cfg: DictConfig):
     lr_scheduler: LRScheduler = instantiate(cfg.lr_scheduler, opt, last_epoch=last_epoch)
     
     logger.info('building trainner and inferencer')
-    trainer: Trainner = instantiate(cfg.trainner, logger=logger)
-    inferencer: Inferencer = instantiate(cfg.inferencer, logger=logger) 
+    trainer: Trainner = instantiate(cfg.engines.trainner, logger=logger)
+    inferencer: Inferencer = instantiate(cfg.engines.inferencer, logger=logger) 
     logger.info('training loop start')
-    best_wer_value = 1000
+     
+    best_wer_value = metas[-1]['val_wer'] if len(metas) > 0 else 1000.
     for i in range(cfg.epoch):
         real_epoch = last_epoch + i + 1
 
@@ -82,7 +89,7 @@ def main(cfg: DictConfig):
         logger.info(f'epoch {real_epoch}, lr={lr}')
 
         start_time = time.time()
-        mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, non_blocking=cfg.non_block, data_excluded=getattr(cfg.data, 'excluded', []))
+        mean_loss, hyp_train, gt_train= trainer.do_train(model, train_loader, opt, getattr(cfg, 'data_excluded', []))
         train_time = time.time() - start_time
         train_wer = wer_calculation(gt_train, hyp_train)
         logger.info(f'training finished, mean loss: {mean_loss}, wer: {train_wer}, total time: {train_time}')

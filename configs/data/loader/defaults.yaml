@@ -1,0 +1,22 @@
+
+train:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 2
+  num_workers: 4
+  shuffle: true
+  dataset: ${data.dataset.train}
+  collate_fn: ${data.dataset.collate}
+
+val:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 2
+  num_workers: 4
+  dataset: ${data.dataset.val}
+  collate_fn: ${data.dataset.collate}
+
+test:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 2
+  num_workers: 4
+  dataset: ${data.dataset.test}
+  collate_fn: ${data.dataset.collate}

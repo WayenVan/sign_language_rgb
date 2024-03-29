@@ -1,0 +1,26 @@
+  _target_: ${csi}.models.slr_ctc_baseline.SLRModel
+  loss_temp: 8
+  loss_weight: [1.0, 0., 0.]
+  backbone: 
+    _target_: ${csi}.modules.slr_base.base_stream.BaseStream
+    encoder: 
+      _target_: ${csi}.modules.slr_base.vitpose_encoder.VitPoseEncoder
+      img_size: 192
+      color_range: [0, 1]
+      cfg_path: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192.py
+      checkpoint: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192-62d7a712_20230314.pth
+      drop_path_rate: 0.5
+      freeze_vitpose: False
+    neck:
+      _target_: ${csi}.modules.tconv.TemporalConv1D
+      input_size: 384
+      out_size: 1024
+      bottleneck_size:  512
+      conv_type: ['K5', 'P2', 'K5', 'P2']
+    decoder:
+      _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
+      n_class: 1296
+      d_model: 1024
+      n_heads: 8
+      n_layers: 6
+      d_feedforward: 2048

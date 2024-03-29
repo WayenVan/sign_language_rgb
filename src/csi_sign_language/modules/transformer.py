@@ -11,11 +11,12 @@ class TransformerEncoder(nn.Module):
         d_feedforward,
         n_head,
         n_layers,
+        dropout=0.1,
         ) -> None:
         super().__init__()
         add_attributes(self, locals())
 
-        encoder_layer = nn.TransformerEncoderLayer(d_model, n_head, dim_feedforward=d_feedforward)
+        encoder_layer = nn.TransformerEncoderLayer(d_model, n_head, dim_feedforward=d_feedforward, dropout=dropout)
         self.trans_decoder = nn.TransformerEncoder(encoder_layer, n_layers)
     
     def forward(self, x, seq_length):

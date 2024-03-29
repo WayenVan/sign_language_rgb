@@ -1,0 +1,23 @@
+train: 
+  _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
+  data_root: ${ph14.lmdb_root}
+  subset: multisigner
+  mode: train
+  transform: ${transforms.test}
+
+val: 
+  _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
+  data_root: ${ph14.lmdb_root}
+  subset: multisigner
+  mode: dev
+  transform: ${transforms.test}
+
+test:
+  _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset
+  data_root: ${phoenix14_root}
+  subset: ${data.subset}
+  mode: test
+  transform: ${transforms.test}
+
+collate: 
+  _target_: ${csi}.data.dataset.phoenix14.CollateFn

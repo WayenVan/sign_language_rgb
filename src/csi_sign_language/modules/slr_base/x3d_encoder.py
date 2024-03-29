@@ -2,11 +2,9 @@ import torch
 from typing import List
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import copy
-from ...modules.x3d import X3d
-from ...modules.externals.flownet2.models import FlowNet2SDConvDown, FlowNet2SD
-from ...modules.tconv import TemporalConv1D
+from ..x3d import X3d
+from ..externals.flownet2.models import FlowNet2SDConvDown, FlowNet2SD
+from ..tconv import TemporalConv1D
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 from collections import namedtuple

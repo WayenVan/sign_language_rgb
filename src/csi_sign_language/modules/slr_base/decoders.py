@@ -7,9 +7,9 @@ from ...modules.transformer import TransformerEncoder
 
 class TransformerDecoder(nn.Module):
     
-    def __init__(self, n_class, d_model, n_heads, n_layers, d_feedforward, freeze=False, *args, **kwargs) -> None:
+    def __init__(self, n_class, d_model, n_heads, n_layers, d_feedforward, freeze=False, dropout=0.1, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.tf = TransformerEncoder(d_model, d_feedforward, n_heads, n_layers)
+        self.tf = TransformerEncoder(d_model, d_feedforward, n_heads, n_layers, dropout=dropout)
         self.header = nn.Linear(d_model, n_class)
         self.freeze = freeze
         

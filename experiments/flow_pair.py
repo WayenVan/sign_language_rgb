@@ -8,7 +8,7 @@ from PIL import Image
 import numpy as np
 from csi_sign_language.modules.flownet2.utils.flow_utils import flow2img
 from matplotlib import pyplot as plt
-from csi_sign_language.modules.slr_base.encoders import TemporalShift
+from csi_sign_language.modules.slr_base.x3d_encoder import TemporalShift
 from omegaconf import OmegaConf
 from hydra.utils import instantiate
 import sys

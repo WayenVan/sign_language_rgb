@@ -5,7 +5,7 @@ from einops import einsum
 
 import math
 from einops.layers.torch import Rearrange
-from .encoders import TemporalShift
+from .x3d_encoder import TemporalShift
 from ...utils.misc import add_attributes
 
 from ..externals.litflownet3 import LiteFlowNet3
