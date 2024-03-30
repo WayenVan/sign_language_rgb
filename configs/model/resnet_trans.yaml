@@ -1,6 +1,4 @@
 _target_: ${csi}.models.slr_ctc_baseline.SLRModel
-loss_temp: 8
-loss_weight: [1.0, 0., 0.]
 backbone: 
   _target_: ${csi}.modules.slr_base.base_stream.BaseStream
   encoder: 

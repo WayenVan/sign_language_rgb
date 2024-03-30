@@ -7,6 +7,7 @@ from ..utils.decode import CTCDecoder
 from ..modules.slr_base.base_stream import BaseStream
 from collections import namedtuple
 
+
 class SLRModel(nn.Module):
     def __init__(
         self, 
