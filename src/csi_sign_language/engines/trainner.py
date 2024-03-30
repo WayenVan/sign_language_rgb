@@ -38,7 +38,7 @@ class Trainner():
         else:
             self.logger = None
         
-    def do_train(self, model, train_loader, opt, data_excluded=None):
+    def do_train(self, model, loss_fn, train_loader, opt, data_excluded=None):
         model.to(self.device)
         model.train()
         losses = []
@@ -56,7 +56,7 @@ class Trainner():
                     del data
                     continue
             
-            loss, outputs = self._forward(model, data)
+            loss, outputs = self._forward(model, loss_fn, data)
 
             #remove nan:
             if torch.isnan(loss) or torch.isinf(loss):
@@ -83,7 +83,7 @@ class Trainner():
         return np.mean(losses), hyp, gt
     
     
-    def _forward(self, model, data):
+    def _forward(self, model, loss_fn, data):
         video = data['video'].to(self.device)
         gloss = data['gloss'].to(self.device)
         video_length: torch.Tensor = data['video_length'].to(self.device)
@@ -92,10 +92,10 @@ class Trainner():
         if self.is_cuda and self.use_amp:
             with torch.autocast('cuda'):
                 outputs = model(video, video_length)
-                loss = model.criterion(outputs, gloss, gloss_length)
+                loss = loss_fn(outputs, video, video_length, gloss, gloss_length)
         else:
                 outputs = model(video, video_length)
-                loss = model.criterion(outputs, gloss, gloss_length)
+                loss = loss_fn(outputs, video, video_length, gloss, gloss_length)
         
         return loss, outputs
     

@@ -4,7 +4,54 @@ from mmengine.config import Config
 from mmpose.apis import init_model
 from csi_sign_language.utils.data import mapping_0_1
 from einops import rearrange
+import torch.nn.functional as F
 
+
+class VACLoss:
+
+    def __init__(self, weights, temperature) -> None:
+        #weigts: ctc_seq, ctc_conv, distill
+        self.CTC = nn.CTCLoss(blank=0, reduction='none')
+        self.distll = SelfDistillLoss(temperature)
+        self.weights = weights
+    
+    def __call__(self, conv_out, seq_out, length, target, target_length):
+        #[t, n, c] logits
+        input_length = length
+        conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
+
+        loss = 0
+        if self.weights[0] > 0.:
+            loss += self.CTC(seq_out, target, input_length.cpu().int(), target_length.cpu().int()).mean()* self.weights[0]
+        if self.weights[1] > 0.:
+            loss += self.CTC(conv_out, target, input_length.cpu().int(), target_length.cpu().int()).mean() * self.weights[1]
+        if self.weights[2] > 0.:
+            loss += self.distll(seq_out, conv_out) * self.weights[2]
+        return loss    
+    
+    # def _filter_nan(self, *losses):
+    #     ret = []
+    #     for loss in losses:
+    #         if torch.all(torch.isinf(loss)).item():
+    #             loss: torch.Tensor
+    #             print('loss is inf')
+    #             loss = torch.nan_to_num(loss, posinf=0.)
+    #         ret.append(loss)
+    #     return tuple(ret)
+
+class SelfDistillLoss:
+    def __init__(self, temperature) -> None:
+        self.t = temperature
+        
+    def __call__(self, teacher, student):
+        # seq: logits [t, n, c]
+        T, N, C = teacher.shape
+        assert (T, N, C) == student.shape
+        teacher, student = teacher/self.t, student/self.t
+
+        teacher = F.log_softmax(rearrange(teacher, 't n c -> (t n) c'), dim=-1)
+        student = F.log_softmax(rearrange(student, 't n c -> (t n) c'), dim=-1)
+        return F.kl_div(student, teacher.detach(), log_target=True, reduction='batchmean')
 
 class HeatMapCTC(nn.Module):
     

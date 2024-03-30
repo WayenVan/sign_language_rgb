@@ -2,11 +2,11 @@ import sys
 from logging import Logger
 
 def info(l: Logger, m):
-    if Logger is not None:
+    if l is not None:
         l.info(m)
 
 def warn(l: Logger, m):
-    if Logger is not None:
+    if l is not None:
         l.warn(m)
 
 def add_attributes(obj, locals: dict):

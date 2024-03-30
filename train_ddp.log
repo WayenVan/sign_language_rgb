@@ -1,0 +1,343 @@
+[2024-03-30 05:15:14,769][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:15:14,769][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:15:14,769][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:15:14,769][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:15:15,863][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpr01bf5so
+[2024-03-30 05:15:15,863][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpqn5_3diw
+[2024-03-30 05:15:15,863][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpr01bf5so/_remote_module_non_scriptable.py
+[2024-03-30 05:15:15,863][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpqn5_3diw/_remote_module_non_scriptable.py
+[2024-03-30 05:17:08,248][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:17:08,248][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:17:08,248][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:17:08,248][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:17:09,350][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpg5022jnc
+[2024-03-30 05:17:09,350][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpg5022jnc/_remote_module_non_scriptable.py
+[2024-03-30 05:18:19,580][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:18:19,580][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:18:19,580][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:18:19,580][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:18:19,581][main][INFO] - saving git info
+[2024-03-30 05:18:20,694][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp1zojtj03
+[2024-03-30 05:18:20,694][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp1zojtj03/_remote_module_non_scriptable.py
+[2024-03-30 05:19:03,600][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:19:03,601][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:19:03,601][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:19:03,601][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:19:03,602][main][INFO] - saving git info
+[2024-03-30 05:19:03,624][main][INFO] - building model and dataloaders
+[2024-03-30 05:19:04,692][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp19rrvevl
+[2024-03-30 05:19:04,693][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp19rrvevl/_remote_module_non_scriptable.py
+[2024-03-30 05:19:04,779][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpgs7_cp4j
+[2024-03-30 05:19:04,779][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpgs7_cp4j/_remote_module_non_scriptable.py
+[2024-03-30 05:19:07,905][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 05:20:49,164][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:20:49,164][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:20:49,164][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:20:49,164][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:20:49,165][main][INFO] - saving git info
+[2024-03-30 05:20:49,187][main][INFO] - building model and dataloaders
+[2024-03-30 05:20:50,280][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp1lsjsf_w
+[2024-03-30 05:20:50,280][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp1lsjsf_w/_remote_module_non_scriptable.py
+[2024-03-30 05:20:50,296][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpt4b3yxk_
+[2024-03-30 05:20:50,297][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpt4b3yxk_/_remote_module_non_scriptable.py
+[2024-03-30 05:20:53,448][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 05:29:17,575][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:29:17,575][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:29:17,575][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:29:17,575][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:29:17,576][main][INFO] - saving git info
+[2024-03-30 05:29:17,597][main][INFO] - building model and dataloaders
+[2024-03-30 05:29:45,122][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:29:45,123][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:29:45,122][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:29:45,123][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:29:45,124][main][INFO] - saving git info
+[2024-03-30 05:29:45,146][main][INFO] - building model and dataloaders
+[2024-03-30 05:29:53,731][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:29:53,731][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:29:53,732][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:29:53,732][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:29:53,733][main][INFO] - saving git info
+[2024-03-30 05:29:53,755][main][INFO] - building model and dataloaders
+[2024-03-30 05:30:26,419][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:30:26,419][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:30:26,419][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:30:26,419][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:30:26,421][main][INFO] - saving git info
+[2024-03-30 05:30:26,443][main][INFO] - building model and dataloaders
+[2024-03-30 05:30:27,557][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpjuhcsrsu
+[2024-03-30 05:30:27,558][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpjuhcsrsu/_remote_module_non_scriptable.py
+[2024-03-30 05:30:27,559][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpsm4subq5
+[2024-03-30 05:30:27,559][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpsm4subq5/_remote_module_non_scriptable.py
+[2024-03-30 05:30:30,664][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 05:57:38,237][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:57:38,238][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:57:38,238][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:57:38,248][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:57:38,249][main][INFO] - saving git info
+[2024-03-30 05:57:38,274][main][INFO] - building model and dataloaders
+[2024-03-30 05:57:39,358][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpb71bq5ut
+[2024-03-30 05:57:39,359][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpb71bq5ut/_remote_module_non_scriptable.py
+[2024-03-30 05:57:39,371][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmps2xxshpk
+[2024-03-30 05:57:39,371][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmps2xxshpk/_remote_module_non_scriptable.py
+[2024-03-30 05:57:48,776][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 05:57:48,777][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 05:57:48,777][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:57:48,777][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 05:57:48,778][main][INFO] - saving git info
+[2024-03-30 05:57:48,801][main][INFO] - building model and dataloaders
+[2024-03-30 05:57:49,893][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpd0rtzf8r
+[2024-03-30 05:57:49,893][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpd0rtzf8r/_remote_module_non_scriptable.py
+[2024-03-30 05:57:49,897][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpwcn49czk
+[2024-03-30 05:57:49,898][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpwcn49czk/_remote_module_non_scriptable.py
+[2024-03-30 06:00:18,145][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:00:18,145][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:00:18,145][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:00:18,145][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:00:18,146][main][INFO] - saving git info
+[2024-03-30 06:00:18,170][main][INFO] - building model and dataloaders
+[2024-03-30 06:00:19,243][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmprjx2n0o_
+[2024-03-30 06:00:19,243][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmprjx2n0o_/_remote_module_non_scriptable.py
+[2024-03-30 06:00:19,266][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpner6ffpj
+[2024-03-30 06:00:19,267][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpner6ffpj/_remote_module_non_scriptable.py
+[2024-03-30 06:00:22,662][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:00:38,705][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:00:38,706][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:00:38,706][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:00:38,716][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:00:38,717][main][INFO] - saving git info
+[2024-03-30 06:00:38,740][main][INFO] - building model and dataloaders
+[2024-03-30 06:00:39,823][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpmihw0lt7
+[2024-03-30 06:00:39,824][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpmihw0lt7/_remote_module_non_scriptable.py
+[2024-03-30 06:00:39,863][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpbbjsqu6l
+[2024-03-30 06:00:39,863][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpbbjsqu6l/_remote_module_non_scriptable.py
+[2024-03-30 06:00:43,220][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:01:44,257][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:01:44,257][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:01:44,257][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:01:44,257][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:01:44,258][main][INFO] - saving git info
+[2024-03-30 06:01:44,281][main][INFO] - building model and dataloaders
+[2024-03-30 06:01:45,353][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpwrwg461i
+[2024-03-30 06:01:45,353][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpwrwg461i/_remote_module_non_scriptable.py
+[2024-03-30 06:01:45,432][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpxh9l4oym
+[2024-03-30 06:01:45,432][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpxh9l4oym/_remote_module_non_scriptable.py
+[2024-03-30 06:01:48,651][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:02:29,414][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:02:29,414][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:02:29,414][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:02:29,424][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:02:29,425][main][INFO] - saving git info
+[2024-03-30 06:02:29,449][main][INFO] - building model and dataloaders
+[2024-03-30 06:02:30,571][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpr7x7d71j
+[2024-03-30 06:02:30,571][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpr7x7d71j/_remote_module_non_scriptable.py
+[2024-03-30 06:02:30,573][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpgwcgfc_f
+[2024-03-30 06:02:30,573][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpgwcgfc_f/_remote_module_non_scriptable.py
+[2024-03-30 06:02:33,969][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:03:03,227][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:03:03,228][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:03:03,228][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:03:03,228][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:03:03,229][main][INFO] - saving git info
+[2024-03-30 06:03:03,253][main][INFO] - building model and dataloaders
+[2024-03-30 06:03:04,328][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp38qig1wq
+[2024-03-30 06:03:04,329][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp38qig1wq/_remote_module_non_scriptable.py
+[2024-03-30 06:03:04,358][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpucb0uvbt
+[2024-03-30 06:03:04,358][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpucb0uvbt/_remote_module_non_scriptable.py
+[2024-03-30 06:03:07,704][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:03:11,014][main.Trainner][INFO] - max memory: 2171090944, memory: 1363976704
+[2024-03-30 06:03:11,021][main.Trainner][INFO] - iteration index: 0, batch loss: 119.57241821289062
+[2024-03-30 06:09:38,861][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:09:38,861][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:09:38,861][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:09:38,861][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:09:38,862][main][INFO] - saving git info
+[2024-03-30 06:09:38,886][main][INFO] - building model and dataloaders
+[2024-03-30 06:09:39,994][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpy0d2fgvs
+[2024-03-30 06:09:39,994][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpy0d2fgvs/_remote_module_non_scriptable.py
+[2024-03-30 06:09:39,994][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpsmda2mbz
+[2024-03-30 06:09:39,994][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpsmda2mbz/_remote_module_non_scriptable.py
+[2024-03-30 06:09:43,338][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:09:46,428][main.Trainner][INFO] - max memory: 2171090944, memory: 1363976704
+[2024-03-30 06:09:46,430][main.Trainner][INFO] - iteration index: 0, batch loss: 119.57241821289062
+[2024-03-30 06:10:26,449][main.Trainner][INFO] - max memory: 3950599680, memory: 1366159360
+[2024-03-30 06:10:26,458][main.Trainner][INFO] - iteration index: 100, batch loss: 69.121826171875
+[2024-03-30 06:11:03,998][main.Trainner][INFO] - max memory: 3950599680, memory: 1365547008
+[2024-03-30 06:11:04,008][main.Trainner][INFO] - iteration index: 200, batch loss: 82.67688751220703
+[2024-03-30 06:12:32,659][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:12:32,659][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:12:32,660][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:12:32,670][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:12:32,671][main][INFO] - saving git info
+[2024-03-30 06:12:32,698][main][INFO] - building model and dataloaders
+[2024-03-30 06:12:34,021][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp2rsy3fp_
+[2024-03-30 06:12:34,021][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp706j786c
+[2024-03-30 06:12:34,021][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp2rsy3fp_/_remote_module_non_scriptable.py
+[2024-03-30 06:12:34,022][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp706j786c/_remote_module_non_scriptable.py
+[2024-03-30 06:12:38,080][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:12:42,144][main.Trainner][INFO] - max memory: 3854863872, memory: 1362958336
+[2024-03-30 06:12:42,153][main.Trainner][INFO] - iteration index: 0, batch loss: 174.9062957763672
+[2024-03-30 06:13:34,956][main.Trainner][INFO] - max memory: 6653480960, memory: 1362261504
+[2024-03-30 06:13:34,965][main.Trainner][INFO] - iteration index: 100, batch loss: 76.98960876464844
+[2024-03-30 06:14:12,426][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:14:12,426][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:14:12,426][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:14:12,436][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:14:12,437][main][INFO] - saving git info
+[2024-03-30 06:14:12,462][main][INFO] - building model and dataloaders
+[2024-03-30 06:14:13,539][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp4a9ao4c4
+[2024-03-30 06:14:13,539][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp4a9ao4c4/_remote_module_non_scriptable.py
+[2024-03-30 06:14:13,631][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp_yshw7av
+[2024-03-30 06:14:13,631][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp_yshw7av/_remote_module_non_scriptable.py
+[2024-03-30 06:14:17,747][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:14:17,748][main][INFO] - finish one epoch
+[2024-03-30 06:14:55,146][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:14:55,146][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:14:55,146][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:14:55,147][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:14:55,147][main][INFO] - saving git info
+[2024-03-30 06:14:55,172][main][INFO] - building model and dataloaders
+[2024-03-30 06:14:56,244][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpgtqwo0v2
+[2024-03-30 06:14:56,244][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpgtqwo0v2/_remote_module_non_scriptable.py
+[2024-03-30 06:14:56,344][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpvzurorjm
+[2024-03-30 06:14:56,344][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpvzurorjm/_remote_module_non_scriptable.py
+[2024-03-30 06:15:00,474][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:15:00,475][main][INFO] - finish one epoch
+[2024-03-30 06:15:33,491][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:15:33,491][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:15:33,491][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:15:33,491][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:15:33,492][main][INFO] - saving git info
+[2024-03-30 06:15:33,517][main][INFO] - building model and dataloaders
+[2024-03-30 06:15:34,641][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpi4nd5l3i
+[2024-03-30 06:15:34,641][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpi4nd5l3i/_remote_module_non_scriptable.py
+[2024-03-30 06:15:34,646][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpr9anvsu1
+[2024-03-30 06:15:34,646][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpr9anvsu1/_remote_module_non_scriptable.py
+[2024-03-30 06:15:38,742][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:15:38,742][main][INFO] - finish one epoch
+[2024-03-30 06:17:12,666][main][INFO] - validation finished, wer: 111.69675090252709
+[2024-03-30 06:17:13,081][main][INFO] - best checkpoint saved
+[2024-03-30 06:17:13,081][main][INFO] - epoch 1, lr=[0.0001]
+[2024-03-30 06:17:13,081][main][INFO] - finish one epoch
+[2024-03-30 06:18:43,726][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:18:43,726][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:18:43,727][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:18:43,737][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:18:43,738][main][INFO] - saving git info
+[2024-03-30 06:18:43,765][main][INFO] - building model and dataloaders
+[2024-03-30 06:18:45,124][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpuoo9cxu5
+[2024-03-30 06:18:45,125][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpuoo9cxu5/_remote_module_non_scriptable.py
+[2024-03-30 06:18:45,125][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpidqtlu5z
+[2024-03-30 06:18:45,125][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpidqtlu5z/_remote_module_non_scriptable.py
+[2024-03-30 06:18:49,167][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:18:53,482][main.Trainner][INFO] - max memory: 3854863872, memory: 1362958336
+[2024-03-30 06:18:53,491][main.Trainner][INFO] - iteration index: 0, batch loss: 174.9062957763672
+[2024-03-30 06:19:13,465][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:19:13,465][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:19:13,465][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:19:13,465][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:19:13,467][main][INFO] - saving git info
+[2024-03-30 06:19:13,494][main][INFO] - building model and dataloaders
+[2024-03-30 06:19:14,627][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpzcp6g998
+[2024-03-30 06:19:14,627][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpzcp6g998/_remote_module_non_scriptable.py
+[2024-03-30 06:19:14,627][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpt_i6em_p
+[2024-03-30 06:19:14,628][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpt_i6em_p/_remote_module_non_scriptable.py
+[2024-03-30 06:19:18,100][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:19:30,729][main.Trainner][INFO] - max memory: 17737359872, memory: 1365992960
+[2024-03-30 06:19:30,735][main.Trainner][INFO] - iteration index: 0, batch loss: 214.38003540039062
+[2024-03-30 06:20:08,210][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:20:08,211][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:20:08,211][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:20:08,211][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:20:08,215][main][INFO] - saving git info
+[2024-03-30 06:20:08,247][main][INFO] - building model and dataloaders
+[2024-03-30 06:20:09,627][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpky8sdm6m
+[2024-03-30 06:20:09,627][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpa4g8zs2p
+[2024-03-30 06:20:09,627][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpky8sdm6m/_remote_module_non_scriptable.py
+[2024-03-30 06:20:09,627][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpa4g8zs2p/_remote_module_non_scriptable.py
+[2024-03-30 06:20:13,873][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:20:17,228][main.Trainner][INFO] - max memory: 2171090944, memory: 1363976704
+[2024-03-30 06:20:17,235][main.Trainner][INFO] - iteration index: 0, batch loss: 119.57241821289062
+[2024-03-30 06:20:51,408][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:20:51,408][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:20:51,408][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:20:51,408][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:20:51,409][main][INFO] - saving git info
+[2024-03-30 06:20:51,434][main][INFO] - building model and dataloaders
+[2024-03-30 06:20:52,532][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp7yihtexz
+[2024-03-30 06:20:52,532][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp7yihtexz/_remote_module_non_scriptable.py
+[2024-03-30 06:20:52,552][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmps70_kf_y
+[2024-03-30 06:20:52,552][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmps70_kf_y/_remote_module_non_scriptable.py
+[2024-03-30 06:20:56,046][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:21:04,097][main.Trainner][INFO] - max memory: 9213793280, memory: 1363433984
+[2024-03-30 06:21:04,106][main.Trainner][INFO] - iteration index: 0, batch loss: 244.9021453857422
+[2024-03-30 06:22:30,494][main.Trainner][INFO] - max memory: 12275585024, memory: 1363633664
+[2024-03-30 06:22:30,503][main.Trainner][INFO] - iteration index: 100, batch loss: 63.44512176513672
+[2024-03-30 06:24:01,336][main.Trainner][INFO] - max memory: 12651110400, memory: 1366016000
+[2024-03-30 06:24:01,345][main.Trainner][INFO] - iteration index: 200, batch loss: 75.70539855957031
+[2024-03-30 06:25:17,548][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:25:17,548][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:25:17,549][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:25:17,549][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:25:17,552][main][INFO] - saving git info
+[2024-03-30 06:25:17,585][main][INFO] - building model and dataloaders
+[2024-03-30 06:25:19,093][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpc9owzg_e
+[2024-03-30 06:25:19,093][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpc9owzg_e/_remote_module_non_scriptable.py
+[2024-03-30 06:25:19,093][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmp7sbi_utx
+[2024-03-30 06:25:19,093][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmp7sbi_utx/_remote_module_non_scriptable.py
+[2024-03-30 06:25:23,747][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:25:28,637][main.Trainner][INFO] - max memory: 3853856768, memory: 1361099264
+[2024-03-30 06:25:28,666][main.Trainner][INFO] - iteration index: 0, batch loss: 174.9062957763672
+[2024-03-30 06:25:28,741][torch.nn.parallel.distributed][INFO] - Reducer buckets have been rebuilt in this iteration.
+[2024-03-30 06:25:28,741][torch.nn.parallel.distributed][INFO] - Reducer buckets have been rebuilt in this iteration.
+[2024-03-30 06:26:18,689][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:26:18,689][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:26:18,689][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:26:18,690][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:26:18,690][main][INFO] - saving git info
+[2024-03-30 06:26:18,716][main][INFO] - building model and dataloaders
+[2024-03-30 06:26:19,847][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpi1ulpxse
+[2024-03-30 06:26:19,848][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpi1ulpxse/_remote_module_non_scriptable.py
+[2024-03-30 06:26:19,849][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpuedusonz
+[2024-03-30 06:26:19,849][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpuedusonz/_remote_module_non_scriptable.py
+[2024-03-30 06:26:23,316][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:26:30,700][main.Trainner][INFO] - max memory: 9213857280, memory: 1363147776
+[2024-03-30 06:26:30,728][main.Trainner][INFO] - iteration index: 0, batch loss: 244.9021453857422
+[2024-03-30 06:26:30,868][torch.nn.parallel.distributed][INFO] - Reducer buckets have been rebuilt in this iteration.
+[2024-03-30 06:26:30,868][torch.nn.parallel.distributed][INFO] - Reducer buckets have been rebuilt in this iteration.
+[2024-03-30 06:27:59,049][main.Trainner][INFO] - max memory: 12275235840, memory: 1361542656
+[2024-03-30 06:27:59,058][main.Trainner][INFO] - iteration index: 100, batch loss: 63.44512176513672
+[2024-03-30 06:29:31,411][main.Trainner][INFO] - max memory: 12651881472, memory: 1362568704
+[2024-03-30 06:29:31,420][main.Trainner][INFO] - iteration index: 200, batch loss: 75.70539855957031
+[2024-03-30 06:31:02,285][main.Trainner][INFO] - max memory: 12651881472, memory: 1361424896
+[2024-03-30 06:31:02,294][main.Trainner][INFO] - iteration index: 300, batch loss: 77.69943237304688
+[2024-03-30 06:31:43,057][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:31:43,058][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:31:43,058][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:31:43,058][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:31:43,061][main][INFO] - saving git info
+[2024-03-30 06:31:43,092][main][INFO] - building model and dataloaders
+[2024-03-30 06:31:44,590][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpz9dufncm
+[2024-03-30 06:31:44,590][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpfljgtvdz
+[2024-03-30 06:31:44,590][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpz9dufncm/_remote_module_non_scriptable.py
+[2024-03-30 06:31:44,590][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpfljgtvdz/_remote_module_non_scriptable.py
+[2024-03-30 06:31:49,386][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:31:58,134][main.Trainner][INFO] - max memory: 9213793280, memory: 1363433984
+[2024-03-30 06:31:58,143][main.Trainner][INFO] - iteration index: 0, batch loss: 244.9021453857422
+[2024-03-30 06:37:08,746][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 0
+[2024-03-30 06:37:08,747][torch.distributed.distributed_c10d][INFO] - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:37:08,746][torch.distributed.distributed_c10d][INFO] - Added key: store_based_barrier_key:1 to store for rank: 1
+[2024-03-30 06:37:08,747][torch.distributed.distributed_c10d][INFO] - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 2 nodes.
+[2024-03-30 06:37:08,749][main][INFO] - saving git info
+[2024-03-30 06:37:08,778][main][INFO] - building model and dataloaders
+[2024-03-30 06:37:10,103][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmph1bkk8rr
+[2024-03-30 06:37:10,103][torch.distributed.nn.jit.instantiator][INFO] - Created a temporary directory at /tmp/tmpemc9qjbz
+[2024-03-30 06:37:10,103][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmph1bkk8rr/_remote_module_non_scriptable.py
+[2024-03-30 06:37:10,103][torch.distributed.nn.jit.instantiator][INFO] - Writing /tmp/tmpemc9qjbz/_remote_module_non_scriptable.py
+[2024-03-30 06:37:14,242][main][INFO] - epoch 0, lr=[0.0001]
+[2024-03-30 06:37:21,786][main.Trainner][INFO] - max memory: 9213793280, memory: 1363433984
+[2024-03-30 06:37:21,795][main.Trainner][INFO] - iteration index: 0, batch loss: 244.9021453857422
+[2024-03-30 06:38:46,823][main.Trainner][INFO] - max memory: 12275585024, memory: 1363633664
+[2024-03-30 06:38:46,831][main.Trainner][INFO] - iteration index: 100, batch loss: 63.44512176513672
+[2024-03-30 06:40:19,509][main.Trainner][INFO] - max memory: 12651110400, memory: 1366016000
+[2024-03-30 06:40:19,517][main.Trainner][INFO] - iteration index: 200, batch loss: 75.70539855957031

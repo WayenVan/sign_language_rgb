@@ -1,0 +1,3 @@
+_target_: ${csi}.models.slr_ctc_baseline.VACLoss
+weights: [1., 0., 0.]
+temp: 8
