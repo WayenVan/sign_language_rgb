@@ -2,8 +2,6 @@
 defaults:
   - /_global_/dataset@_global_
   - /_global_/prefix@_global_
-  # - override hydra/hydra_logging: disabled
-  # - override hydra/job_logging: disabled
   - /hydra: no_output
   - /engines: defaults
   - /optimizer: adam
