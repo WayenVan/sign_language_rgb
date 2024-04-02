@@ -20,7 +20,7 @@ transforms:
     ratio: [0.75, 1.33333333333]
     antialias: True
   - _target_: ${T}.Resize
-    size: 192
+    size: 160
   - _target_: ${CT}.t_tensor.ColorJitter
     brightness: 0.4
     contrast: 0.4

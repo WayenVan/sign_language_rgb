@@ -9,6 +9,7 @@ from einops import rearrange
 from csi_sign_language.utils.data import mapping_0_1
 from collections import namedtuple
 
+
 class VitPoseEncoder(nn.Module):
     
     def __init__(self, img_size, color_range, cfg_path, checkpoint, drop_path_rate, vit_pool_arch=None, freeze_vitpose=True, *args, **kwargs) -> None:
@@ -48,6 +49,9 @@ class VitPoseEncoder(nn.Module):
     
     
     def _data_preprocess(self, x):
+        assert x.min() >= self.color_range[0]
+        assert x.max() >= self.color_range[1]
+
         x = mapping_0_1(self.color_range, x)
         x = x * 255. #mapping to 0-255
         x = x.permute(0, 2, 3, 1)

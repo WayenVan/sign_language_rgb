@@ -1,5 +1,5 @@
 #! /usr/bin/bash
-outputs_dir=/home/jingyan/Documents/sign_language_rgb/outputs/train
+outputs_dir=/home/jingyan/Documents/sign_language_rgb/outputs/train_ddp
 
 file_list=`find $outputs_dir -maxdepth 1`
 

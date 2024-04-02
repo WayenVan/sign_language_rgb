@@ -1,5 +1,11 @@
 import sys
 from logging import Logger
+import gc
+import torch
+
+def clean():
+    gc.collect()
+    torch.cuda.empty_cache()
 
 def info(l: Logger, m):
     if l is not None:

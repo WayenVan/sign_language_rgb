@@ -6,6 +6,8 @@
 /.env
 *.code-workspace
 .idea
+*.log
+
 
 /resources
 __pycache__/*

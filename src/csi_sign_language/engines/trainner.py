@@ -7,7 +7,7 @@ import numpy as np
 from ..utils.inspect import *
 from ..utils.data import *
 from typing import *
-from ..utils.misc import info, warn
+from ..utils.misc import info, warn, clean
 
 class Trainner():
     

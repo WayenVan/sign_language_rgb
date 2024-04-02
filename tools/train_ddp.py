@@ -16,7 +16,7 @@ from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
 from csi_sign_language.evaluation.wer_evaluation_python import wer_calculation
-from csi_sign_language.utils.misc import is_debugging, info, warn
+from csi_sign_language.utils.misc import is_debugging, info, warn, clean
 from csi_sign_language.utils.git import save_git_diff_to_file, get_current_git_hash, save_git_hash
 import hydra
 import os
@@ -30,7 +30,7 @@ local_rank = int(os.getenv('LOCAL_RANK'))
 device = f'cuda:{local_rank}'
 assert local_rank is not None
 
-@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/resnet_trans_ddp')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/swin_pose_trans_ddp')
 def main(cfg: DictConfig):
     global logger
     setup()
@@ -77,7 +77,9 @@ def main(cfg: DictConfig):
     opt, lr_scheduler, trainer, inferencer = build_engines(cfg, model)
 
     best_wer_value = metas[-1]['val_wer'] if len(metas) > 0 else 1000.
+    
     for i in range(cfg.epoch):
+        clean() 
         real_epoch = i
         #train
         train_loader.sampler.set_epoch(real_epoch)
@@ -120,6 +122,7 @@ def main(cfg: DictConfig):
                     'meta': metas
                     }, os.path.join(save_dir, 'checkpoint.pt'))
                 info(logger, f'best checkpoint saved')
+
     
     cleanup()
 
@@ -152,8 +155,7 @@ def build_model_and_data(cfg):
         find_unused_parameters=True
         )
     
-    loss_fn: nn.Module = instantiate(cfg.loss)
-
+    loss_fn: nn.Module = instantiate(cfg.loss, device=device)
     return model, loss_fn, train_loader, val_loader, vocab
 
 def load_checkpoints(cfg, model):

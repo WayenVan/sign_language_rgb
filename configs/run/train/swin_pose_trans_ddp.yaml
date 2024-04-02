@@ -10,8 +10,8 @@ defaults:
   - /data/loader: defaults
   - /transforms/train: defaults
   - /transforms/test: defaults
-  - /model: resnet_trans
-  - /loss: vac
+  - /model: swin_pose_trans
+  - /loss: multi
   
 seed: 3407
 epoch: 85
@@ -31,7 +31,7 @@ data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
 data:
   loader:
     train: 
-      batch_size: 4
+      batch_size: 1
       num_workers: 4
       shuffle: false
     val:
@@ -41,5 +41,5 @@ optimizer:
   lr: 1e-4
 
 lr_scheduler:  
-  milestones: [20, 40, 50, 50]
+  milestones: [20, 40, 50, 60, 70, 75, 80, 85, 90]
   gamma: 0.5

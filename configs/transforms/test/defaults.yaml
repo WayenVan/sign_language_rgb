@@ -13,7 +13,7 @@ transforms:
   - _target_: ${T}.CenterCrop
     size: 224
   - _target_: ${T}.Resize
-    size: 192
+    size: 160
   # - _target_: ${CT}.common.Rearrange
   #   pattern: "t c h w -> t h w c"
 - _target_: ${CT}.common.ApplyByKey

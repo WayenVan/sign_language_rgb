@@ -42,6 +42,9 @@ class Rescale:
         self.output = output
     def __call__(self, video):
         video = self.output[0] + (self.output[1] - self.output[0]) * (video - self.input[0]) / (self.input[1] - self.input[0])
+
+        assert video.max() <= self.output[1], f'{video.max()}'
+        assert video.min() >= self.output[0], f'{video.min()}'
         return video
 
 class CentralCrop:
