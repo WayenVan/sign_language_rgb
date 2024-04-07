@@ -66,7 +66,7 @@ class HeatMapLoss(nn.Module):
         self.color_range = color_range
         self.is_cuda = ('cuda' in device)
 
-        self.vitpose = init_model(cfg, checkpoint)
+        self.vitpose = init_model(cfg, checkpoint, device=device)
         if self.is_cuda:
             self.vitpose = self.vitpose.half()
         for p in self.vitpose.parameters():

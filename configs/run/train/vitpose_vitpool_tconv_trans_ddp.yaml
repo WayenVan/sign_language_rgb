@@ -1,8 +1,8 @@
 #@package _global_
 defaults:
-  - /_global_/dataset@_global_
   - /_global_/prefix@_global_
-  - /hydra: defaults
+  - /resources@_global_
+  - /hydra: no_output
   - /engines: defaults
   - /optimizer: adam
   - /lr_scheduler: multistep
@@ -11,10 +11,13 @@ defaults:
   - /transforms/train: defaults
   - /transforms/test: defaults
   - /model: vitpose_vitpool_tconv_trans
+  - /loss: vac
   
 seed: 3407
 device: cuda
-epoch: 80
+epoch: 90
+  
+snap_path: snap
 
 #-1 when we don want message out
 message_interval: 100
@@ -22,21 +25,30 @@ vocab_size: 1296
 
 #if continuos read model
 load_weights: True
-is_resume: False
-checkpoint: outputs/train/2024-03-28_03-09-56/checkpoint.pt
+checkpoint: outputs/train_ddp/2024-04-06_05-59-20/checkpoint.pt
 
 data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
   
 data:
   loader:
     train: 
-      batch_size: 2
+      batch_size: 1
       num_workers: 4
+      shuffle: false
+    val:
+      batch_size: 1
 
-optimizer:
-  lr: 2e-7
+# optimizer:
+#   lr: 1e-4
 
+
+# lr_scheduler:  
+#   milestones: [20, 40, 55, 65, 75, 80, 85, 90]
+#   gamma: 0.5
 
 lr_scheduler:  
-  milestones: [40, 20, 15, 10]
+  milestones: [10, 15, 20, 25, 30]
   gamma: 0.5
+
+optimizer:
+  lr: 6.05e-6

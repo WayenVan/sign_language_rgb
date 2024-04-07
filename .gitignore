@@ -8,7 +8,7 @@
 .idea
 *.log
 
-
+/snap_tmp
 /resources
 __pycache__/*
 .pytest_cache

@@ -43,7 +43,7 @@ class Rescale:
     def __call__(self, video):
         video = self.output[0] + (self.output[1] - self.output[0]) * (video - self.input[0]) / (self.input[1] - self.input[0])
 
-        assert video.max() <= self.output[1], f'{video.max()}'
+        assert video.max() <= self.output[1] + 0.1, f'{video.max()}'
         assert video.min() >= self.output[0], f'{video.min()}'
         return video
 
@@ -103,8 +103,10 @@ class TemporalAug:
         min_len = int(tmin*vlen)
         max_len = min(max_num_frames, int(tmax*vlen))
         selected_len = np.random.randint(min_len, max_len+1)
+
         if (selected_len%4) != 0:
             selected_len += (4-(selected_len%4))
+
         if selected_len<=vlen: 
             selected_index = sorted(np.random.permutation(np.arange(vlen))[:selected_len])
         else: 

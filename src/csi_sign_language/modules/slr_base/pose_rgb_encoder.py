@@ -103,7 +103,7 @@ class SwinPoseEncoder(nn.Module):
         setattr(cfg.model.backbone, 'out_indices', (0, 1, 2, 3))
         setattr(cfg.model.backbone, 'pad_small_map', True)
         model = build_model_from_cfg(cfg.model, MODELS)
-        load_checkpoint(model, swin_ckpt)
+        load_checkpoint(model, swin_ckpt, map_location='cpu')
 
         self.swin = model.backbone
         self.swin.out_indices = list(range(self.swin.num_layers))

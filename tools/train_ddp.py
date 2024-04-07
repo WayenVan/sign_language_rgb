@@ -32,6 +32,8 @@ assert local_rank is not None
 
 @hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/swin_pose_trans_ddp')
 def main(cfg: DictConfig):
+    snap = load_snap(cfg.snap_path)
+
     global logger
     setup()
 
@@ -44,7 +46,10 @@ def main(cfg: DictConfig):
         current_time = datetime.now()
         file_name = os.path.basename(__file__)
         save_dir = os.path.join('outputs', file_name[:-3], current_time.strftime("%Y-%m-%d_%H-%M-%S"))
-        os.makedirs(save_dir, exist_ok=False)
+        if snap is not None:
+            save_dir = snap['save_dir']
+
+        os.makedirs(save_dir, exist_ok=True)
         if is_debugging():
             with open(os.path.join(save_dir, 'debug'), 'w'):
                 pass
@@ -52,6 +57,11 @@ def main(cfg: DictConfig):
         save_git_hash(os.path.join(save_dir, 'git_version.bash'))
         save_git_diff_to_file(os.path.join(save_dir, 'changes.patch'))
         _setup_logger(logger, save_dir)
+        
+        #save config
+        cfg_string = OmegaConf.to_yaml(cfg)
+        with open(os.path.join(save_dir, 'config.yaml'), 'w') as f:
+            OmegaConf.save(cfg, f)
     else:
         logger = None
         f = open(os.devnull, 'w')
@@ -69,18 +79,21 @@ def main(cfg: DictConfig):
     #load checkpoint
     if cfg.load_weights:
         info(logger, 'loading checkpoint')
-        metas = load_checkpoints(cfg, model)
+        metas = load_checkpoints(cfg, model.module)
         _log_history(metas, logger)
 
     #!important, this train will set the parameter states in the model.
     model.train()
     opt, lr_scheduler, trainer, inferencer = build_engines(cfg, model)
-
-    best_wer_value = metas[-1]['val_wer'] if len(metas) > 0 else 1000.
     
-    for i in range(cfg.epoch):
+    # load snapshot if 
+    pre_epoch = 0
+    if snap is not None:
+        pre_epoch = set_snap(snap, model.module, opt, lr_scheduler)
+
+    for real_epoch in range(pre_epoch, cfg.epoch):
+        warn(logger, f'load snap is {(snap is not None)}')
         clean() 
-        real_epoch = i
         #train
         train_loader.sampler.set_epoch(real_epoch)
 
@@ -90,6 +103,7 @@ def main(cfg: DictConfig):
         start_time = time.time()
         mean_loss, hyp_train, gt_train= trainer.do_train(model, loss_fn, train_loader, opt, getattr(cfg, 'data_excluded', []))
         train_time = time.time() - start_time
+
         train_wer = wer_calculation(gt_train, hyp_train)
         info(logger, f'training finished, mean loss: {mean_loss}, wer: {train_wer}, total time: {train_time}')
 
@@ -118,10 +132,14 @@ def main(cfg: DictConfig):
             if val_wer < best_wer_value:
                 best_wer_value = val_wer
                 torch.save({
-                    'model_state': model.module.cpu().state_dict(),
-                    'meta': metas
+                    'model_state': model.module.state_dict(),
+                    'meta': metas,
+                    'cfg': cfg_string,
                     }, os.path.join(save_dir, 'checkpoint.pt'))
                 info(logger, f'best checkpoint saved')
+
+            save_snap(cfg.snap_path, model.module, opt, lr_scheduler, real_epoch, save_dir)
+        clean()
 
     
     cleanup()
@@ -130,10 +148,37 @@ def setup():
     # os.environ['MASTER_ADDR'] = 'localhost'
     # os.environ['MASTER_PORT'] = '12355'
     # initialize the process group
-    dist.init_process_group("gloo")
+    dist.init_process_group("nccl")
 
 def cleanup():
     dist.destroy_process_group()
+
+def save_snap(path, model, opt, lr, epoch, save_dir):
+    os.makedirs(path, exist_ok=True)
+    torch.save({
+        'epoch': epoch,
+        'state_dict': model.state_dict(),
+        'optimizer': opt.state_dict(),
+        'lr': lr.state_dict(),
+        'save_dir': save_dir
+    }, os.path.join(path, 'snap.pt'))
+    
+def set_snap(snap, model: nn.Module, opt: Optimizer, lr: LRScheduler):
+    model.load_state_dict(snap['state_dict'])
+    opt.load_state_dict(snap['optimizer'])
+    lr.load_state_dict(snap['lr'])
+    return snap['epoch'] + 1
+
+def load_snap(path):
+    file_path = os.path.join(path, 'snap.pt')
+    if os.path.exists(file_path):
+        warn(logger, '----------------find snap loading--------------------')
+        time.sleep(3)
+        snap = torch.load(file_path, map_location=device)
+    else:
+        snap = None
+    return snap
+
 
 def build_model_and_data(cfg):
     #initialize data 
@@ -175,10 +220,10 @@ def build_engines(cfg, model):
 
 def _log_history(metas, logger: logging.Logger):
     info(logger, '-----------showing training history--------------')
-    for info in metas:
-        info(logger, f"train id: {info['train_id']}")
-        info(logger, f"epoch: {info['epoch']}")
-        info(logger, "lr: {}, train loss: {}, train wer: {}, val wer: {}".format(info['lr'], info['train_loss'], info['train_wer'], info['val_wer']))
+    for meta in metas:
+        info(logger, f"train id: {meta['train_id']}")
+        info(logger, f"epoch: {meta['epoch']}")
+        info(logger, "lr: {}, train loss: {}, train wer: {}, val wer: {}".format(meta['lr'], meta['train_loss'], meta['train_wer'], meta['val_wer']))
     info(logger, '-----------finish history------------------------')
     
 def _setup_logger(l, save_dir):

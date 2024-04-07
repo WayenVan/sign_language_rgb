@@ -3,7 +3,7 @@ train:
   data_root: ${ph14.lmdb_root}
   subset: multisigner
   mode: train
-  transform: ${transforms.test}
+  transform: ${transforms.train}
 
 val: 
   _target_: ${csi}.data.dataset.phoenix14.MyPhoenix14Dataset

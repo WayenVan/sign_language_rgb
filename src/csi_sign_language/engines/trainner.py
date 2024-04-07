@@ -8,6 +8,7 @@ from ..utils.inspect import *
 from ..utils.data import *
 from typing import *
 from ..utils.misc import info, warn, clean
+import torch.distributed as DDP
 
 class Trainner():
     
@@ -48,6 +49,7 @@ class Trainner():
         for idx, data in enumerate(tqdm(train_loader)):
 
             opt.zero_grad()
+            skip_flag = torch.tensor(0, dtype=torch.int8).to(self.device)
 
             #remove bad data
             if data_excluded != None:
@@ -60,13 +62,20 @@ class Trainner():
 
             #remove nan:
             if torch.isnan(loss) or torch.isinf(loss):
-                if self.logger is not None:
-                    warn(self.logger, f"loss is {loss.item()}")
-                    warn(self.logger, f"data_id {data['id']}")
-                #clear calculation graph
+                warn(self.logger, f"loss is {loss.item()}")
+                warn(self.logger, f"data_id {data['id']}")
+                skip_flag[()] = 0
+
+
+            all_skip_flag = [torch.tensor(0, dtype=torch.int8).to(self.device) for _ in range(DDP.get_world_size())]
+            DDP.all_gather(all_skip_flag, skip_flag)
+            if any(f.item() for f in all_skip_flag):
+                warn(self.logger, 'batch skipped')
                 del data
                 del loss
+                clean()
                 continue
+        
             
             self._backward_and_update(loss, opt)
 

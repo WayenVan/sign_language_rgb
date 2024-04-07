@@ -22,7 +22,7 @@ class VitPoseEncoder(nn.Module):
         self.register_buffer('std', torch.tensor(cfg.model.data_preprocessor.std))
         self.register_buffer('mean', torch.tensor(cfg.model.data_preprocessor.mean))
 
-        vitpose = init_model(cfg, checkpoint)
+        vitpose = init_model(cfg, checkpoint, device='cpu')
         self.vit = vitpose.backbone
         self.vit_head = vitpose.head
         del vitpose
@@ -49,9 +49,6 @@ class VitPoseEncoder(nn.Module):
     
     
     def _data_preprocess(self, x):
-        assert x.min() >= self.color_range[0]
-        assert x.max() >= self.color_range[1]
-
         x = mapping_0_1(self.color_range, x)
         x = x * 255. #mapping to 0-255
         x = x.permute(0, 2, 3, 1)

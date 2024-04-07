@@ -11,7 +11,7 @@ from ..modules.loss import HeatMapLoss
 
 class VACLoss(nn.Module):
     
-    def __init__(self, weights, temp, *args, **kwargs) -> None:
+    def __init__(self, weights, temp, device, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.loss = _VACLoss(weights, temp)
 
