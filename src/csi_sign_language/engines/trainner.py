@@ -64,7 +64,7 @@ class Trainner():
             if torch.isnan(loss) or torch.isinf(loss):
                 warn(self.logger, f"loss is {loss.item()}")
                 warn(self.logger, f"data_id {data['id']}")
-                skip_flag[()] = 0
+                skip_flag = skip_flag + 1
 
 
             all_skip_flag = [torch.tensor(0, dtype=torch.int8).to(self.device) for _ in range(DDP.get_world_size())]
@@ -72,7 +72,9 @@ class Trainner():
             if any(f.item() for f in all_skip_flag):
                 warn(self.logger, 'batch skipped')
                 del data
+                del outputs
                 del loss
+                del skip_flag
                 clean()
                 continue
         

@@ -4,10 +4,11 @@ import torch
 import collections
 import torch.nn as nn
 import torch.nn.functional as F
+from .patch_merg import PatchMerge1D
 
 
 class TemporalConv1D(nn.Module):
-    def __init__(self, input_size, out_size, bottleneck_size, conv_type=2):
+    def __init__(self, input_size, out_size, bottleneck_size, conv_type=2, pooling='max'):
         super(TemporalConv1D, self).__init__()
         self.input_size = input_size
         self.hidden_size = bottleneck_size
@@ -20,18 +21,31 @@ class TemporalConv1D(nn.Module):
         for layer_idx, ks in enumerate(self.kernel_size):
             input_sz = self.input_size if layer_idx == 0 else self.hidden_size
             if ks[0] == 'P':
-                modules.append(nn.MaxPool1d(kernel_size=int(ks[1]), ceil_mode=False))
+                assert len(modules) > 0, 'pooling layer should not be the first layer'
+                assert len(modules) + 1 == len(self.kernel_size), 'pooling layer should not be the last layer'
+                modules.append(self._build_pooling_layer(pooling, int(ks[1]), bottleneck_size))
             elif ks[0] == 'K':
                 in_size = input_size if self._is_first_k(self.kernel_size, layer_idx) else bottleneck_size
                 o_size = out_size if self._is_last_k(self.kernel_size, layer_idx) else bottleneck_size
                 modules.append(
-                    nn.Conv1d(in_size, o_size, kernel_size=int(ks[1]), stride=1, padding=int(ks[1])//2)
+                    nn.Conv1d(in_size, o_size, kernel_size=int(ks[1]), stride=1, padding=int(ks[1])//2, bias=False)
                 )
                 modules.append(nn.BatchNorm1d(o_size))
                 modules.append(nn.ReLU(inplace=True))
             else:
                 raise NotImplementedError
         self.temporal_conv = nn.Sequential(*modules)
+    
+    @staticmethod
+    def _build_pooling_layer(type, kernel, channels):
+        if type == 'max':
+            return nn.MaxPool1d(kernel, ceil_mode=False)
+        elif type == 'mean':
+            return nn.AvgPool1d(kernel, ceil_mode=False)
+        elif type == 'patch':
+            return PatchMerge1D(channels, channels, kernel)
+        else:
+            raise NotImplementedError
 
     @staticmethod
     def _is_first_k(kernels, idx):

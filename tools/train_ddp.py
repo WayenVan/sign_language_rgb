@@ -86,11 +86,12 @@ def main(cfg: DictConfig):
     model.train()
     opt, lr_scheduler, trainer, inferencer = build_engines(cfg, model)
     
-    # load snapshot if 
+    # load snapshot if it exist
     pre_epoch = 0
     if snap is not None:
-        pre_epoch = set_snap(snap, model.module, opt, lr_scheduler)
+        pre_epoch, meta = set_snap(snap, model.module, opt, lr_scheduler)
 
+    best_wer_value = metas[-1]['val_wer'] if len(metas)>0 else 1000.
     for real_epoch in range(pre_epoch, cfg.epoch):
         warn(logger, f'load snap is {(snap is not None)}')
         clean() 
@@ -138,7 +139,7 @@ def main(cfg: DictConfig):
                     }, os.path.join(save_dir, 'checkpoint.pt'))
                 info(logger, f'best checkpoint saved')
 
-            save_snap(cfg.snap_path, model.module, opt, lr_scheduler, real_epoch, save_dir)
+            save_snap(cfg.snap_path, model.module, opt, lr_scheduler, real_epoch, save_dir, metas)
         clean()
 
     
@@ -153,21 +154,22 @@ def setup():
 def cleanup():
     dist.destroy_process_group()
 
-def save_snap(path, model, opt, lr, epoch, save_dir):
+def save_snap(path, model, opt, lr, epoch, save_dir, metas):
     os.makedirs(path, exist_ok=True)
     torch.save({
         'epoch': epoch,
         'state_dict': model.state_dict(),
         'optimizer': opt.state_dict(),
         'lr': lr.state_dict(),
-        'save_dir': save_dir
+        'save_dir': save_dir,
+        'meta': metas
     }, os.path.join(path, 'snap.pt'))
     
 def set_snap(snap, model: nn.Module, opt: Optimizer, lr: LRScheduler):
     model.load_state_dict(snap['state_dict'])
     opt.load_state_dict(snap['optimizer'])
     lr.load_state_dict(snap['lr'])
-    return snap['epoch'] + 1
+    return snap['epoch'] + 1, snap['meta']
 
 def load_snap(path):
     file_path = os.path.join(path, 'snap.pt')

@@ -46,7 +46,7 @@ data:
 
 lr_scheduler:  
   milestones: [10, 15, 20, 25, 30]
-  gamma: 0.5
+  gamma: 0.1
 
 optimizer:
-  lr: 6.05e-6
+  lr: 5e-5
