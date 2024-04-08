@@ -22,8 +22,9 @@ class TemporalConv1D(nn.Module):
             input_sz = self.input_size if layer_idx == 0 else self.hidden_size
             if ks[0] == 'P':
                 assert len(modules) > 0, 'pooling layer should not be the first layer'
-                assert len(modules) + 1 == len(self.kernel_size), 'pooling layer should not be the last layer'
-                modules.append(self._build_pooling_layer(pooling, int(ks[1]), bottleneck_size))
+                in_size = out_size if layer_idx + 1 == len(self.kernel_size) else bottleneck_size
+                o_size = out_size if layer_idx + 1 == len(self.kernel_size) else bottleneck_size
+                modules.append(self._build_pooling_layer(pooling, int(ks[1]), in_size, o_size))
             elif ks[0] == 'K':
                 in_size = input_size if self._is_first_k(self.kernel_size, layer_idx) else bottleneck_size
                 o_size = out_size if self._is_last_k(self.kernel_size, layer_idx) else bottleneck_size
@@ -37,13 +38,13 @@ class TemporalConv1D(nn.Module):
         self.temporal_conv = nn.Sequential(*modules)
     
     @staticmethod
-    def _build_pooling_layer(type, kernel, channels):
+    def _build_pooling_layer(type, kernel, in_c, out_c):
         if type == 'max':
             return nn.MaxPool1d(kernel, ceil_mode=False)
         elif type == 'mean':
             return nn.AvgPool1d(kernel, ceil_mode=False)
         elif type == 'patch':
-            return PatchMerge1D(channels, channels, kernel)
+            return PatchMerge1D(in_c, out_c, kernel, norm=True)
         else:
             raise NotImplementedError
 

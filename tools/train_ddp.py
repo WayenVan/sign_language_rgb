@@ -30,7 +30,7 @@ local_rank = int(os.getenv('LOCAL_RANK'))
 device = f'cuda:{local_rank}'
 assert local_rank is not None
 
-@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/swin_pose_trans_ddp')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/vitpose_conformer_ddp')
 def main(cfg: DictConfig):
     snap = load_snap(cfg.snap_path)
 

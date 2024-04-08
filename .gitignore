@@ -9,6 +9,7 @@
 *.log
 
 /snap_tmp
+/snap
 /resources
 __pycache__/*
 .pytest_cache

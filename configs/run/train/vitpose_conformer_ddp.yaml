@@ -8,9 +8,9 @@ defaults:
   - /lr_scheduler: multistep
   - /data/dataset: ph14
   - /data/loader: defaults
-  - /transforms/train: defaults
-  - /transforms/test: defaults
-  - /model: vitpose_vitpool_tconv_trans
+  - /transforms/train: 192x192
+  - /transforms/test: 192x192
+  - /model: vitpose_vitpool_tconv_convformer
   - /loss: vac
   
 seed: 3407
@@ -24,7 +24,7 @@ message_interval: 100
 vocab_size: 1296
 
 #if continuos read model
-load_weights: True
+load_weights: False
 checkpoint: outputs/train_ddp/2024-04-06_05-59-20/checkpoint.pt
 
 data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
@@ -38,17 +38,9 @@ data:
     val:
       batch_size: 1
 
-# optimizer:
-#   lr: 1e-4
-
-
-# lr_scheduler:  
-#   milestones: [20, 40, 55, 65, 75, 80, 85, 90]
-#   gamma: 0.5
+optimizer:
+  lr: 1e-3
 
 lr_scheduler:  
-  milestones: [10, 15, 20, 25, 30]
+  milestones: [20, 40, 55, 65, 75, 80, 85, 90]
   gamma: 0.5
-
-optimizer:
-  lr: 6.05e-6

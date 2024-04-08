@@ -11,7 +11,7 @@ sys.path.append('src')
 
 @click.command()
 @click.option('--config-dir', default='configs')
-@click.option('-cn', default='run/train/swin_pose_trans_ddp')
+@click.option('-cn', default='run/train/vitpose_conformer_ddp')
 @click.option('-d', '--depth', default=3)
 @click.option('--device', default='cuda')
 def main(config_dir, cn, depth, device):

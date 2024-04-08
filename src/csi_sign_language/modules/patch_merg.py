@@ -12,9 +12,12 @@ class PatchMerge1D(nn.Module):
                  *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.sampler = nn.Unfold(
-            kernel_size=kernel_size,
-            stride=kernel_size
+        self.sampler= nn.Sequential(
+            Rearrange('n c t -> n c t ()'),
+            nn.Unfold(
+                kernel_size=(kernel_size, 1),
+                stride=(kernel_size, 1),
+            )
         )
 
         self.reduction = nn.Sequential(

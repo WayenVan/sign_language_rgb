@@ -15,10 +15,14 @@
       out_size: 1024
       bottleneck_size:  512
       conv_type: ['K5', 'P2', 'K5', 'P2']
+      pooling: 'patch'
     decoder:
-      _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
+      _target_: ${csi}.modules.slr_base.conformer_decoder.ConformerDecoder
+      dim: 1024
+      dim_head: 64
+      heads: 8
+      depth: 6
+      conv_kernel_size: 5
+      conv_dropout: 0.1
+      ff_dropout: 0.1
       n_class: 1296
-      d_model: 1024
-      n_heads: 8
-      n_layers: 6
-      d_feedforward: 2048
