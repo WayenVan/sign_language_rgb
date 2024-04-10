@@ -1,22 +1,22 @@
-_target_: ${csi}.models.slr_ctc_baseline.SLRModel
-backbone: 
-  _target_: ${csi}.modules.slr_base.base_stream.BaseStream
-  encoder: 
-    _target_: ${csi}.modules.slr_base.resnet_encoder.ResnetEncoder
-    cfg: ${resnet_cfg}
-    ckpt: ${resnet_ckpt}
-    drop_prob: 0.5
-  neck:
-    _target_: ${csi}.modules.tconv.TemporalConv1D
-    input_size: 512
-    out_size: 1024
-    bottleneck_size:  512
-    conv_type: ['K5', 'P2', 'K5', 'P2']
-  decoder:
-    _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
-    n_class: 1296
-    d_model: 1024
-    n_heads: 8
-    n_layers: 6
-    d_feedforward: 2048
-    dropout: 0.5
+# _target_: ${csi}.models.slr_ctc_baseline.SLRModel
+# backbone: 
+_target_: ${csi}.modules.slr_base.base_stream.BaseStream
+encoder: 
+  _target_: ${csi}.modules.slr_base.resnet_encoder.ResnetEncoder
+  cfg: ${resnet_cfg}
+  ckpt: ${resnet_ckpt}
+  drop_prob: 0.5
+neck:
+  _target_: ${csi}.modules.tconv.TemporalConv1D
+  input_size: 512
+  out_size: 1024
+  bottleneck_size:  512
+  conv_type: ['K5', 'P2', 'K5', 'P2']
+decoder:
+  _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
+  n_class: 1296
+  d_model: 1024
+  n_heads: 8
+  n_layers: 6
+  d_feedforward: 2048
+  dropout: 0.5
