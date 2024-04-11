@@ -12,8 +12,8 @@ transforms:
     output: [0., 1.]
   - _target_: ${T}.CenterCrop
     size: 224
-  - _target_: ${T}.Resize
-    size: 160
+  # - _target_: ${T}.Resize
+  #   size: 160
 - _target_: ${CT}.common.ApplyByKey
   key: gloss
   transforms:

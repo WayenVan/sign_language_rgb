@@ -13,8 +13,8 @@ transforms:
     scale: [0.7, 1.0]
     ratio: [0.75, 1.33333333333]
     antialias: True
-  - _target_: ${T}.Resize
-    size: 160
+  # - _target_: ${T}.Resize
+  #   size: 160
   - _target_: ${CT}.common.TemporalAug
     t_min: 0.5
     t_max: 1.5

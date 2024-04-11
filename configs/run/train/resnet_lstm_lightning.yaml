@@ -8,18 +8,14 @@ defaults:
   - /lr_scheduler: multistep
   - /data/dataset: ph14
   - /data/loader: defaults
-  - /transforms/train: defaults
-  - /transforms/test: defaults
-  - /model: resnet_trans
+  - /transforms/train: 192x192
+  - /transforms/test: 192x192
+  - /model: resnet_lstm
   - /loss: vac
   
 seed: 3407
-epoch: 85
+epoch: 90
 output_dir: 
-
-#-1 when we don want message out
-message_interval: 100
-vocab_size: 1296
 
 #if continuos read model
 load_weights: False
@@ -31,15 +27,15 @@ data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
 data:
   loader:
     train: 
-      batch_size: 4
-      num_workers: 4
+      batch_size: 2
+      num_workers: 6
       shuffle: false
     val:
-      batch_size: 1
+      batch_size: 2
 
 optimizer:
   lr: 1e-4
 
 lr_scheduler:  
-  milestones: [20, 40, 50, 50]
+  milestones: [20, 40, 55, 70, 80, 90]
   gamma: 0.5

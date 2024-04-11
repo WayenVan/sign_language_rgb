@@ -16,7 +16,7 @@ class LSTMDecoder(nn.Module):
         super().__init__(*args, **kwargs)
         self.lstm = BiLSTMLayer(
             input_size,
-            hidden_size,
+            hidden_size=hidden_size,
             num_layers=n_layers
         )
         self.header = nn.Linear(hidden_size, n_class)

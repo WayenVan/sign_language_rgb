@@ -8,8 +8,8 @@ defaults:
   - /lr_scheduler: multistep
   - /data/dataset: ph14
   - /data/loader: defaults
-  - /transforms/train: defaults
-  - /transforms/test: defaults
+  - /transforms/train: 192x192
+  - /transforms/test: 192x192
   - /model: resnet_trans
   - /loss: vac
   
@@ -31,8 +31,8 @@ data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
 data:
   loader:
     train: 
-      batch_size: 4
-      num_workers: 4
+      batch_size: 2
+      num_workers: 2
       shuffle: false
     val:
       batch_size: 1

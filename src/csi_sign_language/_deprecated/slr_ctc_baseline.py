@@ -11,15 +11,15 @@ from ..modules.loss import HeatMapLoss
 
 class VACLoss(nn.Module):
     
-    def __init__(self, weights, temp, device, *args, **kwargs) -> None:
+    def __init__(self, weights, temp, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.loss = _VACLoss(weights, temp)
 
     def forward(self, outputs, input, input_length, target, target_length): 
-        conv_out = outputs.backbone_out.encoder_out.out
-        conv_length = outputs.backbone_out.encoder_out.t_length
-        seq_out = outputs.backbone_out.out
-        t_length = outputs.backbone_out.t_length
+        conv_out = outputs.encoder_out.out
+        conv_length = outputs.encoder_out.t_length
+        seq_out = outputs.out
+        t_length = outputs.t_length
         return self.loss(conv_out, conv_length, seq_out, t_length, target, target_length)
 
 class MultiLoss(nn.Module):
@@ -29,10 +29,10 @@ class MultiLoss(nn.Module):
                  color_range,
                  cfg,
                  ckpt,
-                 device) -> None:
+                 ) -> None:
         super().__init__()
         self.weights = weights
-        self.pose_loss = HeatMapLoss(color_range, cfg, ckpt, device)
+        self.pose_loss = HeatMapLoss(color_range, cfg, ckpt)
         self.ctc_loss = nn.CTCLoss(blank=0, reduction='none')
     
     def forward(self, outputs, input, input_length, target, target_length): 

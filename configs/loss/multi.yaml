@@ -1,4 +1,4 @@
-_target_: ${csi}.models.slr_ctc_baseline.MultiLoss
+_target_: ${csi}.models.slr_model.MultiLoss
 weights: [1., 1.]
 cfg: ${vitpose_cfg}
 ckpt: ${vitpose_ckpt}

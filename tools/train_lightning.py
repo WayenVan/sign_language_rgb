@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from torchtext.vocab import Vocab
 from omegaconf import OmegaConf, DictConfig
 import sys
 sys.path.append('src')
@@ -16,8 +17,9 @@ from lightning.pytorch import seed_everything
 from lightning.pytorch import loggers as pl_loggers
 from lightning.pytorch import callbacks
 from lightning.pytorch import trainer
+from lightning.pytorch import strategies
 
-@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/resnet_trans_ddp')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/resnet_lstm_lightning')
 def main(cfg: DictConfig):
     seed_everything(cfg.seed, workers=True)
 
@@ -25,21 +27,18 @@ def main(cfg: DictConfig):
     current_time = datetime.now()
     file_name = os.path.basename(__file__)
     save_dir = os.path.join('outputs', file_name[:-3], current_time.strftime("%Y-%m-%d_%H-%M-%S"))
-    os.makedirs(save_dir, exist_ok=True)
-    
-    #save config
-    cfg_string = OmegaConf.to_yaml(cfg)
-    with open(os.path.join(save_dir, 'config.yaml'), 'w') as f:
-        OmegaConf.save(cfg, f)
-
-    #save git
-    save_git_hash(os.path.join(save_dir, 'git_version.bash'))
-    save_git_diff_to_file(os.path.join(save_dir, 'changes.patch'))
 
     csv_logger = pl_loggers.CSVLogger(save_dir, name='csv_log')
-    ckpt_callback = callbacks.ModelCheckpoint(save_dir)
+    ckpt_callback = callbacks.ModelCheckpoint(
+        save_dir, 
+        save_last=True, 
+        filename='epoch={epoch}_wer-val={val_wer:.2f}',
+        monitor='val_wer', 
+        mode='min', 
+        save_top_k=1,
+        auto_insert_metric_name=True)
+
     train_loader, val_loader, vocab = build_data(cfg)
-    
     if cfg.load_weights:
         lightning_module = SLRModel.load_from_checkpoint(cfg.checkpoint)
     else:
@@ -47,12 +46,25 @@ def main(cfg: DictConfig):
     
     t = trainer.Trainer(
         accelerator='gpu',
-        strategy='deepspeed_stage_2',
+        # strategy=strategies.DeepSpeedStrategy(),
+        strategy='ddp',
+        devices=2,
         callbacks=[ckpt_callback],
         logger=[csv_logger],
         precision=16,
+        log_every_n_steps=25
     )
     
+    if t.local_rank == 0:
+        os.makedirs(save_dir, exist_ok=True)
+        #save config
+        with open(os.path.join(save_dir, 'config.yaml'), 'w') as f:
+            OmegaConf.save(cfg, f)
+
+        #save git
+        save_git_hash(os.path.join(save_dir, 'git_version.bash'))
+        save_git_diff_to_file(os.path.join(save_dir, 'changes.patch'))
+
     t.fit(lightning_module, train_loader, val_loader)
     return
 

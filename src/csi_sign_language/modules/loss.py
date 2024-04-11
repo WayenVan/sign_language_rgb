@@ -19,6 +19,9 @@ class VACLoss:
         #[t, n, c] logits
         conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
 
+        conv_out = conv_out.to(torch.float32)
+        seq_out = seq_out.to(torch.float32)
+
         loss = 0
         if self.weights[0] > 0.:
             loss += self.CTC(seq_out, target, length.cpu().int(), target_length.cpu().int()).mean()* self.weights[0]
@@ -57,18 +60,15 @@ class HeatMapLoss(nn.Module):
     def __init__(self, 
                 color_range, 
                 cfg_path, 
-                checkpoint, 
-                device) -> None:
+                checkpoint) -> None:
         super().__init__()
         cfg = Config.fromfile(cfg_path)
 
         self.cfg = cfg
         self.color_range = color_range
-        self.is_cuda = ('cuda' in device)
 
-        self.vitpose = init_model(cfg, checkpoint, device=device)
-        if self.is_cuda:
-            self.vitpose = self.vitpose.half()
+        self.vitpose = init_model(cfg, checkpoint, device='cpu')
+        self.vitpose = self.vitpose.half()
         for p in self.vitpose.parameters():
             p.requires_grad = False
         self.vitpose.eval()
@@ -78,7 +78,6 @@ class HeatMapLoss(nn.Module):
         
         self.l2_loss = nn.MSELoss(reduction='mean')
         
-        self.to(device)
     
     def forward(self, heatmap, input):
         #n 17 t h w

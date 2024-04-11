@@ -18,8 +18,6 @@ from mmengine.config import Config
 from mmengine.runner import load_checkpoint
 from torch import nn
 
-from dropblock import DropBlock2D, LinearScheduler
-
 class ResnetEncoder(nn.Module):
 
     def __init__(self, cfg, ckpt, drop_prob=0.1, *args, **kwargs) -> None:
@@ -28,12 +26,7 @@ class ResnetEncoder(nn.Module):
         model = build_model_from_cfg(cfg.model, MODELS)
         load_checkpoint(model, ckpt)
         self.resnet = model.backbone
-        self.dropout = LinearScheduler(
-            DropBlock2D(block_size=2, drop_prob=0.),
-            start_value= 0.,
-            stop_value=drop_prob,
-            nr_steps=len(self.resnet.res_layers)
-        )
+        self.dropout = nn.Dropout2d(drop_prob)
         self.gap = model.neck
     
     def forward(self, x, t_length):
@@ -56,13 +49,15 @@ class ResnetEncoder(nn.Module):
             x = self.resnet.norm1(x)
             x = self.resnet.relu(x)
         x = self.resnet.maxpool(x)
+
         outs = []
         for i, layer_name in enumerate(self.resnet.res_layers):
-            self.dropout.step()
             res_layer = getattr(self.resnet, layer_name)
             x = res_layer(x)
-            x = self.dropout(x)
 
+            if i == len(self.resnet.res_layers) - 1:
+                x = self.dropout(x)
             if i in self.resnet.out_indices:
                 outs.append(x)
+
         return tuple(outs)

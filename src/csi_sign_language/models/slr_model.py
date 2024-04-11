@@ -13,9 +13,13 @@ from omegaconf.dictconfig import DictConfig
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from csi_sign_language.evaluation.ph14.post_process import post_process
+from csi_sign_language.modules.loss import VACLoss as _VACLoss
+from csi_sign_language.modules.loss import HeatMapLoss
 
 from torchmetrics import WordErrorRate
 from typing import List
+
+
 
 class SLRModel(L.LightningModule):
 
@@ -33,8 +37,8 @@ class SLRModel(L.LightningModule):
         self.backbone: nn.Module = instantiate(cfg.model)
         self.loss: nn.Module = instantiate(cfg.loss)
 
-        self.decoder = CTCDecoder(self.vocab, blank_id=0, search_mode=ctc_search_type, log_probs_input=True)
         self.vocab = vocab
+        self.decoder = CTCDecoder(vocab, blank_id=0, search_mode=ctc_search_type, log_probs_input=True)
         
         self.train_wer = WordErrorRate(sync_on_compute=True)
         self.val_wer = WordErrorRate(sync_on_compute=True)
@@ -51,12 +55,12 @@ class SLRModel(L.LightningModule):
         return [' '.join(g) for g in gloss]
     
     @staticmethod
-    def _extract_batch(self, batch):
+    def _extract_batch(batch):
         video = batch['video']
         gloss = batch['gloss']
         video_length = batch['video_length']
         gloss_length = batch['gloss_length']
-        gloss_gt = batch['gloss']
+        gloss_gt = batch['gloss_label']
         id = batch['id']
         return id, video, gloss, video_length, gloss_length, gloss_gt
 
@@ -83,7 +87,8 @@ class SLRModel(L.LightningModule):
 
         hyp = self._outputs2labels(outputs.out, outputs.t_length)
         hyp = self._gloss2sentence(hyp)
-        self.train_wer.update(hyp, gloss_gt)
+        gt  = self._gloss2sentence(gloss_gt)
+        self.train_wer.update(hyp, gt)
         self.log('train_loss', loss, on_epoch=True, on_step=True)
         
         return loss
@@ -98,10 +103,18 @@ class SLRModel(L.LightningModule):
         hyp = self._outputs2labels(outputs.out, outputs.t_length)
         hyp = post_process(hyp, merge=True, regex=True)
         hyp = self._gloss2sentence(hyp)
-        self.val_wer.update(hyp, gloss_gt)
+        gt  = self._gloss2sentence(gloss_gt)
+        self.val_wer.update(hyp, gt)
         self.log('val_loss', loss, on_epoch=True, on_step=True)
     
+    def on_train_epoch_start(self):
+        opt = self.optimizers(use_pl_optimizer=False)
+        lr = opt.param_groups[0]['lr']
+        self.log('lr', lr)
+    
     def on_train_epoch_end(self):
+        self.log('train_wer', self.train_wer)
+        self.log('val_wer', self.val_wer)
         self.train_wer.reset()
         self.val_wer.reset()
 
@@ -113,4 +126,43 @@ class SLRModel(L.LightningModule):
             'lr_scheduler': scheduler
         }
     
+class VACLoss(nn.Module):
+
+    def __init__(self, weights, temp, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.loss = _VACLoss(weights, temp)
+
+    def forward(self, outputs, input, input_length, target, target_length): 
+        conv_out = outputs.encoder_out.out
+        conv_length = outputs.encoder_out.t_length
+        seq_out = outputs.out
+        t_length = outputs.t_length
+        return self.loss(conv_out, conv_length, seq_out, t_length, target, target_length)
+
+class MultiLoss(nn.Module):
     
+    def __init__(self,
+                 weights,
+                 color_range,
+                 cfg,
+                 ckpt,
+                 ) -> None:
+        super().__init__()
+        self.weights = weights
+        self.pose_loss = HeatMapLoss(color_range, cfg, ckpt)
+        self.ctc_loss = nn.CTCLoss(blank=0, reduction='none')
+    
+    def forward(self, outputs, input, input_length, target, target_length): 
+        #n c t h w
+        heatmap_out = outputs.backbone_out.encoder_out.heatmap
+        out = F.log_softmax(outputs.backbone_out.out, dim=-1)
+        t_length = outputs.backbone_out.t_length
+        loss = 0.
+        
+        if self.weights[0] > 0.:
+            loss += self.ctc_loss(out, target.cpu().int(), t_length.cpu().int(), target_length.cpu().int()).mean()* self.weights[0]
+        if self.weights[1] > 0.:
+            heatmap_out = rearrange(heatmap_out, 'n c t h w -> (n t) c h w')
+            input_ = rearrange(input, 'n c t h w -> (n t) c h w')
+            loss += self.pose_loss(heatmap_out, input_) * self.weights[1]
+        return loss 
