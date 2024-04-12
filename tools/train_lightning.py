@@ -18,8 +18,9 @@ from lightning.pytorch import loggers as pl_loggers
 from lightning.pytorch import callbacks
 from lightning.pytorch import trainer
 from lightning.pytorch import strategies
+import logging
 
-@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/resnet_lstm_lightning')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/x3d_tconv_lstm_lightning')
 def main(cfg: DictConfig):
     seed_everything(cfg.seed, workers=True)
 
@@ -28,19 +29,19 @@ def main(cfg: DictConfig):
     file_name = os.path.basename(__file__)
     save_dir = os.path.join('outputs', file_name[:-3], current_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
-    csv_logger = pl_loggers.CSVLogger(save_dir, name='csv_log')
+    csv_logger = pl_loggers.TensorBoardLogger(save_dir, name='TBlog')
     ckpt_callback = callbacks.ModelCheckpoint(
         save_dir, 
         save_last=True, 
-        filename='epoch={epoch}_wer-val={val_wer:.2f}',
+        filename='epoch={epoch}_wer-val={val_wer:.2f}_lr={lr:.2e}_loss={train_loss_epoch:.2f}',
         monitor='val_wer', 
         mode='min', 
         save_top_k=1,
-        auto_insert_metric_name=True)
+        auto_insert_metric_name=False)
 
     train_loader, val_loader, vocab = build_data(cfg)
     if cfg.load_weights:
-        lightning_module = SLRModel.load_from_checkpoint(cfg.checkpoint)
+        lightning_module = SLRModel.load_from_checkpoint(cfg.checkpoint, cfg=cfg)
     else:
         lightning_module = SLRModel(cfg, vocab)
     
@@ -52,7 +53,8 @@ def main(cfg: DictConfig):
         callbacks=[ckpt_callback],
         logger=[csv_logger],
         precision=16,
-        log_every_n_steps=25
+        log_every_n_steps=50,
+        max_epochs=cfg.epoch
     )
     
     if t.local_rank == 0:
@@ -65,7 +67,11 @@ def main(cfg: DictConfig):
         save_git_hash(os.path.join(save_dir, 'git_version.bash'))
         save_git_diff_to_file(os.path.join(save_dir, 'changes.patch'))
 
-    t.fit(lightning_module, train_loader, val_loader)
+    t.fit(
+        lightning_module, 
+        train_loader, 
+        val_loader,
+        ckpt_path=cfg.checkpoint if cfg.is_resume else None)
     return
 
 def build_data(cfg):

@@ -260,17 +260,3 @@ class CollateFn:
             ret_data.append(data)
         
         return torch.stack(ret_data), torch.stack(t_lengths_data)
-
-
-# class WDSDecoder:
-    
-#     def __call__(self, sample) -> Any:
-#         ret = {}
-#         ret['video'] = self._load_numpy('video', sample)
-#         ret['gloss'] = self._load_numpy('gloss', sample)
-#         return ret
-    
-#     @staticmethod
-#     def _load_numpy(key, sample):
-#         shape = np.frombuffer(sample[f'{key}_shape'], dtype=b'int64')
-#         return np.frombuffer(sample[key], dtype=sample[f'{key}_dtype']).reshape(shape)

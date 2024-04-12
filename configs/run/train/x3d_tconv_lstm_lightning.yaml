@@ -10,14 +10,19 @@ defaults:
   - /data/loader: defaults
   - /transforms/train: 192x192
   - /transforms/test: 192x192
-  - /model: resnet_lstm
+  - /model: x3d_tconv_lstm
   - /loss: vac
   
 seed: 3407
-epoch: 60
+epoch: 80
+output_dir: 
+
+#-1 when we don want message out
+message_interval: 100
+vocab_size: 1296
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
 checkpoint: outputs/train_lightning/2024-04-11_22-49-43/last.ckpt
 
@@ -30,18 +35,11 @@ data:
       num_workers: 6
       shuffle: false
     val:
-      batch_size: 2
-
-# optimizer:
-#   lr: 1e-4
-
-# lr_scheduler:  
-#   milestones: [20, 40, 55, 70, 80, 90]
-#   gamma: 0.5
+      batch_size: 1
 
 optimizer:
-  lr: 1e-6
+  lr: 2e-4
 
 lr_scheduler:  
-  milestones: [10, 20, 30, 40, 50, 60]
+  milestones: [30, 50, 60, 70, 80, 90]
   gamma: 0.2

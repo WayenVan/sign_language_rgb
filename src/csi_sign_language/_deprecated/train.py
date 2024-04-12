@@ -15,7 +15,7 @@ from torch.optim.lr_scheduler import LRScheduler
 from csi_sign_language.engines.trainner import Trainner
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
-from csi_sign_language.evaluation.wer_evaluation_python import wer_calculation
+from csi_sign_language._deprecated.wer_evaluation_python import wer_calculation
 from csi_sign_language.utils.misc import is_debugging
 from csi_sign_language.utils.git import save_git_diff_to_file, get_current_git_hash, save_git_hash
 import hydra

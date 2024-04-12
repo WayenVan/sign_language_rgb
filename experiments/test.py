@@ -1,10 +1,5 @@
+import torch 
 
-from omegaconf import OmegaConf
-from hydra.utils import instantiate
-import sys
-import os
-os.chdir('/home/jingyan/Documents/sign_language_rgb')
-sys.path.append('src')
+p = torch.load('outputs/train_lightning/2024-04-10_18-53-03/last.ckpt', map_location='cpu')
+a = 0
 
-
-from csi_sign_language.models.slr_ctc_baseline import SLRModel

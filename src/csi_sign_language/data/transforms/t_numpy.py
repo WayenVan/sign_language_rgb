@@ -2,13 +2,9 @@
 import random 
 import numpy as np
 import copy
-from torchvision.transforms.functional import InterpolationMode
 from .functional import rotate_and_crop, adjust_bright, to_gray, numpy2pil, pil2numpy
-import torchvision
 import torchvision.transforms.functional as F
-import numbers
 from PIL import Image
-import torch 
 import cv2
 
 class Resize:

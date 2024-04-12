@@ -10,11 +10,16 @@ defaults:
   - /data/loader: defaults
   - /transforms/train: 192x192
   - /transforms/test: 192x192
-  - /model: resnet_lstm
+  - /model: x3d_lstm
   - /loss: vac
   
 seed: 3407
-epoch: 60
+epoch: 80
+output_dir: 
+
+#-1 when we don want message out
+message_interval: 100
+vocab_size: 1296
 
 #if continuos read model
 load_weights: True
@@ -26,22 +31,15 @@ data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
 data:
   loader:
     train: 
-      batch_size: 2
+      batch_size: 3
       num_workers: 6
       shuffle: false
     val:
-      batch_size: 2
-
-# optimizer:
-#   lr: 1e-4
-
-# lr_scheduler:  
-#   milestones: [20, 40, 55, 70, 80, 90]
-#   gamma: 0.5
+      batch_size: 1
 
 optimizer:
-  lr: 1e-6
+  lr: 1e-4
 
 lr_scheduler:  
-  milestones: [10, 20, 30, 40, 50, 60]
+  milestones: [20, 40, 50, 60, 70, 75, 80]
   gamma: 0.2

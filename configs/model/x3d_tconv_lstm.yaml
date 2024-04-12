@@ -1,0 +1,21 @@
+
+  _target_: ${csi}.modules.slr_base.base_stream.BaseStream
+  encoder: 
+    _target_: ${csi}.modules.slr_base.x3d_encoder.X3dEncoder
+    x3d_type: x3d_m
+    x3d_header:
+      _target_: ${csi}.modules.x3d.Header
+      _args_: [192, 1024, 512]
+      dropout: 0.5
+  neck:
+    _target_: ${csi}.modules.tconv.TemporalConv1D
+    input_size: 1024
+    out_size: 1024
+    bottleneck_size:  512
+    conv_type: ['K5', 'P2', 'K5', 'P2']
+  decoder:
+    _target_: ${csi}.modules.slr_base.lstm_decoder.LSTMDecoder
+    input_size: 1024
+    hidden_size: 1024
+    n_layers: 2
+    n_class: 1296

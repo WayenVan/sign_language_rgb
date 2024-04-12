@@ -19,3 +19,4 @@ mmpose
 *.swp
 
 /preprocessed
+*.log

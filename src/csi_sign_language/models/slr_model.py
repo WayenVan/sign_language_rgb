@@ -12,7 +12,7 @@ import lightning as L
 from omegaconf.dictconfig import DictConfig
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
-from csi_sign_language.evaluation.ph14.post_process import post_process
+from csi_sign_language.data_utils.ph14.post_process import post_process
 from csi_sign_language.modules.loss import VACLoss as _VACLoss
 from csi_sign_language.modules.loss import HeatMapLoss
 
@@ -30,7 +30,7 @@ class SLRModel(L.LightningModule):
                  file_logger = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.save_hyperparameters(logger=False, ignore=['file_logger'])
+        self.save_hyperparameters(logger=False, ignore=['cfg', 'file_logger'])
 
         self.cfg = cfg
         self.data_excluded = getattr(cfg, 'data_excluded', [])
@@ -74,11 +74,11 @@ class SLRModel(L.LightningModule):
         loss = self.loss(outputs, video, video_length, gloss, gloss_length)
         
         # if we should skip this batch
-        skip_flag = torch.tensor(0, dtype=torch.uint8)
+        skip_flag = torch.tensor(0, dtype=torch.uint8, device=self.device)
         if any(i in self.data_excluded for i in id):
-            skip_flag = torch.tensor(1, dtype=torch.uint8)
+            skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         if torch.isnan(loss) or torch.isinf(loss):
-            skip_flag = torch.tensor(1, dtype=torch.uint8)
+            skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         flags = self.all_gather(skip_flag)
         if any(f.item() for f in flags):
             del outputs
@@ -90,6 +90,10 @@ class SLRModel(L.LightningModule):
         gt  = self._gloss2sentence(gloss_gt)
         self.train_wer.update(hyp, gt)
         self.log('train_loss', loss, on_epoch=True, on_step=True)
+
+        opt = self.optimizers(use_pl_optimizer=False)
+        lr = opt.param_groups[0]['lr']
+        self.log('lr', lr, on_step=True, prog_bar=True)
         
         return loss
     
@@ -105,16 +109,11 @@ class SLRModel(L.LightningModule):
         hyp = self._gloss2sentence(hyp)
         gt  = self._gloss2sentence(gloss_gt)
         self.val_wer.update(hyp, gt)
-        self.log('val_loss', loss, on_epoch=True, on_step=True)
-    
-    def on_train_epoch_start(self):
-        opt = self.optimizers(use_pl_optimizer=False)
-        lr = opt.param_groups[0]['lr']
-        self.log('lr', lr)
+        self.log('val_loss', loss.detach(), on_epoch=False, on_step=True)
     
     def on_train_epoch_end(self):
-        self.log('train_wer', self.train_wer)
-        self.log('val_wer', self.val_wer)
+        self.log('train_wer', self.train_wer.compute()*100)
+        self.log('val_wer', self.val_wer.compute()*100)
         self.train_wer.reset()
         self.val_wer.reset()
 
