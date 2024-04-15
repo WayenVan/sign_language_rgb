@@ -16,7 +16,7 @@ from csi_sign_language.data_utils.ph14.post_process import post_process
 from csi_sign_language.modules.loss import VACLoss as _VACLoss
 from csi_sign_language.modules.loss import HeatMapLoss
 
-from torchmetrics import WordErrorRate
+from torchmetrics.text import WordErrorRate
 from typing import List
 
 
@@ -66,6 +66,15 @@ class SLRModel(L.LightningModule):
 
     def forward(self, x, t_length) -> Any:
         return self.backbone(x, t_length)
+    
+    def predict_step(self, batch, batch_id) -> Any:
+        id, video, gloss, video_length, gloss_length, gloss_gt = self._extract_batch(batch)
+        with torch.inference_mode():
+            outputs = self.backbone(video, video_length)
+            hyp = self._outputs2labels(outputs.out, outputs.t_length)
+        #[(id, hyp, gloss_gt), ...]
+        return list(zip(id, hyp, gloss_gt))
+
 
     def training_step(self, batch, batch_idx):
         id, video, gloss, video_length, gloss_length, gloss_gt = self._extract_batch(batch)
@@ -89,12 +98,12 @@ class SLRModel(L.LightningModule):
         hyp = self._gloss2sentence(hyp)
         gt  = self._gloss2sentence(gloss_gt)
         self.train_wer.update(hyp, gt)
-        self.log('train_loss', loss, on_epoch=True, on_step=True)
+        self.log('train_loss', loss, on_epoch=True, on_step=True, prog_bar=True)
 
         opt = self.optimizers(use_pl_optimizer=False)
         lr = opt.param_groups[0]['lr']
         self.log('lr', lr, on_step=True, prog_bar=True)
-        
+        self.log('train_wer', self.train_wer.compute()*100, on_epoch=True, on_step=False)
         return loss
     
     def validation_step(self, batch, batch_idx):
@@ -110,11 +119,12 @@ class SLRModel(L.LightningModule):
         gt  = self._gloss2sentence(gloss_gt)
         self.val_wer.update(hyp, gt)
         self.log('val_loss', loss.detach(), on_epoch=False, on_step=True)
+        self.log('val_wer', self.val_wer.compute()*100, on_epoch=True, on_step=False)
     
-    def on_train_epoch_end(self):
-        self.log('train_wer', self.train_wer.compute()*100)
-        self.log('val_wer', self.val_wer.compute()*100)
+    def on_train_epoch_start(self) -> None:
         self.train_wer.reset()
+    
+    def on_validation_start(self) -> None:
         self.val_wer.reset()
 
     def configure_optimizers(self):

@@ -15,6 +15,7 @@ transforms:
     antialias: True
   - _target_: ${T}.Resize
     size: 192
+    antialias: True
   - _target_: ${CT}.common.TemporalAug
     t_min: 0.5
     t_max: 1.5

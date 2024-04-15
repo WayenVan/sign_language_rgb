@@ -20,6 +20,7 @@ from csi_sign_language.utils.lmdb_tool import store_data, retrieve_data
 import lmdb
 import shutil
 
+#preprocess the data into lmdb format
 
 @click.command()
 @click.option('--data_root', default='dataset/phoenix2014-release')
@@ -29,9 +30,10 @@ import shutil
 @click.option('--multiprocess', default=True)
 @click.option('--chunk_size', default=2, help='the chunk size of data submitted to each process to handle')
 @click.option('--num_p', default=10, help="number of process to create")
-def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size, num_p):
+@click.option('--specials', default=['<blank>'], multiple=True)
+def main(data_root, output_root, frame_size, subset, multiprocess, chunk_size, num_p, specials):
     
-    vocab, vocab_SI5 = generate_vocab(data_root, output_root)
+    vocab, vocab_SI5 = generate_vocab(data_root, output_root, specials)
     info = OmegaConf.create()
     info.author = 'jingyan wang'
     info.email = '2533494w@student.gla.ac.uk'
@@ -157,14 +159,14 @@ def max_length_gloss(annotations):
             max = data_indexes
     return max
 
-def create_glossdictionary(annotations):
+def create_glossdictionary(annotations, specials):
     def tokens():
         for annotation in annotations['annotation']:
             yield annotation.split()
-    vocab = build_vocab_from_iterator(tokens(), special_first=True, specials=['<blank>'])
+    vocab = build_vocab_from_iterator(tokens(), special_first=True, specials=specials)
     return vocab
     
-def generate_vocab(data_root, output_root):
+def generate_vocab(data_root, output_root, specials):
     print(os.getcwd())
     annotation_file_multi = os.path.join(data_root, 'phoenix-2014-multisigner/annotations/manual')
     annotation_file_single = os.path.join(data_root, 'phoenix-2014-signerindependent-SI5/annotations/manual')
@@ -175,8 +177,8 @@ def generate_vocab(data_root, output_root):
         multi.append(pd.read_csv(os.path.join(annotation_file_multi, type+'.corpus.csv'), delimiter='|'))
         si5.append(pd.read_csv(os.path.join(annotation_file_single, type+'.SI5.corpus.csv'), delimiter='|'))
     
-    vocab_multi = create_glossdictionary(pd.concat(multi))
-    vocab_single =  create_glossdictionary(pd.concat(si5))
+    vocab_multi = create_glossdictionary(pd.concat(multi), specials)
+    vocab_single =  create_glossdictionary(pd.concat(si5), specials)
     
     return vocab_multi, vocab_single
 

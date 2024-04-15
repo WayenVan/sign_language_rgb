@@ -1,2 +1,3 @@
 ph14:
+  root: dataset/phoenix2014-release
   lmdb_root: preprocessed/ph14_lmdb

@@ -20,7 +20,7 @@ from lightning.pytorch import trainer
 from lightning.pytorch import strategies
 import logging
 
-@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/x3d_tconv_lstm_lightning')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/x3d_tconv_trans_lightning')
 def main(cfg: DictConfig):
     seed_everything(cfg.seed, workers=True)
 
@@ -54,7 +54,8 @@ def main(cfg: DictConfig):
         logger=[csv_logger],
         precision=16,
         log_every_n_steps=50,
-        max_epochs=cfg.epoch
+        max_epochs=cfg.epoch,
+        sync_batchnorm=True,
     )
     
     if t.local_rank == 0:

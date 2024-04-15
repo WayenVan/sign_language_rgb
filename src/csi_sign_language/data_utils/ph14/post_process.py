@@ -1,9 +1,18 @@
-from typing import List
+from typing import List, Tuple
 from itertools import groupby
 import re
 import os
 import numpy as np
+from ..interface_post_process import IPostProcess
 
+class PostProcess(IPostProcess):
+    
+    def __init__(self) -> None:
+        super().__init__()
+        
+    def process(hyp: List[List[str]], gt: List[List[str]]) -> Tuple:
+        hyp = post_process(hyp)
+        return hyp, gt
 
 def post_process(output: List[List[str]], regex=True, merge=True):
     if regex:
