@@ -17,19 +17,19 @@
       conv_type: ['K5', 'P2', 'K5', 'P2']
       pooling: 'max'
     decoder:
-      # _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
-      # n_class: 1296
-      # d_model: 512
-      # n_heads: 8
-      # n_layers: 6
-      # d_feedforward: 1024
-      # dropout: 0.5
-      _target_: ${csi}.modules.slr_base.conformer_decoder.ConformerDecoder
-      dim: 1024
-      dim_head: 64
-      heads: 8
-      depth: 6
-      conv_kernel_size: 5
-      conv_dropout: 0.1
-      ff_dropout: 0.1
+      _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
       n_class: 1296
+      d_model: 1024
+      n_heads: 8
+      n_layers: 6
+      d_feedforward: 2048
+      dropout: 0.5
+      # _target_: ${csi}.modules.slr_base.conformer_decoder.ConformerDecoder
+      # dim: 1024
+      # dim_head: 64
+      # heads: 8
+      # depth: 6
+      # conv_kernel_size: 5
+      # conv_dropout: 0.1
+      # ff_dropout: 0.1
+      # n_class: 1296

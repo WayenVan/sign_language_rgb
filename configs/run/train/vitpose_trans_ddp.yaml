@@ -10,7 +10,7 @@ defaults:
   - /data/loader: defaults
   - /transforms/train: 192x192
   - /transforms/test: 192x192
-  - /model: vitpose_vitpool_tconv_convformer
+  - /model: vitpose_trans
   - /loss: vac
   
 seed: 3407
@@ -33,7 +33,7 @@ data:
   loader:
     train: 
       batch_size: 1
-      num_workers: 4
+      num_workers: 6
       shuffle: false
     val:
       batch_size: 1

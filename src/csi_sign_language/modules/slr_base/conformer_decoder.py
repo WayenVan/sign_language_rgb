@@ -35,8 +35,9 @@ class ConformerDecoder(nn.Module):
 
     def forward(self, x, t_length):
         #[t n c] [n]
+        t = int(x.size(0))
         x = rearrange(x, 't n c -> n t c')
-        mask = self._make_video_mask(t_length, int(x.size(0)))
+        mask = self._make_video_mask(t_length, t)
         for block in self.blocks:
             x = block(x, mask)
         x = rearrange(x, 'n t c -> t n c')

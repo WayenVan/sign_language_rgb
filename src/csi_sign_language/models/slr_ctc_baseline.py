@@ -59,7 +59,7 @@ class SLRModel(nn.Module):
         self, 
         backbone: BaseStream,
         vocab,
-        ctc_search_type = 'greedy',
+        ctc_search_type = 'beam',
         return_label=True,
         **kwargs
         ) -> None:
