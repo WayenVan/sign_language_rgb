@@ -17,10 +17,10 @@ class VACLoss:
     
     def __call__(self, conv_out, conv_length, seq_out, length, target, target_length):
         #[t, n, c] logits
+        # conv_out = conv_out.to(torch.float32)
+        # seq_out = seq_out.to(torch.float32)
+
         conv_out, seq_out = F.log_softmax(conv_out, dim=-1), F.log_softmax(seq_out, dim=-1)
-        
-        conv_out = conv_out.to(torch.float32)
-        seq_out = seq_out.to(torch.float32)
 
         loss = 0
         if self.weights[0] > 0.:

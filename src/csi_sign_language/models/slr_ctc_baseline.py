@@ -69,6 +69,14 @@ class SLRModel(nn.Module):
         self.return_label = return_label
         self.backbone = backbone
         self.decoder = CTCDecoder(self.vocab, blank_id=0, search_mode=ctc_search_type, log_probs_input=True)
+
+        self.backbone.register_backward_hook(self.gradient_check)
+
+    def gradient_check(self, module, grade_in, grade_out):
+        for grade in grade_in:
+            if grade is not None:
+                if torch.isinf(grade).any():
+                    print('grade is info')
     
     def forward(self, input, t_length, *args, **kwargs):
         #define return tuple
