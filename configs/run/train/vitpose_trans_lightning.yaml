@@ -3,25 +3,24 @@ defaults:
   - /_global_/prefix@_global_
   - /resources@_global_
   - /hydra: no_output
-  - /engines: defaults
   - /optimizer: adam
-  - /lr_scheduler: multistep
+  - /lr_scheduler: cosine
   - /datamodule: ph14
   - /transforms/train: 192x192
   - /transforms/test: 192x192
-  - /model: resnet_trans
+  - /model: vitpose_tconv_trans
   - /loss: vac
   
 seed: 3407
-epoch: 85
-
-#-1 when we don want message out
-vocab_size: 1296
+epoch: 100
+tags: 
+  - vitpose_tconv_trans
+  - pytorch_lightning
 
 #if continuos read model
-load_weights: False
+load_weights: True
 is_resume: False
-checkpoint: outputs/train/2024-03-28_03-09-56/checkpoint.pt
+checkpoint: outputs/train_lightning/2024-04-21_00-15-07/epoch=10_wer-val=26.25_lr=0.00e+00_loss=2.00.ckpt
 
 data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
   
@@ -30,10 +29,16 @@ datamodule:
   num_workers: 6
   train_shuffle: False
 
-optimizer:
-  lr: 1e-4
+# optimizer:
+#   lr: 2e-4
 
+# lr_scheduler:  
+#   milestones: [30, 50, 60, 70]
+#   gamma: 0.2
+
+optimizer:
+  lr: 2.5e-6
 
 lr_scheduler:  
-  milestones: [20, 40, 50, 50]
-  gamma: 0.5
+  T_0: 15
+  T_mult: 2

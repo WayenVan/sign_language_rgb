@@ -10,7 +10,7 @@ import torch
 from csi_sign_language.engines.inferencer import Inferencer
 from csi_sign_language.evaluation.ph14.post_process import post_process
 from csi_sign_language.evaluation.ph14.wer_evaluation_sclite import eval
-from csi_sign_language._deprecated.wer_evaluation_python import wer_calculation
+from csi_sign_language.data_utils.ph14.wer_evaluation_python import wer_calculation
 import hydra
 import os
 import json

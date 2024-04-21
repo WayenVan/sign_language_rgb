@@ -20,3 +20,5 @@ mmpose
 
 /preprocessed
 *.log
+.*
+/tmp

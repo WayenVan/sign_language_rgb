@@ -10,7 +10,7 @@ class PostProcess(IPostProcess):
     def __init__(self) -> None:
         super().__init__()
         
-    def process(hyp: List[List[str]], gt: List[List[str]]) -> Tuple:
+    def process(self, hyp: List[List[str]], gt: List[List[str]]) -> Tuple:
         hyp = post_process(hyp)
         return hyp, gt
 

@@ -16,9 +16,9 @@ transforms:
   # - _target_: ${T}.Resize
   #   size: 160
   - _target_: ${CT}.common.TemporalAug
-    t_min: 0.5
+    t_min: 0.8
     t_max: 1.5
-    n_frame_max: 288
+    n_frame_max: 400
   - _target_: ${CT}.common.Rescale
     input: [0., 255.]
     output: [0., 1.]

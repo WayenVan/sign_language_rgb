@@ -1,8 +1,0 @@
-trainner:
-  _target_: ${csi}.engines.trainner.Trainner
-  device: ${device}
-  message_interval: ${message_interval}
-
-inferencer:
-  _target_: ${csi}.engines.inferencer.Inferencer
-  device: ${device}

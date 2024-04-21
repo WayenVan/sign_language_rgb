@@ -12,7 +12,7 @@ from collections import namedtuple
 
 class VitPoseEncoder(nn.Module):
     
-    def __init__(self, img_size, color_range, cfg_path, checkpoint, drop_path_rate, vit_pool_arch=None, freeze_vitpose=True, *args, **kwargs) -> None:
+    def __init__(self, img_size, color_range, cfg_path, checkpoint, drop_path_rate, vit_pool_arch=None, freeze_vitpose=False, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         cfg = Config.fromfile(cfg_path)
 
@@ -24,7 +24,7 @@ class VitPoseEncoder(nn.Module):
 
         vitpose = init_model(cfg, checkpoint, device='cpu')
         self.vit = vitpose.backbone
-        self.vit_head = vitpose.head
+        # self.vit_head = vitpose.head
         del vitpose
 
         vit_out_channels = cfg.model.backbone.arch.embed_dims
@@ -76,11 +76,11 @@ class VitPoseEncoder(nn.Module):
     def train(self, mode: bool = True):
         super().train(mode)
 
-        for p in self.vit.parameters():
-            p.requires_grad = not self.freeze_vitpose
-        for p in self.vit_head.parameters():
-            p.requires_grad = not self.freeze_vitpose
+        # for p in self.vit.parameters():
+        #     p.requires_grad = not self.freeze_vitpose
+        # for p in self.vit_head.parameters():
+        #     p.requires_grad = not self.freeze_vitpose
             
-        if self.freeze_vitpose:
-            self.vit.eval()
-            self.vit_head.eval()
+        # if self.freeze_vitpose:
+        #     self.vit.eval()
+        #     self.vit_head.eval()

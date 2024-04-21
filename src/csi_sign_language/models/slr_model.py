@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import sys
 from typing import List, Any
 from einops import rearrange
 from ..utils.decode import CTCDecoder
@@ -15,9 +16,11 @@ from torch.optim.lr_scheduler import LRScheduler
 from csi_sign_language.data_utils.ph14.post_process import post_process
 from csi_sign_language.modules.loss import VACLoss as _VACLoss
 from csi_sign_language.modules.loss import HeatMapLoss
+from csi_sign_language.data_utils.ph14.wer_evaluation_python import wer_calculation
 
 from torchmetrics.text import WordErrorRate
 from typing import List
+from ..data_utils.interface_post_process import IPostProcess
 
 
 
@@ -26,7 +29,7 @@ class SLRModel(L.LightningModule):
     def __init__(self, 
                  cfg: DictConfig,
                  vocab,
-                 ctc_search_type = 'greedy',
+                 ctc_search_type = 'beam',
                  file_logger = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -39,9 +42,12 @@ class SLRModel(L.LightningModule):
 
         self.vocab = vocab
         self.decoder = CTCDecoder(vocab, blank_id=0, search_mode=ctc_search_type, log_probs_input=True)
-        
-        self.train_wer = WordErrorRate(sync_on_compute=True)
-        self.val_wer = WordErrorRate(sync_on_compute=True)
+
+        self.post_process = None
+
+        self.train_ids_epoch = []
+        self.val_ids_epoch = []
+        self.backbone.register_backward_hook(self.check_gradients)
         
     @torch.no_grad()
     def _outputs2labels(self, out, length):
@@ -63,6 +69,19 @@ class SLRModel(L.LightningModule):
         gloss_gt = batch['gloss_label']
         id = batch['id']
         return id, video, gloss, video_length, gloss_length, gloss_gt
+    
+    @staticmethod
+    def check_gradients(module, grad_input, grad_output):
+        for grad in grad_input:
+            if grad is not None:
+                if torch.isnan(grad).any():
+                    print('graident is nan', file=sys.stderr)
+                if torch.isinf(grad).any():
+                    print(grad)
+                    print('graident is inf', file=sys.stderr)
+
+    def set_post_process(self, fn):
+        self.post_process: IPostProcess = fn
 
     def forward(self, x, t_length) -> Any:
         return self.backbone(x, t_length)
@@ -75,6 +94,8 @@ class SLRModel(L.LightningModule):
         #[(id, hyp, gloss_gt), ...]
         return list(zip(id, hyp, gloss_gt))
 
+    def on_train_epoch_start(self):
+        self.train_ids_epoch.clear()
 
     def training_step(self, batch, batch_idx):
         id, video, gloss, video_length, gloss_length, gloss_gt = self._extract_batch(batch)
@@ -87,6 +108,7 @@ class SLRModel(L.LightningModule):
         if any(i in self.data_excluded for i in id):
             skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         if torch.isnan(loss) or torch.isinf(loss):
+            self.print(f'find nan, data id {id}')
             skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         flags = self.all_gather(skip_flag)
         if any(f.item() for f in flags):
@@ -94,18 +116,23 @@ class SLRModel(L.LightningModule):
             del loss
             return None
 
-        hyp = self._outputs2labels(outputs.out, outputs.t_length)
-        hyp = self._gloss2sentence(hyp)
-        gt  = self._gloss2sentence(gloss_gt)
-        self.train_wer.update(hyp, gt)
-        self.log('train_loss', loss, on_epoch=True, on_step=True, prog_bar=True)
-
+        hyp = self._outputs2labels(outputs.out.detach(), outputs.t_length.detach())
+        # hyp = self._gloss2sentence(hyp)
+        # gt  = self._gloss2sentence(gloss_gt)
+        # self.train_wer.update(hyp, gt)
+        # self.log('train_wer', self.train_wer.compute()*100, on_epoch=True, on_step=False)
         opt = self.optimizers(use_pl_optimizer=False)
         lr = opt.param_groups[0]['lr']
+
         self.log('lr', lr, on_step=True, prog_bar=True)
-        self.log('train_wer', self.train_wer.compute()*100, on_epoch=True, on_step=False)
+        self.log('train_loss', loss, on_epoch=True, on_step=True, prog_bar=True)
+        self.log('train_wer', wer_calculation(gloss_gt, hyp), on_step=False, on_epoch=True, sync_dist=True)
+        self.train_ids_epoch += id
         return loss
     
+    def on_validation_start(self) -> None:
+        self.val_ids_epoch.clear()
+
     def validation_step(self, batch, batch_idx):
         id, video, gloss, video_length, gloss_length, gloss_gt = self._extract_batch(batch)
 
@@ -114,18 +141,19 @@ class SLRModel(L.LightningModule):
             loss = self.loss(outputs, video, video_length, gloss, gloss_length)
 
         hyp = self._outputs2labels(outputs.out, outputs.t_length)
-        hyp = post_process(hyp, merge=True, regex=True)
-        hyp = self._gloss2sentence(hyp)
-        gt  = self._gloss2sentence(gloss_gt)
-        self.val_wer.update(hyp, gt)
+        if self.post_process:
+            hyp, gt= self.post_process.process(hyp, gloss_gt)
+        else:
+            raise NotImplementedError()
+        # hyp = self._gloss2sentence(hyp)
+        # gt  = self._gloss2sentence(gt)
+        # self.val_wer.update(hyp, gt)
+        # self.log('val_wer', self.val_wer.compute()*100, on_epoch=True, on_step=False)
+
         self.log('val_loss', loss.detach(), on_epoch=False, on_step=True)
-        self.log('val_wer', self.val_wer.compute()*100, on_epoch=True, on_step=False)
+        self.log('val_wer', wer_calculation(gt, hyp), on_epoch=True, on_step=False, sync_dist=True)
+        self.val_ids_epoch += id
     
-    def on_train_epoch_start(self) -> None:
-        self.train_wer.reset()
-    
-    def on_validation_start(self) -> None:
-        self.val_wer.reset()
 
     def configure_optimizers(self):
         opt: Optimizer = instantiate(self.cfg.optimizer, filter(lambda p: p.requires_grad, self.backbone.parameters()))
