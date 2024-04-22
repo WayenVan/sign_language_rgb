@@ -67,12 +67,14 @@ def main(cfg: DictConfig):
         log_every_n_steps=50,
         max_epochs=cfg.epoch,
         sync_batchnorm=True,
+        # precision=32
+        gradient_clip_val=1.,
         plugins=[
             plugins.MixedPrecision(
                 precision='16-mixed',
                 device='cuda',
                 scaler=GradScaler(
-                    growth_interval=20,
+                    growth_interval=50,
                 )
             ),
         ]
@@ -121,13 +123,14 @@ class LogCallback(Callback):
     
 
     def on_train_epoch_end(self, trainer: Trainer, pl_module: SLRModel) -> None:
-        if trainer.current_epoch < 5:
-            ids = pl_module.train_ids_epoch
-            rank = trainer.local_rank
-            print(rank)
-            self.logger.experiment[f'training/train_ids_rank{rank}'].append(f'----epoch{trainer.current_epoch}')
-            for id in ids:
-                self.logger.experiment[f'training/train_ids_rank{rank}'].append(f'{id}')
+        pass
+        # if trainer.current_epoch < 5:
+        #     ids = pl_module.train_ids_epoch
+        #     rank = trainer.local_rank
+        #     print(rank)
+        #     self.logger.experiment[f'training/train_ids_rank{rank}'].append(f'----epoch{trainer.current_epoch}')
+        #     for id in ids:
+        #         self.logger.experiment[f'training/train_ids_rank{rank}'].append(f'{id}')
 
     def on_validation_end(self, trainer: Trainer, pl_module: SLRModel) -> None:
         pass

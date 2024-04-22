@@ -28,7 +28,7 @@ import pickle
 @click.option('--ph14_root', default='dataset/phoenix2014-release')
 @click.option('--ph14_lmdb_root', default='preprocessed/ph14_lmdb')
 @click.option('--tmp', default='tmp')
-@click.option('--mode', default='val')
+@click.option('--mode', default='test')
 @click.command()
 def main(config, checkpoint, ph14_root, ph14_lmdb_root, tmp, mode):
 

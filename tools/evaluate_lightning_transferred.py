@@ -32,7 +32,7 @@ import pickle
 @click.option('--ph14_root', default='dataset/phoenix2014-release')
 @click.option('--ph14_lmdb_root', default='preprocessed/ph14_lmdb')
 @click.option('--tmp', default='tmp')
-@click.option('--mode', default='val')
+@click.option('--mode', default='test')
 @click.command()
 def main(config, checkpoint, ph14_root, ph14_lmdb_root, tmp, mode):
     
@@ -47,7 +47,7 @@ def main(config, checkpoint, ph14_root, ph14_lmdb_root, tmp, mode):
     ck = torch.load('outputs/train_x3d_trans/checkpoint.pt')
     dm = Ph14DataModule(ph14_lmdb_root, batch_size=1, num_workers=6, train_shuffle=True, val_transform=instantiate(cfg.transforms.test), test_transform=instantiate(cfg.transforms.test))
     # model = SLRModel.load_from_checkpoint(checkpoint, cfg=cfg, map_location='cpu', ctc_search_type='beam')
-    model = SLRModel(cfg, dm.train_set.get_vocab(), 'beam')
+    model = SLRModel(cfg, dm.train_set.get_vocab(), 'greedy')
     model.load_state_dict(ck['model_state'], strict=False)
     model.set_post_process(dm.get_post_process())
 

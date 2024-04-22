@@ -7,13 +7,16 @@ import torch.nn.functional as F
 from .patch_merg import PatchMerge1D
 
 
+
 class TemporalConv1D(nn.Module):
-    def __init__(self, input_size, out_size, bottleneck_size, conv_type=2, pooling='max'):
+
+    def __init__(self, input_size, out_size, bottleneck_size, conv_type=2, pooling='max', dropout=0.5):
         super(TemporalConv1D, self).__init__()
         self.input_size = input_size
         self.hidden_size = bottleneck_size
         self.out_size = out_size
         self.conv_type = conv_type
+        self.dropout = nn.Dropout1d(p=dropout)
 
         self.kernel_size = self.conv_type
 
@@ -75,5 +78,6 @@ class TemporalConv1D(nn.Module):
         :param lgt: [n]
         """
         visual_feat = self.temporal_conv(frame_feat)
+        visual_feat = self.dropout(visual_feat)
         lgt = self.update_lgt(lgt)
         return visual_feat, lgt

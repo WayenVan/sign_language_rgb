@@ -3,8 +3,8 @@ defaults:
   - /_global_/prefix@_global_
   - /resources@_global_
   - /hydra: no_output
-  - /optimizer: adam
-  - /lr_scheduler: cosine
+  - /optimizer: adamw
+  - /lr_scheduler: multistep
   - /datamodule: ph14
   - /transforms/train: 192x192
   - /transforms/test: 192x192
@@ -18,7 +18,7 @@ tags:
   - pytorch_lightning
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
 checkpoint: outputs/train_lightning/2024-04-21_00-15-07/epoch=10_wer-val=26.25_lr=0.00e+00_loss=2.00.ckpt
 
@@ -37,8 +37,17 @@ datamodule:
 #   gamma: 0.2
 
 optimizer:
-  lr: 2.5e-6
+  lr: 1e-5
+  eps: 1e-6
 
-lr_scheduler:  
-  T_0: 15
-  T_mult: 2
+lr_scheduler:
+  milestones:
+  - 20
+  - 40
+  - 55
+  - 65
+  - 75
+  - 80
+  - 85
+  - 90
+  gamma: 0.5

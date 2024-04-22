@@ -21,6 +21,7 @@ from csi_sign_language.data_utils.ph14.wer_evaluation_python import wer_calculat
 from torchmetrics.text import WordErrorRate
 from typing import List
 from ..data_utils.interface_post_process import IPostProcess
+import re
 
 
 
@@ -80,6 +81,13 @@ class SLRModel(L.LightningModule):
                     print(grad)
                     print('graident is inf', file=sys.stderr)
 
+    def on_save_checkpoint(self, checkpoint: torch.Dict[str, Any]) -> None:
+        #remove any parameters in loss function to reduce thesize
+        state_dict = checkpoint['state_dict']
+        state_dict = {k: v for k, v in state_dict.items() if not re.match(r'^loss', k)}
+        checkpoint['state_dict'] = state_dict
+
+
     def set_post_process(self, fn):
         self.post_process: IPostProcess = fn
 
@@ -111,16 +119,14 @@ class SLRModel(L.LightningModule):
             self.print(f'find nan, data id {id}')
             skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         flags = self.all_gather(skip_flag)
-        if any(f.item() for f in flags):
+        if (flags > 0).any().item():
             del outputs
             del loss
-            return None
+            self.print(flags)
+            self.print('skipped')
+            return 
 
         hyp = self._outputs2labels(outputs.out.detach(), outputs.t_length.detach())
-        # hyp = self._gloss2sentence(hyp)
-        # gt  = self._gloss2sentence(gloss_gt)
-        # self.train_wer.update(hyp, gt)
-        # self.log('train_wer', self.train_wer.compute()*100, on_epoch=True, on_step=False)
         opt = self.optimizers(use_pl_optimizer=False)
         lr = opt.param_groups[0]['lr']
 
@@ -145,10 +151,6 @@ class SLRModel(L.LightningModule):
             hyp, gt= self.post_process.process(hyp, gloss_gt)
         else:
             raise NotImplementedError()
-        # hyp = self._gloss2sentence(hyp)
-        # gt  = self._gloss2sentence(gt)
-        # self.val_wer.update(hyp, gt)
-        # self.log('val_wer', self.val_wer.compute()*100, on_epoch=True, on_step=False)
 
         self.log('val_loss', loss.detach(), on_epoch=False, on_step=True)
         self.log('val_wer', wer_calculation(gt, hyp), on_epoch=True, on_step=False, sync_dist=True)
