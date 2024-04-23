@@ -38,7 +38,7 @@ def main(cfg: DictConfig):
     save_dir = os.path.join('outputs', file_name[:-3], current_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
     logger = build_logger()
-    callback = LogCallback(logger)
+    callback = DebugCallback(logger)
     ckpt_callback = callbacks.ModelCheckpoint(
         save_dir, 
         save_last=True, 
@@ -108,7 +108,7 @@ def build_logger():
     )
     return logger
 
-class LogCallback(Callback):
+class DebugCallback(Callback):
     
     def __init__(self, logger) -> None:
         super().__init__()
@@ -119,6 +119,10 @@ class LogCallback(Callback):
         scaler: GradScaler = trainer.strategy.precision_plugin.scaler
         scale = scaler.get_scale()
         self.logger.experiment['training/scaler'].append(scale)
+        pass
+    
+    def on_after_backward(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        #inspect gradient here
         pass
     
 

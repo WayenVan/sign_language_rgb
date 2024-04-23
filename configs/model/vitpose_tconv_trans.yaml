@@ -3,8 +3,8 @@ encoder:
   _target_: ${csi}.modules.slr_base.vitpose_encoder.VitPoseEncoder
   img_size: 192
   color_range: [0, 1]
-  cfg_path: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192.py
-  checkpoint: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192-62d7a712_20230314.pth
+  cfg_path: ${vitpose_cfg}
+  checkpoint: ${vitpose_ckpt}
   drop_path_rate: 0.5
   freeze_vitpose: False
 neck:

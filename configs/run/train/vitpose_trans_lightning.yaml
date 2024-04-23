@@ -1,6 +1,6 @@
 #@package _global_
 defaults:
-  - /_global_/prefix@_global_
+  - /prefix@_global_
   - /resources@_global_
   - /hydra: no_output
   - /optimizer: adamw

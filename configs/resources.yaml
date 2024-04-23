@@ -1,5 +1,6 @@
 ph14:
   lmdb_root: preprocessed/ph14_lmdb
+  root: dataset/phoenix2014-release
     
 swin_cfg: resources/swin/tiny_224.py
 swin_ckpt: resources/swin/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth
