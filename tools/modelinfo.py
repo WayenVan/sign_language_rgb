@@ -1,34 +1,40 @@
 #! /usr/bin/env python3
+import torch
 from hydra.utils import instantiate
 from hydra import compose, initialize_config_dir
 import click
 import os
 from omegaconf import OmegaConf
 import torch.nn as nn
-import torchinfo
 import sys
 sys.path.append('src')
+from csi_sign_language.models.slr_model import SLRModel
+import calflops
 
+@click.option('--config', '-c', default='outputs/train_lightning/2024-04-13_19-54-02/config.yaml')
+@click.option('-ckpt', '--checkpoint', default='outputs/train_lightning/2024-04-13_19-54-02/last.ckpt')
 @click.command()
-@click.option('--config-dir', default='configs')
-@click.option('-cn', default='run/train/vitpose_conformer_ddp')
-@click.option('-d', '--depth', default=3)
-@click.option('--device', default='cuda')
-def main(config_dir, cn, depth, device):
-    path = os.path.abspath(config_dir)
-    initialize_config_dir(path)
-    cfg = compose(cn)
-    dataset = instantiate(cfg.data.dataset.val)
-    loader = instantiate(cfg.data.loader.val, dataset=dataset, batch_size=1)
-    vocab = loader.dataset.vocab
-    model: nn.Module = instantiate(cfg.model, vocab=vocab).to(device)
-
-    data = next(iter(loader))
-    video = data['video'].to(device)
-    gloss = data['gloss'].to(device)
-    video_length = data['video_length'].to(device)
+def main(config, checkpoint):
+    cfg = OmegaConf.load(config)
+    model = SLRModel.load_from_checkpoint(checkpoint, cfg=cfg, map_location='cpu', ctc_search_type='beam', strict=False).cuda()
+    fake_data = torch.rand(1, 3, 150, 192, 192)
+    fake_length = torch.tensor([150], dtype=torch.int64).cuda()
     
-    torchinfo.summary(model, input_data=(video, video_length), depth=depth)
+    flops, macs, params = calflops.calculate_flops(
+        model= model,
+        kwargs=dict(
+            x = fake_data,
+            t_length=fake_length
+        ),
+        print_results=True,
+    )
+    
+    
+
+    
+    
+
+    
 
 if __name__ == '__main__':
     main()

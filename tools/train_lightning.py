@@ -67,8 +67,8 @@ def main(cfg: DictConfig):
         log_every_n_steps=50,
         max_epochs=cfg.epoch,
         sync_batchnorm=True,
-        # precision=32
-        gradient_clip_val=1.,
+        # precision=32,
+        # gradient_clip_val=1.,
         plugins=[
             plugins.MixedPrecision(
                 precision='16-mixed',
@@ -116,9 +116,9 @@ class DebugCallback(Callback):
     
         
     def on_before_optimizer_step(self, trainer: Trainer, pl_module: LightningModule, optimizer: Optimizer) -> None:
-        scaler: GradScaler = trainer.strategy.precision_plugin.scaler
-        scale = scaler.get_scale()
-        self.logger.experiment['training/scaler'].append(scale)
+        # scaler: GradScaler = trainer.strategy.precision_plugin.scaler
+        # scale = scaler.get_scale()
+        # self.logger.experiment['training/scaler'].append(scale)
         pass
     
     def on_after_backward(self, trainer: Trainer, pl_module: LightningModule) -> None:
