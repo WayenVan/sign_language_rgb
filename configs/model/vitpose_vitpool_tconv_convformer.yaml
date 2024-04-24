@@ -5,7 +5,7 @@ encoder:
   color_range: [0, 1]
   cfg_path: ${vitpose_cfg}
   checkpoint: ${vitpose_ckpt}
-  drop_path_rate: 0.5
+  drop_path_rate: 0.9
   freeze_vitpose: False
 neck:
   _target_: ${csi}.modules.tconv.TemporalConv1D

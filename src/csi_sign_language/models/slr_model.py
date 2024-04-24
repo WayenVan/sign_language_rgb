@@ -27,12 +27,13 @@ import re
 
 class SLRModel(L.LightningModule):
 
-    def __init__(self, 
-                 cfg: DictConfig,
-                 vocab,
-                 ctc_search_type = 'beam',
-                 file_logger = None,
-                 *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, 
+        cfg: DictConfig,
+        vocab,
+        ctc_search_type = 'beam',
+        file_logger = None,
+         *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.save_hyperparameters(logger=False, ignore=['cfg', 'file_logger'])
 
@@ -81,13 +82,13 @@ class SLRModel(L.LightningModule):
                     print(grad)
                     print('graident is inf', file=sys.stderr)
 
+    
     def on_save_checkpoint(self, checkpoint: torch.Dict[str, Any]) -> None:
         #remove any parameters in loss function to reduce thesize
         state_dict = checkpoint['state_dict']
         state_dict = {k: v for k, v in state_dict.items() if not re.match(r'^loss', k)}
         checkpoint['state_dict'] = state_dict
-
-
+        
     def set_post_process(self, fn):
         self.post_process: IPostProcess = fn
 
@@ -127,10 +128,7 @@ class SLRModel(L.LightningModule):
             return 
 
         hyp = self._outputs2labels(outputs.out.detach(), outputs.t_length.detach())
-        opt = self.optimizers(use_pl_optimizer=False)
-        lr = opt.param_groups[0]['lr']
 
-        self.log('lr', lr, on_step=True, prog_bar=True)
         self.log('train_loss', loss, on_epoch=True, on_step=True, prog_bar=True)
         self.log('train_wer', wer_calculation(gloss_gt, hyp), on_step=False, on_epoch=True, sync_dist=True)
         self.train_ids_epoch += id

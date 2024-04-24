@@ -10,3 +10,6 @@ resnet_ckpt: resources/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
   
 vitpose_cfg: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192.py
 vitpose_ckpt: resources/vitpose/td-hm_ViTPose-small_8xb64-210e_coco-256x192-62d7a712_20230314.pth
+  
+mbvit_cfg: resources/mbvit/mbvit.py
+mbvit_ckpt: resources/mbvit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth

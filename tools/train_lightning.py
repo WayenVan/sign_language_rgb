@@ -39,6 +39,7 @@ def main(cfg: DictConfig):
 
     logger = build_logger()
     callback = DebugCallback(logger)
+    lr_callback = callbacks.LearningRateMonitor('step', log_momentum=True)
     ckpt_callback = callbacks.ModelCheckpoint(
         save_dir, 
         save_last=True, 
@@ -62,12 +63,12 @@ def main(cfg: DictConfig):
         accelerator='gpu',
         strategy='ddp',
         devices=2,
-        callbacks=[ckpt_callback, callback],
+        callbacks=[ckpt_callback, lr_callback, callback],
         logger=logger,
         log_every_n_steps=50,
         max_epochs=cfg.epoch,
         sync_batchnorm=True,
-        # precision=32,
+        # precision=16,
         # gradient_clip_val=1.,
         plugins=[
             plugins.MixedPrecision(

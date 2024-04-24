@@ -31,6 +31,7 @@ class Ph14DataModule(LightningDataModule):
         self.train_set = MyPhoenix14Dataset(self.data_root, 'multisigner', 'train', transform=self.train_transform)
         self.val_set = MyPhoenix14Dataset(self.data_root, 'multisigner', 'dev', transform=self.v_transform)
         self.test_set = MyPhoenix14Dataset(self.data_root, 'multisigner', 'test', transform=self.test_transform)
+        self.collate_fn = CollateFn()
     
     def get_vocab(self):
         return self.train_set.get_vocab()

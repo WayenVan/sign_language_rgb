@@ -8,19 +8,19 @@ defaults:
   - /datamodule: ph14
   - /transforms/train: 192x192
   - /transforms/test: 192x192
-  - /model: vitpose_tconv_trans
+  - /model: swin_trans
   - /loss: vac
   
 seed: 3407
 epoch: 100
 tags: 
-  - vitpose_tconv_trans
+  - swin_trans
   - pytorch_lightning
 
 #if continuos read model
-load_weights: True
+load_weights: False
 is_resume: False
-checkpoint: outputs/train_lightning/2024-04-24_01-42-41/last.ckpt
+checkpoint: outputs/train_lightning/2024-04-22_14-06-50/last.ckpt
 
 data_excluded: ["13April_2011_Wednesday_tagesschau_default-14",]
   
@@ -29,24 +29,24 @@ datamodule:
   num_workers: 6
   train_shuffle: False
 
-optimizer:
-  lr: 2e-7
-
-lr_scheduler:  
-  milestones: [40, 80]
-  gamma: 0.8
-
 # optimizer:
-#   lr: 1e-4
+#   lr: 2e-4
 
-# lr_scheduler:
-#   milestones:
-#   - 20
-#   - 40
-#   - 55
-#   - 65
-#   - 75
-#   - 80
-#   - 85
-#   - 90
-#   gamma: 0.5
+# lr_scheduler:  
+#   milestones: [30, 50, 60, 70]
+#   gamma: 0.2
+
+optimizer:
+  lr: 1e-4
+
+lr_scheduler:
+  milestones:
+  - 20
+  - 40
+  - 55
+  - 65
+  - 75
+  - 80
+  - 85
+  - 90
+  gamma: 0.5

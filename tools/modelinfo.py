@@ -29,12 +29,6 @@ def main(config, checkpoint):
         print_results=True,
     )
     
-    
-
-    
-    
-
-    
 
 if __name__ == '__main__':
     main()
