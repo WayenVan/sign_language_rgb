@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from lightning import LightningModule
+import torch
 from torch.optim import Optimizer
 from torchtext.vocab import Vocab
 from omegaconf import OmegaConf, DictConfig
@@ -25,8 +26,7 @@ from lightning.pytorch.trainer import Trainer
 from lightning.pytorch.callbacks import Callback
 from lightning.pytorch import plugins
 from torch.cuda.amp.grad_scaler import GradScaler
-import logging
-import torch
+from torch.utils.tensorboard.writer import SummaryWriter
 
 @hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/vitpose_trans_lightning')
 def main(cfg: DictConfig):
@@ -38,7 +38,8 @@ def main(cfg: DictConfig):
     save_dir = os.path.join('outputs', file_name[:-3], current_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
     logger = build_logger()
-    callback = DebugCallback(logger)
+    callback = DebugCallback(logger, current_time.strftime("%Y-%m-%d_%H-%M-%S"))
+    rich_callback = callbacks.RichProgressBar()
     lr_callback = callbacks.LearningRateMonitor('step', log_momentum=True)
     ckpt_callback = callbacks.ModelCheckpoint(
         save_dir, 
@@ -63,13 +64,13 @@ def main(cfg: DictConfig):
         accelerator='gpu',
         strategy='ddp',
         devices=2,
-        callbacks=[ckpt_callback, lr_callback, callback],
+        callbacks=[ckpt_callback, lr_callback, callback, rich_callback],
         logger=logger,
         log_every_n_steps=50,
         max_epochs=cfg.epoch,
         sync_batchnorm=True,
         # precision=16,
-        # gradient_clip_val=1.,
+        gradient_clip_val=1.,
         plugins=[
             plugins.MixedPrecision(
                 precision='16-mixed',
@@ -111,20 +112,36 @@ def build_logger():
 
 class DebugCallback(Callback):
     
-    def __init__(self, logger) -> None:
+    def __init__(self, logger, logdir) -> None:
         super().__init__()
         self.logger = logger
-    
+        self.tb_dir = os.path.join('outputs/tensorboard', logdir)
+        self.logger.experiment['tensorboard_dir'] = self.tb_dir
+        
+    def on_train_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        if trainer.local_rank == 0:
+            self.writer = SummaryWriter(self.tb_dir)
         
     def on_before_optimizer_step(self, trainer: Trainer, pl_module: LightningModule, optimizer: Optimizer) -> None:
         # scaler: GradScaler = trainer.strategy.precision_plugin.scaler
         # scale = scaler.get_scale()
         # self.logger.experiment['training/scaler'].append(scale)
-        pass
     
-    def on_after_backward(self, trainer: Trainer, pl_module: LightningModule) -> None:
         #inspect gradient here
+        # if trainer.local_rank == 0:
+        #     if trainer.global_step % 100 == 0:
+        #         for name, p in pl_module.named_parameters():
+        #             if 'backbone' in name:
+        #                 self.writer.add_histogram(name, p.clone().detach().cpu().numpy(), trainer.global_step)
+        #                 if p.grad is None:
+        #                     print(f'none name: {name}', file=sys.stderr)
+        #                     return
+        #                 if not torch.isnan(p.grad).any():
+        #                     self.writer.add_histogram(name+'/grad', p.grad.clone().detach().cpu().numpy(), trainer.global_step)
+        #                 else:
+        #                     print(f'nan occured, name: {name}', file=sys.stderr)
         pass
+        
     
 
     def on_train_epoch_end(self, trainer: Trainer, pl_module: SLRModel) -> None:

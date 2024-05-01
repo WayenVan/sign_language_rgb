@@ -30,11 +30,11 @@ datamodule:
   train_shuffle: False
 
 optimizer:
-  lr: 2e-7
+  lr: 1e-7
 
 lr_scheduler:  
   milestones: [40, 80]
-  gamma: 0.8
+  gamma: 0.5
 
 # optimizer:
 #   lr: 1e-4

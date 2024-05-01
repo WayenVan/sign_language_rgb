@@ -61,6 +61,10 @@ def main(config, checkpoint, ph14_root, ph14_lmdb_root, tmp, mode):
         use_distributed_sampler=True,
     )
     strategy = t.strategy
+    strategy.connect(model)
+    t.save_checkpoint('outputs/vitpose_trans_best/val-wer=24.ckpt')
+    OmegaConf.save(cfg, 'outputs/vitpose_trans_best/config.yaml')
+    return
     loader = dm.test_dataloader() if mode=='test' else dm.val_dataloader()
     t.validate(model, loader)
     outputs = t.predict(model, loader)

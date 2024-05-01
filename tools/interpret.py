@@ -26,6 +26,7 @@ import click
 from torchmetrics.text import WordErrorRate
 from lightning import LightningModule, Trainer
 from lightning import Callback
+import math
 
 feat_map = None
 grads = None
@@ -34,11 +35,15 @@ def regist_hooks_vit(model: LightningModule):
 
     def reshape(x):
         patch_token = x[:, 1:]
-        B, N, C = x.shape
+        B, N, C = patch_token.shape
+        # breakpoint()
         # (B, N, C) -> (B, H, W, C) -> (B, C, H, W)
-        return patch_token.reshape(B, N//2, N//2, -1).permute(0, 3, 1, 2)
+        h = int(math.sqrt(N))
+        w = int(math.sqrt(N))
+        return patch_token.reshape(B, h, w, -1).transpose(0, 3, 1, 2)
 
     target_layer: torch.nn.Module = model.backbone.encoder.vitpool.layers[-2]
+    # target_layer: torch.nn.Module = model.backbone.encoder.vit.layers[-1]
     def fhook(m, argvit, output):
         print(output.shape)
         global feat_map
@@ -85,8 +90,8 @@ def regist_hooks(model: LightningModule):
     target_layer.register_backward_hook(bhook)
     target_layer.register_forward_hook(fhook)
 
-@click.option('--config', '-c', default='outputs/train_lightning/2024-04-12_04-39-59/config.yaml')
-@click.option('-ckpt', '--checkpoint', default='outputs/train_lightning/2024-04-12_04-39-59/epoch=40_wer-val=31.16_lr=4.00e-06_loss=4.53.ckpt')
+@click.option('--config', '-c', default='outputs/vitpose_trans_best/config.yaml')
+@click.option('-ckpt', '--checkpoint', default='outputs/vitpose_trans_best/val-wer=24.ckpt')
 @click.option('--ph14_root', default='dataset/phoenix2014-release')
 @click.option('--ph14_lmdb_root', default='preprocessed/ph14_lmdb')
 @click.option('--index', default=2)
@@ -114,6 +119,7 @@ def main(config, checkpoint, ph14_root, ph14_lmdb_root, index):
         logger=False,
         enable_checkpointing=False,
         precision=32,
+        callbacks=[CB()]
     )
     
     result = t.predict(model, single_loader)[0][0]
@@ -123,7 +129,7 @@ def main(config, checkpoint, ph14_root, ph14_lmdb_root, index):
     single_data['gloss_label'] = result[1]
     single_loader = torch.utils.data.DataLoader([single_data], batch_size=1, collate_fn=dm.collate_fn)
     
-    regist_hooks_x3d(model=model)
+    regist_hooks_vit(model=model)
 
     t.fit(model, single_loader)
         
@@ -167,6 +173,11 @@ def visualize_and_save_grad_cam_images(original_images, grad_cam_heatmap_batch, 
         cv2.imwrite(output_path, output_image)
 
 
+class CB(Callback):
+    
+    def on_train_batch_start(self, trainer: Trainer, pl_module: LightningModule, batch, batch_idx) -> None:
+        pl_module.eval()
+        
 def compute_grad_cam_batch(feature_map_batch, grads_batch):
     # Global average pooling of gradients
     weights = np.mean(grads_batch, axis=(2, 3))
@@ -198,7 +209,7 @@ def compute_grad_cam_plus_plus_batch(feature_map_batch, grads_batch):
 
     # Normalize the heatmap for each sample in the batch
     max_vals = np.max(grad_cam_plus_plus_batch, axis=(1, 2), keepdims=True)
-    grad_cam_plus_plus_batch /= max_vals
+    grad_cam_plus_plus_batch /= (max_vals + 1e-8)
 
     return grad_cam_plus_plus_batch
 

@@ -117,19 +117,19 @@ class SLRModel(L.LightningModule):
         if any(i in self.data_excluded for i in id):
             skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         if torch.isnan(loss) or torch.isinf(loss):
-            self.print(f'find nan, data id {id}')
+            self.print(f'find nan, data id {id}', file=sys.stderr)
             skip_flag = torch.tensor(1, dtype=torch.uint8, device=self.device)
         flags = self.all_gather(skip_flag)
         if (flags > 0).any().item():
             del outputs
             del loss
             self.print(flags)
-            self.print('skipped')
+            self.print('skipped', file=sys.stderr)
             return 
 
         hyp = self._outputs2labels(outputs.out.detach(), outputs.t_length.detach())
 
-        self.log('train_loss', loss, on_epoch=True, on_step=True, prog_bar=True)
+        self.log('train_loss', loss, on_epoch=True, on_step=False, prog_bar=True, sync_dist=True)
         self.log('train_wer', wer_calculation(gloss_gt, hyp), on_step=False, on_epoch=True, sync_dist=True)
         self.train_ids_epoch += id
         return loss
@@ -150,7 +150,7 @@ class SLRModel(L.LightningModule):
         else:
             raise NotImplementedError()
 
-        self.log('val_loss', loss.detach(), on_epoch=False, on_step=True)
+        self.log('val_loss', loss.detach(), on_epoch=True, on_step=False, sync_dist=True)
         self.log('val_wer', wer_calculation(gt, hyp), on_epoch=True, on_step=False, sync_dist=True)
         self.val_ids_epoch += id
     
