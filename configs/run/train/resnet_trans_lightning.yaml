@@ -1,22 +1,23 @@
 #@package _global_
 defaults:
-  - /_global_/prefix@_global_
+  - /prefix@_global_
   - /resources@_global_
   - /hydra: no_output
-  - /engines: defaults
-  - /optimizer: adam
-  - /lr_scheduler: multistep
   - /datamodule: ph14
+  - /optimizer: adam
+  - /lr_scheduler: step
   - /transforms/train: 192x192
   - /transforms/test: 192x192
   - /model: resnet_trans
   - /loss: vac
   
 seed: 3407
-epoch: 85
+epoch: 200
+tags: 
+  - resnet_trans
+  - pytorch_lightning
 
 #-1 when we don want message out
-vocab_size: 1296
 
 #if continuos read model
 load_weights: False
@@ -35,5 +36,5 @@ optimizer:
 
 
 lr_scheduler:  
-  milestones: [20, 40, 50, 50]
-  gamma: 0.5
+  step_size: 40
+  gamma: 0.1

@@ -1,5 +1,5 @@
 ph14:
-  lmdb_root: preprocessed/ph14_lmdb
+  lmdb_root: dataset/preprocessed/ph14_lmdb
   root: dataset/phoenix2014-release
     
 swin_cfg: resources/swin/tiny_224.py

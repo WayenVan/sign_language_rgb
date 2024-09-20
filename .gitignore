@@ -12,6 +12,7 @@
 /snap
 /resources
 __pycache__/*
+**/__pychache__
 .pytest_cache
 mmpose
 

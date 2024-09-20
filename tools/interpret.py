@@ -90,10 +90,10 @@ def regist_hooks(model: LightningModule):
     target_layer.register_backward_hook(bhook)
     target_layer.register_forward_hook(fhook)
 
-@click.option('--config', '-c', default='outputs/vitpose_trans_best/config.yaml')
-@click.option('-ckpt', '--checkpoint', default='outputs/vitpose_trans_best/val-wer=24.ckpt')
+@click.option('--config', '-c', default='outputs/train_lightning/2024-05-11_16-19-53/config.yaml')
+@click.option('-ckpt', '--checkpoint', default='outputs/train_lightning/2024-05-11_16-19-53/epoch=48_wer-val=22.79_lr=0.00e+00_loss=0.00.ckpt')
 @click.option('--ph14_root', default='dataset/phoenix2014-release')
-@click.option('--ph14_lmdb_root', default='preprocessed/ph14_lmdb')
+@click.option('--ph14_lmdb_root', default='/home/jingyan/Documents/sign_language_rgb/dataset/preprocessed/ph14_lmdb')
 @click.option('--index', default=2)
 @click.command()
 def main(config, checkpoint, ph14_root, ph14_lmdb_root, index):
@@ -129,7 +129,7 @@ def main(config, checkpoint, ph14_root, ph14_lmdb_root, index):
     single_data['gloss_label'] = result[1]
     single_loader = torch.utils.data.DataLoader([single_data], batch_size=1, collate_fn=dm.collate_fn)
     
-    regist_hooks_vit(model=model)
+    regist_hooks(model=model)
 
     t.fit(model, single_loader)
         

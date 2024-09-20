@@ -12,6 +12,7 @@ neck:
   out_size: 1024
   bottleneck_size:  512
   conv_type: ['K5', 'P2', 'K5', 'P2']
+  dropout: 0.1
 decoder:
   _target_: ${csi}.modules.slr_base.decoders.TransformerDecoder
   n_class: 1296

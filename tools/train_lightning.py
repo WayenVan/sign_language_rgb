@@ -1,34 +1,31 @@
 #! /usr/bin/env python3
 
 from lightning import LightningModule
-import torch
 from torch.optim import Optimizer
-from torchtext.vocab import Vocab
 from omegaconf import OmegaConf, DictConfig
+
 import sys
 sys.path.append('src')
+
 from hydra.utils import instantiate
 from torch.utils.data.dataloader import DataLoader
-from csi_sign_language.utils.git import save_git_diff_to_file, get_current_git_hash, save_git_hash
+from csi_sign_language.utils.git import save_git_diff_to_file, save_git_hash
 from csi_sign_language.models.slr_model import SLRModel
-from csi_sign_language.utils.misc import is_debugging
 import hydra
 import os
-import numpy as np
 
 from datetime import datetime
 from lightning.pytorch import seed_everything
 from lightning.pytorch import loggers as pl_loggers
 from lightning.pytorch import callbacks
 from lightning.pytorch import trainer
-from lightning.pytorch import strategies
 from lightning.pytorch.trainer import Trainer
 from lightning.pytorch.callbacks import Callback
 from lightning.pytorch import plugins
 from torch.cuda.amp.grad_scaler import GradScaler
 from torch.utils.tensorboard.writer import SummaryWriter
 
-@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/vitpose_trans_lightning')
+@hydra.main(version_base='1.3.2', config_path='../configs', config_name='run/train/resnet_trans_lightning')
 def main(cfg: DictConfig):
     seed_everything(cfg.seed, workers=True)
 
@@ -74,8 +71,8 @@ def main(cfg: DictConfig):
         plugins=[
             plugins.MixedPrecision(
                 precision='16-mixed',
-                device='cuda',
                 scaler=GradScaler(
+                device='cuda',
                     growth_interval=50,
                 )
             ),
